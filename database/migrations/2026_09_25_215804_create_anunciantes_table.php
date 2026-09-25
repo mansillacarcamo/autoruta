@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->string('nombre_negocio');
             $table->string('rubro'); // financiera | taller | otro
             $table->string('logo')->nullable();
-            $table->text('descripcion')->default('');
+            $table->text('descripcion');
             $table->string('telefono_whatsapp')->nullable();
             $table->string('sitio_web')->nullable();
             $table->string('estado')->default('pausado'); // activo | pausado | vencido

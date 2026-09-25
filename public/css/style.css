@@ -90,6 +90,30 @@ img { max-width: 100%; display: block; }
 .footer a:hover { color: var(--acento); }
 .footer-abajo { border-top: 1px solid var(--carbon-claro); padding: 16px 0; text-align: center; font-size: 12px; }
 
+/* Fondo automotriz para login/registro (auto en movimiento, silueta con lineas de velocidad) */
+.fondo-auto {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background-color: var(--carbon);
+  background-image:
+    linear-gradient(135deg, rgba(4,5,13,.92), rgba(21,22,31,.88)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Cg stroke='%23d90718' stroke-width='3' opacity='0.35' fill='none'%3E%3Cline x1='0' y1='120' x2='220' y2='120'/%3E%3Cline x1='0' y1='150' x2='260' y2='150'/%3E%3Cline x1='0' y1='180' x2='200' y2='180'/%3E%3C/g%3E%3Cg stroke='%23ffffff' stroke-width='4' opacity='0.15' fill='none'%3E%3Cpath d='M260 210 q40 -60 120 -60 h90 q30 0 45 30 l15 30 h40 q10 0 10 12 v20 q0 10 -10 10 h-20 q0 -25 -25 -25 t-25 25 h-180 q0 -25 -25 -25 t-25 25 h-25 q-10 0 -10 -10 v-16 q0 -10 10 -16 z'/%3E%3Ccircle cx='330' cy='236' r='22'/%3E%3Ccircle cx='500' cy='236' r='22'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center 30%, center 60%;
+  background-size: cover, min(90%, 700px);
+}
+.tarjeta-login {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 28px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.35);
+}
+
 /* WhatsApp flotante */
 .wa-flotante {
   position: fixed; bottom: 20px; right: 20px; z-index: 50; background: #25D366; color: #fff;

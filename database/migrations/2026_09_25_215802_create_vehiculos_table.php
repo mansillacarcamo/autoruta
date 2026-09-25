@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->unsignedInteger('kilometraje');
             $table->string('region');
             $table->string('comuna');
-            $table->text('descripcion')->default('');
+            $table->text('descripcion');
             $table->string('version')->nullable();
             $table->string('transmision')->nullable(); // manual | automatica
             $table->string('combustible')->nullable(); // bencina | diesel | hibrido | electrico | gas
