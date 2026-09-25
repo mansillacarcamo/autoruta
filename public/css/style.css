@@ -124,3 +124,9 @@ img { max-width: 100%; display: block; }
 .texto-mutado { color: #737373; }
 .grid-2 { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
 .mt-1 { margin-top: 8px; } .mt-2 { margin-top: 16px; } .mt-3 { margin-top: 24px; }
+
+/* Banners laterales: ocultos en celular, visibles desde pantallas grandes */
+.banner-lateral-slot { display: none; flex-shrink: 0; width: 160px; }
+.contenido-con-laterales { display: flex; gap: 16px; align-items: flex-start; max-width: 1200px; margin: 0 auto; }
+.contenido-con-laterales > main { flex: 1; min-width: 0; }
+@media (min-width: 1400px) { .banner-lateral-slot { display: block; } }

@@ -13,4 +13,10 @@ return [
     'contacto_whatsapp' => '+56962148407',
     'contacto_telefono' => '+56 9 6214 8407',
     'contacto_email' => 'info@autoruta.cl',
+
+    // Reemplazar por las URLs reales cuando existan las cuentas del sitio.
+    'redes_sociales' => [
+        'facebook' => 'https://facebook.com',
+        'instagram' => 'https://instagram.com',
+    ],
 ];

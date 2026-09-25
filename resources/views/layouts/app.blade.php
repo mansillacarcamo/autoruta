@@ -17,6 +17,19 @@
         <a href="{{ route('como-funciona') }}">Cómo funciona</a>
       </nav>
       <div class="header-acciones">
+        <a href="{{ config('autoruta.redes_sociales.facebook') }}" target="_blank" rel="noopener" aria-label="Facebook">
+          <svg viewBox="0 0 24 24" width="22" height="22"><path fill="#1877F2" d="M24 12.07C24 5.7 18.63.5 12 .5S0 5.7 0 12.07c0 5.75 4.39 10.52 10.13 11.36v-8.04H7.08v-3.32h3.05V9.41c0-2.99 1.83-4.63 4.6-4.63 1.33 0 2.72.23 2.72.23v2.92h-1.53c-1.51 0-1.98.92-1.98 1.87v2.27h3.37l-.54 3.32h-2.83v8.04C19.61 22.6 24 17.82 24 12.07Z"/></svg>
+        </a>
+        <a href="{{ config('autoruta.redes_sociales.instagram') }}" target="_blank" rel="noopener" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" width="22" height="22">
+            <defs><radialGradient id="ig" cx="30%" cy="107%" r="150%"><stop offset="0%" stop-color="#fdf497"/><stop offset="45%" stop-color="#fd5949"/><stop offset="60%" stop-color="#d6249f"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs>
+            <rect width="24" height="24" rx="6" fill="url(#ig)"/>
+            <rect x="6" y="6" width="12" height="12" rx="3.5" fill="none" stroke="#fff" stroke-width="1.4"/>
+            <circle cx="12" cy="12" r="3.2" fill="none" stroke="#fff" stroke-width="1.4"/>
+            <circle cx="15.8" cy="8.2" r="0.9" fill="#fff"/>
+          </svg>
+        </a>
+        <span style="width:1px;height:24px;background:var(--carbon-claro)"></span>
         @auth
           <a href="{{ route('panel') }}" class="btn btn-acento">Mi panel</a>
         @else
@@ -27,16 +40,26 @@
     </div>
   </header>
 
-  <main>
-    @if (session('ok'))
-      <div class="contenedor mt-2"><p class="alerta-ok">{{ session('ok') }}</p></div>
-    @endif
-    @if (session('error'))
-      <div class="contenedor mt-2"><p class="alerta-error">{{ session('error') }}</p></div>
-    @endif
+  @include('partials.banner-ancho', ['posicion' => 'superior'])
 
-    @yield('contenido')
-  </main>
+  <div class="contenido-con-laterales">
+    @include('partials.banner-lateral', ['lado' => 'izquierdo'])
+
+    <main>
+      @if (session('ok'))
+        <div class="contenedor mt-2"><p class="alerta-ok">{{ session('ok') }}</p></div>
+      @endif
+      @if (session('error'))
+        <div class="contenedor mt-2"><p class="alerta-error">{{ session('error') }}</p></div>
+      @endif
+
+      @yield('contenido')
+    </main>
+
+    @include('partials.banner-lateral', ['lado' => 'derecho'])
+  </div>
+
+  @include('partials.banner-ancho', ['posicion' => 'inferior'])
 
   <footer class="footer">
     <div class="contenedor footer-grid">
@@ -68,15 +91,6 @@
           <li><a href="mailto:{{ config('autoruta.contacto_email') }}">{{ config('autoruta.contacto_email') }}</a></li>
           <li><a href="tel:{{ str_replace(' ', '', config('autoruta.contacto_telefono')) }}">{{ config('autoruta.contacto_telefono') }}</a></li>
         </ul>
-      </div>
-    </div>
-
-    <div class="contenedor" style="border-top:1px solid var(--carbon-claro);padding:20px 0">
-      <p style="font-size:12px;font-weight:600;color:#a3a3a3;margin:0 0 8px">Autos usados en venta por región</p>
-      <div style="display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px">
-        @foreach (array_keys(config('regiones')) as $region)
-          <a href="{{ route('vehiculos.index', ['region' => $region]) }}">Autos en {{ $region }}</a>
-        @endforeach
       </div>
     </div>
 
