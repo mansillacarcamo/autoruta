@@ -156,5 +156,7 @@
      href="https://wa.me/{{ preg_replace('/\D/', '', config('autoruta.contacto_whatsapp')) }}?text={{ urlencode('Hola, quiero hablar con un ejecutivo') }}">
     Hablar con un ejecutivo
   </a>
+
+  @include('partials.aviso-cookies')
 </body>
 </html>
