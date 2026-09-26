@@ -36,6 +36,7 @@
   <div class="admin-tabla-envoltura">
     <table class="admin-tabla">
       <tbody>
+        <tr><td>Dónde se guardan las fotos</td><td><strong>{{ \App\Support\Archivos::esLocal() ? 'Base de datos (respaldo permanente) + disco del servidor' : 'Object Storage (disco ' . config('autoruta.disco_archivos') . ')' }}</strong></td></tr>
         <tr><td>Tamaño máximo por archivo (upload_max_filesize)</td><td><strong>{{ ini_get('upload_max_filesize') }}</strong></td></tr>
         <tr><td>Tamaño máximo por envío (post_max_size)</td><td><strong>{{ ini_get('post_max_size') }}</strong></td></tr>
         <tr><td>Archivos máximos por envío (max_file_uploads)</td><td><strong>{{ ini_get('max_file_uploads') }}</strong></td></tr>

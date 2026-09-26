@@ -13,6 +13,10 @@ Route::get('/vehiculos', [VehiculoController::class, 'index'])->name('vehiculos.
 Route::get('/vehiculos/nuevos', [VehiculoController::class, 'nuevos'])->name('vehiculos.nuevos');
 Route::get('/vehiculos/{vehiculo}', [VehiculoController::class, 'show'])->name('vehiculos.show');
 
+Route::get('/media/{carpeta}/{archivo}', [\App\Http\Controllers\MediaController::class, 'mostrar'])
+    ->where(['carpeta' => 'vehiculos|negocios|portada', 'archivo' => '[A-Za-z0-9_.-]+'])
+    ->name('media');
+
 Route::view('/como-funciona', 'como-funciona')->name('como-funciona');
 Route::view('/terminos', 'legal.terminos')->name('terminos');
 Route::view('/privacidad', 'legal.privacidad')->name('privacidad');
