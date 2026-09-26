@@ -10,7 +10,7 @@ class VehiculoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = $this->filtrar(Vehiculo::activos()->with('fotos'), $request);
+        $query = $this->filtrar(Vehiculo::activos()->with(['fotos', 'usuario']), $request);
 
         match ($request->string('orden')->toString()) {
             'precio_asc' => $query->orderBy('precio'),
@@ -61,7 +61,7 @@ class VehiculoController extends Controller
     public function nuevos(Request $request)
     {
         $desde = (int) $request->query('desde');
-        $nuevos = $this->filtrar(Vehiculo::activos()->with('fotos'), $request)
+        $nuevos = $this->filtrar(Vehiculo::activos()->with(['fotos', 'usuario']), $request)
             ->where('id', '>', $desde)
             ->orderByDesc('id')
             ->take(8)

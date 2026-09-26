@@ -14,7 +14,7 @@ Route::get('/vehiculos/nuevos', [VehiculoController::class, 'nuevos'])->name('ve
 Route::get('/vehiculos/{vehiculo}', [VehiculoController::class, 'show'])->name('vehiculos.show');
 
 Route::get('/media/{carpeta}/{archivo}', [\App\Http\Controllers\MediaController::class, 'mostrar'])
-    ->where(['carpeta' => 'vehiculos|negocios|portada', 'archivo' => '[A-Za-z0-9_.-]+'])
+    ->where(['carpeta' => 'vehiculos|negocios|portada|logos', 'archivo' => '[A-Za-z0-9_.-]+'])
     ->name('media');
 
 Route::get('/publicidad/{banner}', [\App\Http\Controllers\PublicidadController::class, 'clic'])->name('publicidad.clic');
@@ -27,6 +27,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/panel', [PanelController::class, 'index'])->name('panel');
     Route::get('/panel/cuenta', [\App\Http\Controllers\CuentaController::class, 'editar'])->name('panel.cuenta');
     Route::put('/panel/cuenta', [\App\Http\Controllers\CuentaController::class, 'actualizarDatos'])->name('panel.cuenta.datos');
+    Route::post('/panel/cuenta/logo', [\App\Http\Controllers\CuentaController::class, 'actualizarLogo'])->name('panel.cuenta.logo');
+    Route::delete('/panel/cuenta/logo', [\App\Http\Controllers\CuentaController::class, 'quitarLogo'])->name('panel.cuenta.logo.quitar');
     Route::put('/panel/cuenta/clave', [\App\Http\Controllers\CuentaController::class, 'actualizarClave'])->name('panel.cuenta.clave');
     Route::get('/panel/publicar', [PanelController::class, 'crear'])->name('panel.publicar');
     Route::post('/panel/publicar', [PanelController::class, 'guardar'])->name('panel.publicar.guardar');

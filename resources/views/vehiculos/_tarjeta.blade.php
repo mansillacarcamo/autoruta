@@ -1,6 +1,9 @@
 <a href="{{ route('vehiculos.show', $v) }}" class="tarjeta{{ !empty($nuevo) ? ' tarjeta-nueva' : '' }}">
   <div class="tarjeta-foto">
     @if (!empty($nuevo))<span class="etiqueta-nuevo">Nuevo</span>@endif
+    @if ($logoVendedor = $v->usuario?->logoVisibleUrl())
+      <span class="tarjeta-logo"><img src="{{ $logoVendedor }}" alt="{{ $v->usuario->nombre_comercial ?: $v->usuario->name }}" loading="lazy" onerror="this.parentNode.remove()"></span>
+    @endif
     <img src="{{ $v->primeraFotoUrl() }}" alt="{{ $v->marca }} {{ $v->modelo }}" loading="lazy" data-fotos="{{ json_encode($v->fotosUrls()) }}" data-sin-foto="{{ asset('img/vehiculo-placeholder.svg') }}" onerror="siguienteFoto(this)">
   </div>
   <div class="tarjeta-cuerpo">

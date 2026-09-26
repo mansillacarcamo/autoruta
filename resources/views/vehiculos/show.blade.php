@@ -277,9 +277,14 @@
         <div class="vendedor-cuerpo">
           <h2 class="vendedor-titulo">Contacta al vendedor</h2>
           <div class="vendedor-datos">
-            <span class="vendedor-avatar">{{ mb_strtoupper(mb_substr($vehiculo->usuario->name, 0, 1)) }}</span>
+            @if ($logoVendedor = $vehiculo->usuario->logoVisibleUrl())
+              <span class="vendedor-avatar vendedor-logo"><img src="{{ $logoVendedor }}" alt="{{ $vehiculo->usuario->nombre_comercial ?: $vehiculo->usuario->name }}"></span>
+            @else
+              <span class="vendedor-avatar">{{ mb_strtoupper(mb_substr($vehiculo->usuario->name, 0, 1)) }}</span>
+            @endif
             <div>
               <small>Publicado por</small>
+              @if ($vehiculo->usuario->nombre_comercial)<span class="vendedor-comercial">{{ $vehiculo->usuario->nombre_comercial }}</span>@endif
               <strong>{{ $vehiculo->usuario->name }}</strong>
               <span>{{ $vehiculo->comuna }} · Miembro desde {{ $vehiculo->usuario->created_at->locale('es')->translatedFormat('F Y') }}</span>
             </div>

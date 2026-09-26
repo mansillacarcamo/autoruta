@@ -347,4 +347,36 @@ class AutoRutaTest extends TestCase
         $this->actingAs($admin)->get('/admin/negocios')->assertOk()->assertSee('Taller Sur');
         $this->actingAs($admin)->get("/admin/negocios/{$negocio->id}")->assertOk()->assertSee('2 clics');
     }
+    public function test_logo_de_automotora_lo_decide_cada_usuario(): void
+    {
+        $usuario = $this->vendedor();
+        $vehiculo = $this->aviso($usuario);
+
+        $this->actingAs($usuario)->post('/panel/cuenta/logo', ['logo' => UploadedFile::fake()->create('logo.gif', 10, 'image/gif')])
+            ->assertSessionHasErrorsIn('logo', 'logo');
+
+        $this->actingAs($usuario)->post('/panel/cuenta/logo', [
+            'nombre_comercial' => 'Automotora Sur', 'mostrar_logo' => '1', 'logo' => UploadedFile::fake()->image('logo.png', 1200, 1200),
+        ])->assertSessionHas('ok');
+        $usuario->refresh();
+        $this->assertNotNull($usuario->logo);
+        Storage::disk('public')->assertExists('logos/' . $usuario->logo);
+        [$ancho, $alto] = getimagesizefromstring(Storage::disk('public')->get('logos/' . $usuario->logo));
+        $this->assertLessThanOrEqual(400, max($ancho, $alto));
+
+        $this->get('/vehiculos')->assertSee('tarjeta-logo', false)->assertSee('/media/logos/' . $usuario->logo, false);
+        $this->get('/vehiculos/' . $vehiculo->id)->assertSee('Automotora Sur')->assertSee('vendedor-logo', false);
+        $this->get('/media/logos/' . $usuario->logo)->assertOk();
+
+        // Desmarcar la casilla oculta el logo sin borrarlo.
+        $this->actingAs($usuario)->post('/panel/cuenta/logo', ['nombre_comercial' => 'Automotora Sur'])->assertSessionHas('ok');
+        $this->get('/vehiculos')->assertDontSee('tarjeta-logo', false);
+        $this->assertNotNull($usuario->fresh()->logo);
+
+        // Quitar el logo lo elimina.
+        $archivo = $usuario->fresh()->logo;
+        $this->actingAs($usuario)->delete('/panel/cuenta/logo')->assertSessionHas('ok');
+        $this->assertNull($usuario->fresh()->logo);
+        Storage::disk('public')->assertMissing('logos/' . $archivo);
+    }
 }

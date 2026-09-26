@@ -37,6 +37,16 @@ class Archivos
         return $nombre;
     }
 
+    // Guarda contenido ya procesado (por ejemplo un logo redimensionado) en el disco y en el respaldo.
+    public static function guardarContenido(string $contenido, string $ruta, string $mime): void
+    {
+        self::disco()->put($ruta, $contenido);
+
+        if (self::esLocal()) {
+            ArchivoGuardado::updateOrCreate(['ruta' => $ruta], ['mime' => $mime, 'contenido' => $contenido]);
+        }
+    }
+
     public static function url(string $ruta): string
     {
         // Disco local: se sirve por /media (no depende de storage:link ni de APP_URL).
