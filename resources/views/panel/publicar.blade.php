@@ -62,7 +62,8 @@
       </div>
       <div class="form-grupo">
         <label>WhatsApp de contacto</label>
-        <input type="text" name="telefonoWhatsapp" required placeholder="+56912345678" value="{{ auth()->user()->telefono_whatsapp }}">
+        <input type="text" name="telefonoWhatsapp" required placeholder="+56912345678" value="{{ old('telefonoWhatsapp', auth()->user()->telefono_whatsapp) }}">
+        <p class="texto-mutado" style="font-size:12px;margin:4px 0 0">Los compradores te escribirán a este número desde el botón de WhatsApp de tu aviso.</p>
       </div>
     </div>
     <div class="form-grupo"><label>Descripción</label><textarea name="descripcion" required rows="4" maxlength="3000"></textarea></div>

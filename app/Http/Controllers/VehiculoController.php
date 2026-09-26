@@ -58,7 +58,11 @@ class VehiculoController extends Controller
         ]);
 
         $numeroWa = preg_replace('/\D/', '', $vehiculo->usuario->telefono_whatsapp ?: config('autoruta.contacto_whatsapp'));
-        $mensajeWa = urlencode("Hola, vi tu {$vehiculo->marca} {$vehiculo->modelo} {$vehiculo->anio} en " . config('autoruta.nombre_sitio') . ' y me interesa');
+        // Celulares chilenos escritos sin código de país (9XXXXXXXX): wa.me exige el 56.
+        if (strlen($numeroWa) === 9 && str_starts_with($numeroWa, '9')) {
+            $numeroWa = '56' . $numeroWa;
+        }
+        $mensajeWa = urlencode("Hola, vi tu auto {$vehiculo->marca} {$vehiculo->modelo} {$vehiculo->anio} en " . config('autoruta.nombre_sitio') . ', me gustaría saber más información.');
 
         return view('vehiculos.show', compact('vehiculo', 'negocioDestacado', 'ficha', 'numeroWa', 'mensajeWa'));
     }
