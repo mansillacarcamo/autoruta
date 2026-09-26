@@ -33,6 +33,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/negocios/{negocio}', [NegocioController::class, 'actualizar'])->name('negocios.actualizar');
     Route::post('/negocios/{negocio}/banners', [NegocioController::class, 'subirBanner'])->name('negocios.banners.subir');
     Route::delete('/negocios/{negocio}/banners/{banner}', [NegocioController::class, 'eliminarBanner'])->name('negocios.banners.eliminar');
+    Route::get('/portada', [\App\Http\Controllers\Admin\PortadaController::class, 'index'])->name('portada.index');
+    Route::post('/portada', [\App\Http\Controllers\Admin\PortadaController::class, 'subir'])->name('portada.subir');
+    Route::delete('/portada/{medio}', [\App\Http\Controllers\Admin\PortadaController::class, 'eliminar'])->name('portada.eliminar');
     Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
 });
 

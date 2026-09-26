@@ -36,3 +36,6 @@ Thumbs.db
 /storage/app/public/negocios/*
 !/storage/app/public/negocios/.gitkeep
 server-log.txt
+
+/storage/app/public/portada/*
+!/storage/app/public/portada/.gitkeep

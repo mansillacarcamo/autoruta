@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AnuncianteBanner;
+use App\Models\PortadaMedio;
 use App\Models\Vehiculo;
 use Illuminate\Support\Facades\DB;
 
@@ -22,6 +23,8 @@ class HomeController extends Controller
             ->orderBy('orden')
             ->get();
 
-        return view('home', compact('destacados', 'ultimos', 'bannersInicio'));
+        $portada = PortadaMedio::orderBy('orden')->orderBy('id')->get();
+
+        return view('home', compact('destacados', 'ultimos', 'bannersInicio', 'portada'));
     }
 }

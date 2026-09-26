@@ -42,10 +42,31 @@ img { max-width: 100%; display: block; }
 .btn-block { display: block; width: 100%; text-align: center; }
 
 /* Hero */
-.hero { background: var(--carbon); color: #fff; padding: 56px 0; }
-.hero h1 { font-size: 32px; margin: 0; }
+.hero {
+  color: #fff; padding: 88px 0 96px;
+  background-color: var(--carbon);
+  background-image:
+    linear-gradient(90deg, rgba(4,5,13,.97) 0%, rgba(4,5,13,.85) 45%, rgba(140,11,22,.55) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Cg stroke='%23d90718' stroke-width='3' opacity='0.6' fill='none'%3E%3Cline x1='0' y1='120' x2='220' y2='120'/%3E%3Cline x1='0' y1='150' x2='260' y2='150'/%3E%3Cline x1='0' y1='180' x2='200' y2='180'/%3E%3C/g%3E%3Cg stroke='%23ffffff' stroke-width='4' opacity='0.35' fill='none'%3E%3Cpath d='M260 210 q40 -60 120 -60 h90 q30 0 45 30 l15 30 h40 q10 0 10 12 v20 q0 10 -10 10 h-20 q0 -25 -25 -25 t-25 25 h-180 q0 -25 -25 -25 t-25 25 h-25 q-10 0 -10 -10 v-16 q0 -10 10 -16 z'/%3E%3Ccircle cx='330' cy='236' r='22'/%3E%3Ccircle cx='500' cy='236' r='22'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center, right 5% center;
+  background-size: cover, min(55%, 720px);
+}
+.hero { position: relative; overflow: hidden; }
+.hero-contenido { position: relative; z-index: 2; }
+.hero-medios { position: absolute; inset: 0; z-index: 0; }
+.hero-medios img, .hero-medios video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero-medios img { opacity: 0; transition: opacity 1.2s ease; }
+.hero-medios img.activa { opacity: 1; }
+.hero-con-medios { background-image: none; }
+.hero-con-medios::after {
+  content: ""; position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(90deg, rgba(4,5,13,.92) 0%, rgba(4,5,13,.6) 50%, rgba(4,5,13,.2) 100%);
+}
+.hero h1 { font-size: 40px; margin: 0; max-width: 640px; line-height: 1.15; }
+@media (max-width: 700px) { .hero { padding: 56px 0; background-size: cover, 90%; background-position: center, center bottom; } .hero h1 { font-size: 28px; } }
 .hero p { color: #d4d4d4; margin-top: 8px; }
-.buscador { margin-top: 24px; background: #fff; border-radius: 12px; padding: 12px; display: grid; gap: 8px; box-shadow: 0 10px 25px rgba(0,0,0,.2); }
+.buscador { max-width: 760px; margin-top: 24px; background: #fff; border-radius: 12px; padding: 12px; display: grid; gap: 8px; box-shadow: 0 10px 25px rgba(0,0,0,.2); }
 @media (min-width: 700px) { .buscador { grid-template-columns: 2fr 1fr 1fr; } }
 .buscador input, .buscador select { padding: 10px 12px; border: 1px solid #d4d4d4; border-radius: 8px; font-size: 14px; }
 
@@ -114,6 +135,51 @@ img { max-width: 100%; display: block; }
   padding: 32px 28px;
   box-shadow: 0 20px 50px rgba(0,0,0,.35);
 }
+
+/* Bloque promocional "¿Tienes un vehículo para vender?" */
+.promo {
+  position: relative; text-align: center; color: #fff; padding: 48px 24px; border-radius: 16px;
+  background: linear-gradient(135deg, var(--carbon), var(--carbon-claro));
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  isolation: isolate;
+}
+.promo::before {
+  content: ""; position: absolute; inset: -2px; z-index: -1; border-radius: 18px;
+  background: linear-gradient(90deg, var(--acento), #ff5a5f, var(--acento-oscuro), var(--acento));
+  background-size: 300% 100%;
+  animation: promo-borde 4s linear infinite;
+}
+.promo::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 16px;
+  background: radial-gradient(circle at 50% 0%, rgba(217,7,24,.25), transparent 60%), linear-gradient(135deg, var(--carbon), var(--carbon-claro));
+}
+.promo h2 { color: #fff; font-size: 26px; margin: 12px 0 8px; }
+.promo p { color: #d4d4d4; margin: 0; }
+.promo-badge {
+  display: inline-block; background: var(--acento); color: #fff; font-size: 12px; font-weight: 800; letter-spacing: 1.5px;
+  padding: 6px 14px; border-radius: 999px; animation: promo-pulso 1.8s ease-in-out infinite;
+}
+.promo-beneficios { list-style: none; padding: 0; margin: 20px 0 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 20px; font-size: 14px; color: #e5e5e5; }
+.promo-beneficios li::before { content: "✓"; color: #fff; background: var(--acento); border-radius: 50%; display: inline-flex; width: 18px; height: 18px; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; margin-right: 6px; }
+.promo-boton { position: relative; overflow: hidden; margin-top: 24px; padding: 14px 32px; font-size: 16px; transition: transform .15s; }
+.promo-boton:hover { transform: scale(1.05); }
+.promo-boton::after {
+  content: ""; position: absolute; top: 0; left: -75%; width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,.45), transparent);
+  transform: skewX(-20deg); animation: promo-brillo 3s ease-in-out infinite;
+}
+.btn-brillo { position: relative; overflow: hidden; animation: brillo-pulso 2s ease-in-out infinite; transition: transform .15s; }
+.btn-brillo:hover { transform: scale(1.06); }
+.btn-brillo::after {
+  content: ""; position: absolute; top: 0; left: -75%; width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,.5), transparent);
+  transform: skewX(-20deg); animation: promo-brillo 3s ease-in-out infinite;
+}
+@keyframes brillo-pulso { 0%, 100% { box-shadow: 0 0 0 0 rgba(217,7,24,.7); } 50% { box-shadow: 0 0 0 8px rgba(217,7,24,0); } }
+@keyframes promo-borde { to { background-position: 300% 0; } }
+@keyframes promo-pulso { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(217,7,24,.6); } 50% { transform: scale(1.06); box-shadow: 0 0 0 10px rgba(217,7,24,0); } }
+@keyframes promo-brillo { 0% { left: -75%; } 60%, 100% { left: 130%; } }
 
 /* WhatsApp flotante */
 .wa-flotante {

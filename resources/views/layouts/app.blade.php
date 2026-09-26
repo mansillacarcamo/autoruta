@@ -13,6 +13,7 @@
     <div class="contenedor header-fila">
       <a href="{{ route('home') }}" class="logo"><img src="{{ asset('img/logo-autoruta.png') }}" alt="{{ config('autoruta.nombre_sitio') }}"></a>
       <nav class="nav">
+        <a href="{{ route('home') }}">Inicio</a>
         <a href="{{ route('vehiculos.index') }}">Ver vehículos</a>
         <a href="{{ route('como-funciona') }}">Cómo funciona</a>
       </nav>
@@ -34,7 +35,7 @@
           <a href="{{ route('panel') }}" class="btn btn-acento">Mi panel</a>
         @else
           <a href="{{ route('login') }}" class="btn btn-outline">Iniciar sesión</a>
-          <a href="{{ route('register') }}" class="btn btn-acento">Publicar</a>
+          <a href="{{ route('register') }}" class="btn btn-acento btn-brillo">Publicar</a>
         @endauth
       </div>
     </div>

@@ -1,8 +1,19 @@
 @extends('layouts.app')
 
 @section('contenido')
-<section class="hero">
-  <div class="contenedor">
+<section class="hero {{ $portada->isNotEmpty() ? 'hero-con-medios' : '' }}">
+  @if ($portada->isNotEmpty())
+    <div class="hero-medios">
+      @if ($video = $portada->firstWhere('tipo_medio', 'video'))
+        <video src="{{ $video->url() }}" autoplay muted loop playsinline></video>
+      @else
+        @foreach ($portada as $i => $m)
+          <img src="{{ $m->url() }}" alt="" class="{{ $i === 0 ? 'activa' : '' }}">
+        @endforeach
+      @endif
+    </div>
+  @endif
+  <div class="contenedor hero-contenido">
     <h1>Compra y vende tu vehículo en {{ config('autoruta.nombre_sitio') }}</h1>
     <p>Publica gratis en minutos. Miles de compradores en toda Chile.</p>
     <form class="buscador" action="{{ route('vehiculos.index') }}" method="get">
@@ -63,10 +74,29 @@
 @endif
 
 <section class="seccion contenedor">
-  <div class="caja" style="background:linear-gradient(135deg, var(--carbon), var(--carbon-claro)); color:#fff; text-align:center; padding:40px;">
-    <h2 style="color:#fff">¿Tienes un vehículo para vender?</h2>
-    <p style="color:#d4d4d4">Publica gratis en minutos, sin comisión por venta.</p>
-    <a href="{{ route('register') }}" class="btn btn-acento" style="margin-top:16px;padding:14px 28px;font-size:16px">Publicar mi vehículo →</a>
+  <div class="promo">
+    <span class="promo-badge">100% GRATIS</span>
+    <h2>¿Tienes un vehículo para vender?</h2>
+    <p>Publica gratis en minutos, sin comisión por venta.</p>
+    <ul class="promo-beneficios">
+      <li>Sin comisión</li>
+      <li>Hasta {{ config('autoruta.max_fotos_vehiculo') }} fotos</li>
+      <li>Contacto directo por WhatsApp</li>
+    </ul>
+    <a href="{{ route('register') }}" class="btn btn-acento promo-boton">Publicar mi vehículo →</a>
   </div>
 </section>
+
+<script>
+  (function () {
+    var fotos = document.querySelectorAll('.hero-medios img');
+    if (fotos.length < 2) return;
+    var i = 0;
+    setInterval(function () {
+      fotos[i].classList.remove('activa');
+      i = (i + 1) % fotos.length;
+      fotos[i].classList.add('activa');
+    }, 5000);
+  })();
+</script>
 @endsection
