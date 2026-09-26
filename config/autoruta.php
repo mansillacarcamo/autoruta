@@ -10,6 +10,7 @@ return [
     'anio_min_vehiculo' => 1950,
     'max_banners_negocio' => 3,
     'visitas_inicio' => 1000,
+    'contacto_ubicacion' => 'Puerto Montt, Región de Los Lagos',
 
     'contacto_whatsapp' => '+56962148407',
     'contacto_telefono' => '+56 9 6214 8407',

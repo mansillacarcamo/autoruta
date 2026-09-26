@@ -91,6 +91,7 @@
         <ul>
           <li><a href="mailto:{{ config('autoruta.contacto_email') }}">{{ config('autoruta.contacto_email') }}</a></li>
           <li><a href="tel:{{ str_replace(' ', '', config('autoruta.contacto_telefono')) }}">{{ config('autoruta.contacto_telefono') }}</a></li>
+          <li>{{ config('autoruta.contacto_ubicacion') }}</li>
         </ul>
       </div>
     </div>
