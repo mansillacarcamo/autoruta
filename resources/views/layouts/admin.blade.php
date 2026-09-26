@@ -51,6 +51,7 @@
 
     <main class="admin-contenido">
       @if (session('ok'))<p class="alerta-ok">{{ session('ok') }}</p>@endif
+      @if (request('aviso') === 'archivos-pesados')<p class="alerta-error">El archivo pesa demasiado para el servidor. Usa uno más liviano e inténtalo de nuevo.</p>@endif
       @if (session('error'))<p class="alerta-error">{{ session('error') }}</p>@endif
       @if ($errors->any())
         <div class="alerta-error"><ul style="margin:0;padding-left:18px">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>

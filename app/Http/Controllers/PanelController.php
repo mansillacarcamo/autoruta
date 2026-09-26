@@ -57,9 +57,13 @@ class PanelController extends Controller
             'puertas' => 'nullable|integer|min:2|max:6',
             'traccion' => 'nullable|in:4x2,4x4,awd',
             'duenosAnteriores' => 'nullable|integer|min:0|max:20',
-            'equipamiento' => 'nullable|string|max:500',
             'fotos' => 'required|array|min:1|max:' . config('autoruta.max_fotos_vehiculo'),
-            'fotos.*' => 'image|max:5120',
+            'fotos.*' => 'image|max:10240',
+        ], [
+            'fotos.required' => 'Agrega al menos una foto del vehículo.',
+            'fotos.max' => 'Puedes subir como máximo ' . config('autoruta.max_fotos_vehiculo') . ' fotos.',
+            'fotos.*.image' => 'Uno de los archivos no es una imagen válida (usa JPG o PNG).',
+            'fotos.*.max' => 'Cada foto puede pesar como máximo 10 MB.',
         ]);
 
         $vehiculo = Vehiculo::create([
@@ -82,7 +86,6 @@ class PanelController extends Controller
             'puertas' => $datos['puertas'] ?? null,
             'traccion' => $datos['traccion'] ?? null,
             'duenos_anteriores' => $datos['duenosAnteriores'] ?? null,
-            'equipamiento' => $datos['equipamiento'] ?? null,
             'publicado_en' => now(),
             'vence_en' => now()->addDays(config('autoruta.duracion_publicacion_dias')),
         ]);

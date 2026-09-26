@@ -66,6 +66,9 @@
       @if (session('ok'))
         <div class="contenedor mt-2"><p class="alerta-ok">{{ session('ok') }}</p></div>
       @endif
+      @if (request('aviso') === 'archivos-pesados')
+        <div class="contenedor mt-2"><p class="alerta-error">Las fotos pesan demasiado para enviarlas juntas. Sube menos fotos o fotos más livianas e inténtalo de nuevo.</p></div>
+      @endif
       @if (session('error'))
         <div class="contenedor mt-2"><p class="alerta-error">{{ session('error') }}</p></div>
       @endif

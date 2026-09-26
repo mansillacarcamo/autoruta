@@ -20,4 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // PHP descarta todo el formulario cuando los archivos superan el límite del servidor.
+        // Ocurre antes de iniciar la sesión, así que el aviso viaja en la URL y no como flash.
+        $exceptions->render(function (\Illuminate\Http\Exceptions\PostTooLargeException $e, Request $request) {
+            $ruta = parse_url((string) $request->headers->get('referer'), PHP_URL_PATH) ?: '/panel/publicar';
+
+            return redirect(url($ruta) . '?aviso=archivos-pesados');
+        });
     })->create();
