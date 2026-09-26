@@ -5,7 +5,7 @@
 <div class="contenedor" style="max-width:760px;padding:32px 16px">
   <div style="display:flex;align-items:center;justify-content:space-between">
     <div>
-      <h1>Mi panel</h1>
+      <h1>Hola, {{ \Illuminate\Support\Str::of(auth()->user()->name)->trim()->before(' ') }}</h1>
       <p class="texto-mutado">Sesión iniciada como <strong>{{ auth()->user()->email }}</strong>.</p>
     </div>
     <form method="post" action="{{ route('logout') }}">
@@ -13,6 +13,14 @@
       <button type="submit" class="btn btn-outline" style="color:#525252;border-color:#d4d4d4">Cerrar sesión</button>
     </form>
   </div>
+
+  @if (session('bienvenida'))
+    <div class="bienvenida">
+      <h2>¡Te damos la bienvenida a {{ config('autoruta.nombre_sitio') }}, {{ \Illuminate\Support\Str::of(auth()->user()->name)->trim()->before(' ') }}!</h2>
+      <p>Tu cuenta ya está lista. Publica tu vehículo gratis en minutos y los compradores te escribirán directo a tu WhatsApp.</p>
+      <a href="{{ route('panel.publicar') }}" class="btn">Publicar mi primer vehículo →</a>
+    </div>
+  @endif
 
   @if (auth()->user()->rol !== 'negocio')
   <div class="mt-3">

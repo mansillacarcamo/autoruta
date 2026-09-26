@@ -38,6 +38,11 @@ class PanelController extends Controller
             return back()->withInput()->with('error', 'Ya tienes ' . config('autoruta.max_publicaciones_activas') . ' publicaciones activas.');
         }
 
+        $request->merge([
+            'precio' => preg_replace('/\D/', '', (string) $request->input('precio')),
+            'kilometraje' => preg_replace('/\D/', '', (string) $request->input('kilometraje')),
+        ]);
+
         $datos = $request->validate([
             'tipo' => 'required|in:' . implode(',', array_keys(Vehiculo::ETIQUETA_TIPO)),
             'marca' => 'required|string|max:60',

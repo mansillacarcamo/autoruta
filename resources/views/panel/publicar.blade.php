@@ -36,8 +36,8 @@
       </div>
       <div class="form-grupo"><label>Modelo</label><input type="text" name="modelo" required placeholder="Ej. Hilux" value="{{ old('modelo') }}"></div>
       <div class="form-grupo"><label>Año</label><input type="number" name="anio" required placeholder="Ej. 2020" value="{{ old('anio') }}"></div>
-      <div class="form-grupo"><label>Kilometraje</label><input type="number" name="kilometraje" required placeholder="Ej. 45000" value="{{ old('kilometraje') }}"></div>
-      <div class="form-grupo"><label>Precio (CLP)</label><input type="number" name="precio" required placeholder="Ej. 12500000" value="{{ old('precio') }}"></div>
+      <div class="form-grupo"><label>Kilometraje</label><input type="text" inputmode="numeric" class="con-puntos" name="kilometraje" required placeholder="Ej. 45.000" value="{{ old('kilometraje') }}"></div>
+      <div class="form-grupo"><label>Precio (CLP)</label><div class="campo-precio"><span>$</span><input type="text" inputmode="numeric" class="con-puntos" name="precio" required placeholder="Ej. 12.500.000" value="{{ old('precio') }}"></div></div>
       <div class="form-grupo">
         <label>Transmisión</label>
         <select name="transmision">
@@ -113,6 +113,16 @@ function actualizarComunas() {
   });
 }
 document.addEventListener('DOMContentLoaded', actualizarComunas);
+
+// Precio y kilometraje con separador de miles mientras se escribe (15000000 -> 15.000.000).
+document.querySelectorAll('.con-puntos').forEach(campo => {
+  const formatear = () => {
+    const digitos = campo.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+    campo.value = digitos.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  };
+  campo.addEventListener('input', formatear);
+  formatear();
+});
 
 // Las fotos de celular pesan 3-8 MB; se reducen en el navegador antes de enviarlas
 // para no chocar con el límite de subida del servidor.

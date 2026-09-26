@@ -339,3 +339,22 @@ body { overflow-x: clip; }
   .categoria { flex: 0 0 104px; scroll-snap-align: start; }
 }
 @media (min-width: 1000px) { .categorias { grid-template-columns: repeat(10, 1fr); } }
+
+/* Botón para ver la contraseña */
+.campo-clave { position: relative; }
+.campo-clave input { padding-right: 44px !important; }
+.ver-clave { position: absolute; right: 6px; top: calc(50% + 2px); transform: translateY(-50%); background: none; border: none; padding: 6px; cursor: pointer; color: #737373; display: flex; }
+.ver-clave:hover { color: var(--acento); }
+
+/* Bienvenida tras registrarse */
+.bienvenida { position: relative; overflow: hidden; margin-top: 20px; padding: 26px 24px; border-radius: 16px; color: #fff; background: linear-gradient(135deg, var(--carbon), var(--acento-oscuro)); }
+.bienvenida h2 { color: #fff; font-size: 24px; margin: 0 0 6px; }
+.bienvenida p { color: #e5e5e5; margin: 0 0 16px; }
+.bienvenida .btn { background: #fff; color: var(--acento); }
+.bienvenida .btn:hover { background: #f4f4f5; }
+.bienvenida::after { content: ""; position: absolute; right: -40px; top: -40px; width: 160px; height: 160px; border-radius: 50%; background: rgba(217,7,24,.35); }
+
+/* Campo de precio con signo $ */
+.campo-precio { position: relative; }
+.campo-precio span { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #737373; font-weight: 600; }
+.campo-precio input { padding-left: 26px !important; }

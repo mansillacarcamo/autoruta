@@ -50,6 +50,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('panel', absolute: false));
+        return redirect(route('panel', absolute: false))->with('bienvenida', true);
     }
 }
