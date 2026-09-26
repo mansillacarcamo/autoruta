@@ -198,6 +198,7 @@ img { max-width: 100%; display: block; }
 /* Banners laterales: ocultos en celular, visibles desde pantallas grandes */
 .banner-lateral-slot { display: none; flex-shrink: 0; width: 160px; }
 .contenido-con-laterales { display: flex; gap: 16px; align-items: flex-start; }
+@media (min-width: 1400px) { .contenido-con-laterales { padding: 0 16px; } }
 .contenido-con-laterales > main { flex: 1; min-width: 0; }
 @media (min-width: 1400px) { .banner-lateral-slot { display: block; padding-top: 16px; } }
 .espacio-publicitario {

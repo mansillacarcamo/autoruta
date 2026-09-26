@@ -6,7 +6,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>{{ config('autoruta.nombre_sitio') }}</title>
         <link rel="icon" href="{{ asset('img/logo-autoruta.png') }}">
-        <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body>
