@@ -31,6 +31,22 @@
 </form>
 
 <div class="admin-tarjeta" style="margin-top:22px">
+  <h2>Notificaciones por correo</h2>
+  <p class="texto-mutado" style="font-size:14px;margin:0 0 12px">Cada vez que alguien se registra se envía un aviso a <strong>{{ config('autoruta.correo_notificaciones') }}</strong>.</p>
+  <p style="font-size:14px;margin:0 0 14px">Estado del correo:
+    @if (in_array(config('mail.default'), ['log', 'array'], true))
+      <span class="admin-etiqueta roja">No conectado ({{ config('mail.default') }})</span>
+    @else
+      <span class="admin-etiqueta verde">Conectado ({{ config('mail.default') }} · {{ config('mail.mailers.smtp.host') }})</span>
+    @endif
+  </p>
+  <form method="post" action="{{ route('admin.configuracion.correo') }}">
+    @csrf
+    <button type="submit" class="btn btn-acento">Enviar correo de prueba</button>
+  </form>
+</div>
+
+<div class="admin-tarjeta" style="margin-top:22px">
   <h2>Límites del servidor para subir archivos</h2>
   <p class="texto-mutado" style="font-size:14px;margin:0 0 14px">Información técnica. Si las publicaciones con fotos fallan, compártela con soporte.</p>
   <div class="admin-tabla-envoltura">

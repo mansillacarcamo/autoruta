@@ -47,4 +47,23 @@ class ConfiguracionController extends Controller
 
         return back()->with('ok', 'Configuración guardada.');
     }
+
+    public function correoPrueba()
+    {
+        $destino = config('autoruta.correo_notificaciones');
+
+        if (in_array(config('mail.default'), ['log', 'array'], true)) {
+            return back()->with('error', 'El envío de correos no está conectado (MAIL_MAILER = ' . config('mail.default') . '). Configura los datos SMTP en Laravel Cloud.');
+        }
+
+        try {
+            \Illuminate\Support\Facades\Mail::raw('Este es un correo de prueba de AutoRuta. Si lo recibes, las notificaciones de registro funcionan.', function ($m) use ($destino) {
+                $m->to($destino)->subject('Correo de prueba de AutoRuta');
+            });
+        } catch (\Throwable $e) {
+            return back()->with('error', 'No se pudo enviar el correo: ' . $e->getMessage());
+        }
+
+        return back()->with('ok', 'Correo de prueba enviado a ' . $destino . '. Revisa tu bandeja (y la carpeta de spam).');
+    }
 }

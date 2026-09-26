@@ -14,6 +14,9 @@ return [
     // Disco para fotos y banners. Si el disco por defecto es un bucket (Laravel Cloud Object
     // Storage) se usa ese; si es el disco local privado, se usa "public".
     'disco_archivos' => env('ARCHIVOS_DISCO') ?: (env('FILESYSTEM_DISK', 'local') === 'local' ? 'public' : env('FILESYSTEM_DISK')),
+    // Correo que recibe un aviso cada vez que alguien se registra.
+    'correo_notificaciones' => env('NOTIFICACIONES_EMAIL', 'cesar.mansilla@bynari.cl'),
+
     'contacto_ubicacion' => 'Puerto Montt, Región de Los Lagos',
 
     'contacto_whatsapp' => '+56962148407',

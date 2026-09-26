@@ -280,4 +280,42 @@ class AutoRutaTest extends TestCase
         $this->post('/login', ['email' => 'cliente@test.cl', 'password' => 'clave12345']);
         $this->assertAuthenticatedAs($cliente);
     }
+    public function test_registro_envia_aviso_al_administrador(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+
+        $this->post('/register', [
+            'name' => 'Cliente Nuevo', 'email' => 'nuevo@cliente.cl', 'telefono' => '+56 9 5555 4444',
+            'ciudad' => 'Osorno', 'password' => 'clave12345', 'password_confirmation' => 'clave12345',
+        ])->assertRedirect(route('panel', absolute: false));
+
+        \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\NuevoUsuarioRegistrado::class, function ($correo) {
+            return $correo->hasTo(config('autoruta.correo_notificaciones')) && $correo->usuario->email === 'nuevo@cliente.cl';
+        });
+
+        $html = (new \App\Mail\NuevoUsuarioRegistrado(User::where('email', 'nuevo@cliente.cl')->first()))->render();
+        $this->assertStringContainsString('Cliente Nuevo', $html);
+        $this->assertStringContainsString('+56955554444', $html);
+    }
+
+    public function test_registro_funciona_aunque_falle_el_correo(): void
+    {
+        config(['mail.default' => 'smtp', 'mail.mailers.smtp.host' => '127.0.0.1', 'mail.mailers.smtp.port' => 1, 'mail.mailers.smtp.timeout' => 2]);
+
+        $this->post('/register', [
+            'name' => 'Sin Correo', 'email' => 'sincorreo@cliente.cl', 'telefono' => '+56 9 5555 3333',
+            'ciudad' => 'Osorno', 'password' => 'clave12345', 'password_confirmation' => 'clave12345',
+        ])->assertRedirect(route('panel', absolute: false));
+
+        $this->assertAuthenticated();
+        $this->assertDatabaseHas('users', ['email' => 'sincorreo@cliente.cl']);
+    }
+
+    public function test_admin_correo_de_prueba_avisa_si_no_esta_conectado(): void
+    {
+        $admin = User::where('usuario', 'cesar')->firstOrFail();
+        config(['mail.default' => 'log']);
+        $this->actingAs($admin)->post('/admin/configuracion/correo-prueba')->assertSessionHas('error');
+        $this->actingAs($admin)->get('/admin/configuracion')->assertSee('No conectado');
+    }
 }
