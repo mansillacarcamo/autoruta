@@ -23,7 +23,7 @@
           </div>
           <div class="galeria-miniaturas">
             @foreach ($vehiculo->fotos as $f)
-              <button type="button" class="galeria-miniatura"><img src="{{ \App\Support\Archivos::url('vehiculos/' . $f->archivo) }}" alt="" loading="lazy"></button>
+              <button type="button" class="galeria-miniatura"><img src="{{ \App\Support\Archivos::url('vehiculos/' . $f->archivo) }}" alt=""></button>
             @endforeach
           </div>
         </div>
@@ -73,7 +73,15 @@
                 mostrar(actual >= miniaturas.length ? 0 : (i < actual ? actual - 1 : actual));
               }
               img.addEventListener('error', quitar);
-              if (img.complete && img.naturalWidth === 0) quitar();
+            });
+
+            // Solo después de que la página terminó de cargar se puede saber con seguridad si una
+            // foto falló (antes, en Safari del iPhone una foto que aún no carga parece rota).
+            window.addEventListener('load', function () {
+              miniaturas.slice().forEach(function (m) {
+                var img = m.querySelector('img');
+                if (img.complete && img.naturalWidth === 0) img.dispatchEvent(new Event('error'));
+              });
             });
 
             galeria.querySelector('.anterior').addEventListener('click', function () { mostrar(actual - 1); });
