@@ -4,8 +4,8 @@
         ->orderBy('orden')
         ->first();
 @endphp
-@if ($bannerAncho)
-  <div style="display:flex;justify-content:center;padding:16px">
+<div style="display:flex;justify-content:center;padding:16px">
+  @if ($bannerAncho)
     <a href="{{ $bannerAncho->link_url }}" target="_blank" rel="noopener"
        style="display:block;width:100%;max-width:728px;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;aspect-ratio:728/90;background:var(--gris-claro)">
       @if ($bannerAncho->tipo_medio === 'video')
@@ -14,5 +14,7 @@
         <img src="{{ $bannerAncho->url() }}" style="width:100%;height:100%;object-fit:cover">
       @endif
     </a>
-  </div>
-@endif
+  @else
+    @include('partials.espacio-publicitario', ['estilo' => 'width:100%;max-width:728px;aspect-ratio:728/90'])
+  @endif
+</div>

@@ -3,7 +3,7 @@
 @section('contenido')
 <section class="hero">
   <div class="contenedor">
-    <h1>Compra y vende tu vehículo en <span class="hero-marca">{{ config('autoruta.nombre_sitio') }}</span></h1>
+    <h1>Compra y vende tu vehículo en {{ config('autoruta.nombre_sitio') }}</h1>
     <p>Publica gratis en minutos. Miles de compradores en toda Chile.</p>
     <form class="buscador" action="{{ route('vehiculos.index') }}" method="get">
       <input type="text" name="q" placeholder="Marca o modelo (ej. Toyota Hilux)">
