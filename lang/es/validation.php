@@ -197,6 +197,8 @@ return [
         'traccion' => 'tracción',
         'transmision' => 'transmisión',
         'version' => 'versión',
+        'telefono' => 'teléfono',
+        'ciudad' => 'ciudad',
     ],
 
 ];

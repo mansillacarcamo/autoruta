@@ -100,7 +100,7 @@ class NegocioController extends Controller
 
         $datos = $request->validate([
             'tipoMedio' => 'required|in:imagen,video',
-            'posicion' => 'required|in:inicio,listado,superior,inferior,lateral',
+            'posicion' => 'required|in:' . implode(',', array_keys(Anunciante::POSICIONES)),
             'linkUrl' => 'required|string|max:255',
             'archivo' => 'required|file|mimes:jpg,jpeg,png,webp,mp4,webm|max:20480',
         ]);

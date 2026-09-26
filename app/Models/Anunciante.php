@@ -19,9 +19,20 @@ class Anunciante extends Model
 
     public const ETIQUETA_RUBRO = ['financiera' => 'Financiera', 'taller' => 'Taller mecánico', 'otro' => 'Otro'];
     public const ETIQUETA_ESTADO = ['activo' => 'Activo', 'pausado' => 'Pausado', 'vencido' => 'Vencido'];
+    // posicion => [etiqueta, medida recomendada]
+    public const POSICIONES = [
+        'superior' => ['Superior (bajo el menú)', '728 × 90 px'],
+        'inferior' => ['Inferior (sobre el pie de página)', '728 × 90 px'],
+        'lateral_izquierdo' => ['Lateral izquierdo', '160 × 600 px'],
+        'lateral_derecho' => ['Lateral derecho', '160 × 600 px'],
+        'inicio' => ['Inicio · "Auspiciado por"', '1280 × 720 px'],
+        'listado' => ['Ficha de vehículo · negocio destacado', '1280 × 720 px'],
+    ];
+
     public const ETIQUETA_POSICION = [
-        'inicio' => 'Inicio', 'listado' => 'Listado', 'superior' => 'Superior',
-        'inferior' => 'Inferior', 'lateral' => 'Lateral',
+        'superior' => 'Superior', 'inferior' => 'Inferior',
+        'lateral_izquierdo' => 'Lateral izquierdo', 'lateral_derecho' => 'Lateral derecho',
+        'inicio' => 'Inicio', 'listado' => 'Ficha de vehículo', 'lateral' => 'Lateral',
     ];
 
     public function banners(): HasMany

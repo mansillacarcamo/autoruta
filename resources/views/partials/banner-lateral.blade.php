@@ -1,9 +1,9 @@
 @php
-    $bannersLaterales = \App\Models\AnuncianteBanner::where('posicion', 'lateral')
+    $bannerLateral = \App\Models\AnuncianteBanner::whereIn('posicion', ['lateral_' . $lado, 'lateral'])
         ->whereHas('anunciante', fn ($q) => $q->activos())
+        ->orderByRaw("posicion = 'lateral'")
         ->orderBy('orden')
-        ->get();
-    $bannerLateral = $lado === 'izquierdo' ? $bannersLaterales->first() : ($bannersLaterales->get(1) ?? $bannersLaterales->first());
+        ->first();
 @endphp
 <div class="banner-lateral-slot">
   <div style="position:sticky;top:104px">
@@ -17,7 +17,7 @@
         @endif
       </a>
     @else
-      @include('partials.espacio-publicitario', ['estilo' => 'width:160px;aspect-ratio:160/600'])
+      @include('partials.espacio-publicitario', ['estilo' => 'width:160px;aspect-ratio:160/600', 'posicion' => 'lateral_' . $lado])
     @endif
   </div>
 </div>

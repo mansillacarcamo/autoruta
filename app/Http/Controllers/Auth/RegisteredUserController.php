@@ -33,12 +33,16 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'telefono' => ['required', 'string', 'max:20', 'regex:/^[+\d\s]{8,20}$/'],
+            'ciudad' => ['required', 'string', 'max:80'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'telefono_whatsapp' => preg_replace('/\s+/', '', $request->telefono),
+            'comuna' => $request->ciudad,
             'password' => Hash::make($request->password),
         ]);
 

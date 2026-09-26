@@ -25,7 +25,10 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', [NegocioController::class, 'index'])->name('negocios.index');
+    Route::get('/', [\App\Http\Controllers\Admin\ResumenController::class, 'index'])->name('inicio');
+    Route::get('/negocios', [NegocioController::class, 'index'])->name('negocios.index');
+    Route::get('/configuracion', [\App\Http\Controllers\Admin\ConfiguracionController::class, 'editar'])->name('configuracion');
+    Route::put('/configuracion', [\App\Http\Controllers\Admin\ConfiguracionController::class, 'actualizar'])->name('configuracion.actualizar');
     Route::post('/precio', [NegocioController::class, 'actualizarPrecio'])->name('precio.actualizar');
     Route::get('/negocios/nuevo', [NegocioController::class, 'crear'])->name('negocios.crear');
     Route::post('/negocios', [NegocioController::class, 'guardar'])->name('negocios.guardar');

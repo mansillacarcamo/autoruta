@@ -7,6 +7,7 @@
         <title>{{ config('autoruta.nombre_sitio') }}</title>
         <link rel="icon" href="{{ asset('img/logo-autoruta.png') }}">
         <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">
+  @include('partials.app-instalable')
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body>
