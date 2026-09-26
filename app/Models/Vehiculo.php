@@ -21,8 +21,9 @@ class Vehiculo extends Model
     ];
 
     public const ETIQUETA_TIPO = [
-        'auto' => 'Auto', 'camioneta' => 'Camioneta', 'suv' => 'SUV',
-        'moto' => 'Moto', 'camion' => 'Camión', 'otro' => 'Otro',
+        'auto' => 'Auto', 'citycar' => 'City car', 'camioneta' => 'Camioneta', 'suv' => 'SUV',
+        'moto' => 'Moto', 'camion' => 'Camiones', 'bus' => 'Buses',
+        'maquinaria' => 'Maquinaria agrícola', 'otro' => 'Otro',
     ];
     public const ETIQUETA_TRANSMISION = ['manual' => 'Manual', 'automatica' => 'Automática'];
     public const ETIQUETA_COMBUSTIBLE = [

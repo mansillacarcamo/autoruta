@@ -29,6 +29,11 @@
   </div>
 </section>
 
+<section class="seccion contenedor" style="padding-bottom:0">
+  <h2>Explora por categoría</h2>
+  @include('partials.categorias')
+</section>
+
 <section class="seccion contenedor">
   <div class="seccion-titulo">
     <h2>Destacados</h2>

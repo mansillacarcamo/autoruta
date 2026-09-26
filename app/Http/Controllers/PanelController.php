@@ -39,7 +39,7 @@ class PanelController extends Controller
         }
 
         $datos = $request->validate([
-            'tipo' => 'required|in:auto,camioneta,suv,moto,camion,otro',
+            'tipo' => 'required|in:' . implode(',', array_keys(Vehiculo::ETIQUETA_TIPO)),
             'marca' => 'required|string|max:60',
             'modelo' => 'required|string|max:60',
             'anio' => 'required|integer|min:' . config('autoruta.anio_min_vehiculo') . '|max:' . (date('Y') + 1),

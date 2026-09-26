@@ -3,7 +3,13 @@
 
 @section('contenido')
 <div class="contenedor" style="padding:32px 16px">
-  <h1>Vehículos en venta</h1>
+  <h1>
+    Vehículos en venta
+    @if (array_key_exists((string) request('tipo'), \App\Models\Vehiculo::ETIQUETA_TIPO))
+      <span style="color:var(--acento)">· {{ \App\Models\Vehiculo::ETIQUETA_TIPO[request('tipo')] }}</span>
+    @endif
+  </h1>
+  <div class="mt-2">@include('partials.categorias')</div>
 
   <div style="display:grid;gap:24px;margin-top:24px" class="lg-grid">
     <form class="caja" method="get" style="height:fit-content">
