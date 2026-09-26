@@ -6,6 +6,17 @@
   <title>@hasSection('titulo')@yield('titulo') · {{ config('autoruta.nombre_sitio') }}@else{{ config('autoruta.nombre_sitio') }}@endif</title>
   <meta name="description" content="Compra y vende autos, camionetas, SUV y motos usados en Chile. Publicar es 100% gratis.">
   <link rel="icon" href="{{ asset('img/logo-autoruta.png') }}">
+  <script>
+    // Si la foto de una tarjeta no carga, prueba con la siguiente foto del aviso; si ninguna carga, muestra "Sin foto".
+    function siguienteFoto(img) {
+      var fotos = [];
+      try { fotos = JSON.parse(img.dataset.fotos || '[]'); } catch (e) {}
+      var i = Number(img.dataset.intento || 0) + 1;
+      if (i < fotos.length) { img.dataset.intento = i; img.src = fotos[i]; return; }
+      img.onerror = null;
+      img.src = img.dataset.sinFoto;
+    }
+  </script>
   <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">
   @include('partials.app-instalable')
 </head>

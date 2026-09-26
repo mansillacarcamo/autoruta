@@ -53,6 +53,11 @@ class Vehiculo extends Model
         return $foto ? \App\Support\Archivos::url('vehiculos/' . $foto->archivo) : asset('img/vehiculo-placeholder.svg');
     }
 
+    public function fotosUrls(): array
+    {
+        return $this->fotos->map(fn ($f) => \App\Support\Archivos::url('vehiculos/' . $f->archivo))->all();
+    }
+
     public function precioFormateado(): string
     {
         return '$' . number_format($this->precio, 0, ',', '.');
