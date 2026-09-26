@@ -16,6 +16,6 @@ class AnuncianteBanner extends Model
 
     public function url(): string
     {
-        return asset('storage/negocios/' . $this->archivo);
+        return \App\Support\Archivos::url('negocios/' . $this->archivo);
     }
 }

@@ -14,7 +14,7 @@
       @if ($vehiculo->fotos->count() > 1)
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px">
           @foreach ($vehiculo->fotos as $f)
-            <img src="{{ asset('storage/vehiculos/' . $f->archivo) }}" style="aspect-ratio:1;object-fit:cover;border-radius:8px">
+            <img src="{{ \App\Support\Archivos::url('vehiculos/' . $f->archivo) }}" style="aspect-ratio:1;object-fit:cover;border-radius:8px">
           @endforeach
         </div>
       @endif

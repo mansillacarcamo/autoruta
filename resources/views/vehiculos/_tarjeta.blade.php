@@ -1,5 +1,6 @@
-<a href="{{ route('vehiculos.show', $v) }}" class="tarjeta">
+<a href="{{ route('vehiculos.show', $v) }}" class="tarjeta{{ !empty($nuevo) ? ' tarjeta-nueva' : '' }}">
   <div class="tarjeta-foto">
+    @if (!empty($nuevo))<span class="etiqueta-nuevo">Nuevo</span>@endif
     <img src="{{ $v->primeraFotoUrl() }}" alt="{{ $v->marca }} {{ $v->modelo }}">
   </div>
   <div class="tarjeta-cuerpo">

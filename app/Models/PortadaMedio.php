@@ -12,6 +12,6 @@ class PortadaMedio extends Model
 
     public function url(): string
     {
-        return asset('storage/portada/' . $this->archivo);
+        return \App\Support\Archivos::url('portada/' . $this->archivo);
     }
 }

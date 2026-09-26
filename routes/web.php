@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/vehiculos', [VehiculoController::class, 'index'])->name('vehiculos.index');
+Route::get('/vehiculos/nuevos', [VehiculoController::class, 'nuevos'])->name('vehiculos.nuevos');
 Route::get('/vehiculos/{vehiculo}', [VehiculoController::class, 'show'])->name('vehiculos.show');
 
 Route::view('/como-funciona', 'como-funciona')->name('como-funciona');

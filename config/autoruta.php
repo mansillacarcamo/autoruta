@@ -10,6 +10,10 @@ return [
     'anio_min_vehiculo' => 1950,
     'max_banners_negocio' => 3,
     'visitas_inicio' => 1000,
+
+    // Disco para fotos y banners. Si el disco por defecto es un bucket (Laravel Cloud Object
+    // Storage) se usa ese; si es el disco local privado, se usa "public".
+    'disco_archivos' => env('ARCHIVOS_DISCO') ?: (env('FILESYSTEM_DISK', 'local') === 'local' ? 'public' : env('FILESYSTEM_DISK')),
     'contacto_ubicacion' => 'Puerto Montt, Región de Los Lagos',
 
     'contacto_whatsapp' => '+56962148407',

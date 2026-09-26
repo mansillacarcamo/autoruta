@@ -105,15 +105,15 @@ class NegocioController extends Controller
             'archivo' => 'required|file|mimes:jpg,jpeg,png,webp,mp4,webm|max:20480',
         ]);
 
-        $ruta = $request->file('archivo')->storeAs(
+        $nombre = \App\Support\Archivos::guardar(
+            $request->file('archivo'),
             'negocios',
-            'neg' . $negocio->id . '_' . time() . '.' . $request->file('archivo')->extension(),
-            'public'
+            'neg' . $negocio->id . '_' . time() . '.' . $request->file('archivo')->extension()
         );
 
         $negocio->banners()->create([
             'tipo_medio' => $datos['tipoMedio'],
-            'archivo' => basename($ruta),
+            'archivo' => $nombre,
             'link_url' => $datos['linkUrl'],
             'posicion' => $datos['posicion'],
         ]);
@@ -124,7 +124,7 @@ class NegocioController extends Controller
     public function eliminarBanner(Anunciante $negocio, \App\Models\AnuncianteBanner $banner)
     {
         abort_unless($banner->anunciante_id === $negocio->id, 404);
-        Storage::disk('public')->delete('negocios/' . $banner->archivo);
+        \App\Support\Archivos::borrar('negocios/' . $banner->archivo);
         $banner->delete();
 
         return back()->with('ok', 'Banner eliminado.');

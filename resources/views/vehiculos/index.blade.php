@@ -86,5 +86,7 @@
   </div>
 </div>
 
+@include('partials.vehiculos-en-vivo', ['modo' => 'aviso', 'grilla' => null, 'desde' => (int) \App\Models\Vehiculo::max('id')])
+
 <style>@media (min-width:900px){.lg-grid{grid-template-columns:260px 1fr}}</style>
 @endsection

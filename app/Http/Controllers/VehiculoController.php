@@ -10,18 +10,7 @@ class VehiculoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Vehiculo::activos()->with('fotos');
-
-        if ($q = $request->string('q')->toString()) {
-            $query->where(fn ($w) => $w->where('marca', 'like', "%$q%")->orWhere('modelo', 'like', "%$q%"));
-        }
-        foreach (['tipo', 'region', 'comuna'] as $campo) {
-            if ($valor = $request->string($campo)->toString()) {
-                $query->where($campo, $valor);
-            }
-        }
-        if ($request->filled('precioMin')) $query->where('precio', '>=', (int) $request->precioMin);
-        if ($request->filled('precioMax')) $query->where('precio', '<=', (int) $request->precioMax);
+        $query = $this->filtrar(Vehiculo::activos()->with('fotos'), $request);
 
         match ($request->string('orden')->toString()) {
             'precio_asc' => $query->orderBy('precio'),
@@ -65,5 +54,39 @@ class VehiculoController extends Controller
         $mensajeWa = urlencode("Hola, vi tu auto {$vehiculo->marca} {$vehiculo->modelo} {$vehiculo->anio} en " . config('autoruta.nombre_sitio') . ', me gustaría saber más información.');
 
         return view('vehiculos.show', compact('vehiculo', 'negocioDestacado', 'ficha', 'numeroWa', 'mensajeWa'));
+    }
+
+    // Vehículos publicados después de $desde (id), con los mismos filtros del listado.
+    // La página lo consulta cada cierto tiempo para mostrar publicaciones nuevas sin recargar.
+    public function nuevos(Request $request)
+    {
+        $desde = (int) $request->query('desde');
+        $nuevos = $this->filtrar(Vehiculo::activos()->with('fotos'), $request)
+            ->where('id', '>', $desde)
+            ->orderByDesc('id')
+            ->take(8)
+            ->get();
+
+        return response()->json([
+            'cantidad' => $nuevos->count(),
+            'ultimo_id' => $nuevos->max('id') ?? $desde,
+            'html' => $nuevos->map(fn ($v) => view('vehiculos._tarjeta', ['v' => $v, 'nuevo' => true])->render())->implode(''),
+        ]);
+    }
+
+    private function filtrar($query, Request $request)
+    {
+        if ($q = $request->string('q')->toString()) {
+            $query->where(fn ($w) => $w->where('marca', 'like', "%$q%")->orWhere('modelo', 'like', "%$q%"));
+        }
+        foreach (['tipo', 'region', 'comuna'] as $campo) {
+            if ($valor = $request->string($campo)->toString()) {
+                $query->where($campo, $valor);
+            }
+        }
+        if ($request->filled('precioMin')) $query->where('precio', '>=', (int) $request->precioMin);
+        if ($request->filled('precioMax')) $query->where('precio', '<=', (int) $request->precioMax);
+
+        return $query;
     }
 }

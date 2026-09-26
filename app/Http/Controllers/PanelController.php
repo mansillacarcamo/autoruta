@@ -132,8 +132,8 @@ class PanelController extends Controller
         ]);
 
         foreach ($request->file('fotos') as $i => $foto) {
-            $ruta = $foto->storeAs('vehiculos', "veh{$vehiculo->id}_{$i}." . $foto->extension(), 'public');
-            $vehiculo->fotos()->create(['archivo' => basename($ruta), 'orden' => $i]);
+            $nombre = \App\Support\Archivos::guardar($foto, 'vehiculos', "veh{$vehiculo->id}_{$i}_" . time() . '.' . $foto->extension());
+            $vehiculo->fotos()->create(['archivo' => $nombre, 'orden' => $i]);
         }
 
         $usuario->update([
@@ -164,7 +164,7 @@ class PanelController extends Controller
         abort_unless($vehiculo->user_id === $request->user()->id, 403);
 
         foreach ($vehiculo->fotos as $foto) {
-            Storage::disk('public')->delete('vehiculos/' . $foto->archivo);
+            \App\Support\Archivos::borrar('vehiculos/' . $foto->archivo);
         }
         $vehiculo->delete();
 

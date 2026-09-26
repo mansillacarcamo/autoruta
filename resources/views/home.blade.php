@@ -39,23 +39,70 @@
     <h2>Destacados</h2>
     <a href="{{ route('vehiculos.index') }}">Ver todos →</a>
   </div>
-  <div class="grilla">
-    @forelse ($destacados as $v)
-      @include('vehiculos._tarjeta', ['v' => $v])
-    @empty
-      <p class="texto-mutado">Todavía no hay vehículos publicados.</p>
-    @endforelse
-  </div>
+  @if ($destacados->isEmpty())
+    <p class="texto-mutado">Todavía no hay vehículos publicados.</p>
+  @else
+    <div class="carrusel" data-carrusel>
+      <button type="button" class="carrusel-flecha anterior" aria-label="Anterior">&#8249;</button>
+      <div class="carrusel-pista">
+        @foreach ($destacados as $v)
+          @include('vehiculos._tarjeta', ['v' => $v])
+        @endforeach
+      </div>
+      <button type="button" class="carrusel-flecha siguiente" aria-label="Siguiente">&#8250;</button>
+    </div>
+  @endif
 </section>
 
 <section class="seccion contenedor">
   <h2>Últimos publicados</h2>
-  <div class="grilla">
-    @foreach ($ultimos as $v)
-      @include('vehiculos._tarjeta', ['v' => $v])
-    @endforeach
+  <div class="carrusel" data-carrusel>
+    <button type="button" class="carrusel-flecha anterior" aria-label="Anterior">&#8249;</button>
+    <div class="carrusel-pista" id="grillaUltimos">
+      @foreach ($ultimos as $v)
+        @include('vehiculos._tarjeta', ['v' => $v])
+      @endforeach
+    </div>
+    <button type="button" class="carrusel-flecha siguiente" aria-label="Siguiente">&#8250;</button>
   </div>
+  @if ($ultimos->isEmpty())<p class="texto-mutado" id="sinVehiculos">Todavía no hay vehículos publicados.</p>@endif
+  @include('partials.vehiculos-en-vivo', ['modo' => 'insertar', 'grilla' => 'grillaUltimos', 'desde' => (int) \App\Models\Vehiculo::max('id'), 'maxTarjetas' => 12])
 </section>
+
+<script>
+  // Carruseles de Destacados y Últimos publicados: avanzan solos cada 4 s y se pausan
+  // mientras la persona interactúa.
+  document.querySelectorAll('[data-carrusel]').forEach(function (carrusel) {
+    var pista = carrusel.querySelector('.carrusel-pista');
+    var pausaHasta = 0;
+    function paso() {
+      var tarjeta = pista.querySelector('.tarjeta');
+      return tarjeta ? tarjeta.getBoundingClientRect().width + 16 : pista.clientWidth;
+    }
+    function mover(direccion) {
+      var alFinal = pista.scrollLeft + pista.clientWidth >= pista.scrollWidth - 4;
+      if (direccion > 0 && alFinal) pista.scrollTo({ left: 0, behavior: 'smooth' });
+      else pista.scrollBy({ left: direccion * paso(), behavior: 'smooth' });
+    }
+    function actualizarFlechas() {
+      carrusel.classList.toggle('sin-desplazamiento', pista.scrollWidth <= pista.clientWidth + 4);
+    }
+    carrusel.querySelector('.anterior').addEventListener('click', function () { pausaHasta = Date.now() + 8000; mover(-1); });
+    carrusel.querySelector('.siguiente').addEventListener('click', function () { pausaHasta = Date.now() + 8000; mover(1); });
+    ['pointerdown', 'wheel', 'touchstart'].forEach(function (ev) {
+      pista.addEventListener(ev, function () { pausaHasta = Date.now() + 8000; }, { passive: true });
+    });
+    carrusel.addEventListener('mouseenter', function () { pausaHasta = Infinity; });
+    carrusel.addEventListener('mouseleave', function () { pausaHasta = Date.now() + 2000; });
+    new MutationObserver(actualizarFlechas).observe(pista, { childList: true });
+    window.addEventListener('resize', actualizarFlechas);
+    actualizarFlechas();
+    setInterval(function () {
+      if (document.hidden || Date.now() < pausaHasta || carrusel.classList.contains('sin-desplazamiento')) return;
+      mover(1);
+    }, 4000);
+  });
+</script>
 
 @if ($bannersInicio->isNotEmpty())
 <section class="seccion contenedor">

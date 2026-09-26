@@ -23,15 +23,20 @@ class Anunciante extends Model
     public const POSICIONES = [
         'superior' => ['Superior (bajo el menú)', '728 × 90 px'],
         'inferior' => ['Inferior (sobre el pie de página)', '728 × 90 px'],
-        'lateral_izquierdo' => ['Lateral izquierdo', '160 × 600 px'],
-        'lateral_derecho' => ['Lateral derecho', '160 × 600 px'],
+        'lateral_izquierdo' => ['Lateral izquierdo 1', '160 × 600 px'],
+        'lateral_izquierdo_2' => ['Lateral izquierdo 2', '160 × 600 px'],
+        'lateral_izquierdo_3' => ['Lateral izquierdo 3', '160 × 600 px'],
+        'lateral_derecho' => ['Lateral derecho 1', '160 × 600 px'],
+        'lateral_derecho_2' => ['Lateral derecho 2', '160 × 600 px'],
+        'lateral_derecho_3' => ['Lateral derecho 3', '160 × 600 px'],
         'inicio' => ['Inicio · "Auspiciado por"', '1280 × 720 px'],
         'listado' => ['Ficha de vehículo · negocio destacado', '1280 × 720 px'],
     ];
 
     public const ETIQUETA_POSICION = [
         'superior' => 'Superior', 'inferior' => 'Inferior',
-        'lateral_izquierdo' => 'Lateral izquierdo', 'lateral_derecho' => 'Lateral derecho',
+        'lateral_izquierdo' => 'Lateral izquierdo 1', 'lateral_izquierdo_2' => 'Lateral izquierdo 2', 'lateral_izquierdo_3' => 'Lateral izquierdo 3',
+        'lateral_derecho' => 'Lateral derecho 1', 'lateral_derecho_2' => 'Lateral derecho 2', 'lateral_derecho_3' => 'Lateral derecho 3',
         'inicio' => 'Inicio', 'listado' => 'Ficha de vehículo', 'lateral' => 'Lateral',
     ];
 

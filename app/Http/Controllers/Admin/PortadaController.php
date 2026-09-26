@@ -31,11 +31,11 @@ class PortadaController extends Controller
 
         $archivo = $request->file('archivo');
         $esVideo = in_array($archivo->extension(), ['mp4', 'webm']);
-        $ruta = $archivo->storeAs('portada', 'portada_' . time() . '.' . $archivo->extension(), 'public');
+        $nombre = \App\Support\Archivos::guardar($archivo, 'portada', 'portada_' . time() . '.' . $archivo->extension());
 
         PortadaMedio::create([
             'tipo_medio' => $esVideo ? 'video' : 'imagen',
-            'archivo' => basename($ruta),
+            'archivo' => $nombre,
             'orden' => (int) PortadaMedio::max('orden') + 1,
         ]);
 
@@ -44,7 +44,7 @@ class PortadaController extends Controller
 
     public function eliminar(PortadaMedio $medio)
     {
-        Storage::disk('public')->delete('portada/' . $medio->archivo);
+        \App\Support\Archivos::borrar('portada/' . $medio->archivo);
         $medio->delete();
 
         return back()->with('ok', 'Archivo eliminado.');

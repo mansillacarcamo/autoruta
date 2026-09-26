@@ -50,7 +50,7 @@ class Vehiculo extends Model
     public function primeraFotoUrl(): string
     {
         $foto = $this->fotos->first();
-        return $foto ? asset('storage/vehiculos/' . $foto->archivo) : asset('img/vehiculo-placeholder.svg');
+        return $foto ? \App\Support\Archivos::url('vehiculos/' . $foto->archivo) : asset('img/vehiculo-placeholder.svg');
     }
 
     public function precioFormateado(): string

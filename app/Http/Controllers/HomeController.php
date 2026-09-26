@@ -14,7 +14,7 @@ class HomeController extends Controller
         DB::table('visitas')->where('id', 1)->increment('total');
 
         $todos = Vehiculo::activos()->with('fotos')->orderByDesc('publicado_en')->get();
-        $destacados = $todos->sortByDesc('vistas')->take(4);
+        $destacados = $todos->sortByDesc('vistas')->take(8);
         $ultimos = $todos->take(8);
 
         $bannersInicio = AnuncianteBanner::where('posicion', 'inicio')
