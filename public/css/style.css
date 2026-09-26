@@ -27,8 +27,9 @@ img { max-width: 100%; display: block; }
 .header { background: var(--carbon); border-bottom: 1px solid var(--carbon-claro); position: sticky; top: 0; z-index: 40; }
 .header-fila { display: flex; align-items: center; justify-content: space-between; height: 88px; }
 .logo img { height: 56px; width: auto; }
-.nav { display: none; gap: 24px; font-size: 14px; font-weight: 500; color: #d4d4d4; }
-.nav a:hover { color: var(--acento); }
+.nav { display: none; gap: 8px; font-size: 14px; font-weight: 600; }
+.nav a { color: #d4d4d4; padding: 8px 16px; border-radius: 999px; transition: .15s; }
+.nav a:hover { color: #fff; background: var(--carbon-claro); }
 @media (min-width: 900px) { .nav { display: flex; } }
 .header-acciones { display: flex; align-items: center; gap: 12px; }
 
@@ -44,6 +45,7 @@ img { max-width: 100%; display: block; }
 .hero { background: var(--carbon); color: #fff; padding: 56px 0; }
 .hero h1 { font-size: 32px; margin: 0; }
 .hero p { color: #d4d4d4; margin-top: 8px; }
+.hero-marca { color: var(--acento); }
 .buscador { margin-top: 24px; background: #fff; border-radius: 12px; padding: 12px; display: grid; gap: 8px; box-shadow: 0 10px 25px rgba(0,0,0,.2); }
 @media (min-width: 700px) { .buscador { grid-template-columns: 2fr 1fr 1fr; } }
 .buscador input, .buscador select { padding: 10px 12px; border: 1px solid #d4d4d4; border-radius: 8px; font-size: 14px; }
