@@ -82,22 +82,34 @@
     </div>
     <div class="form-grupo"><label>Descripción</label><textarea name="descripcion" required rows="4" maxlength="3000">{{ old('descripcion', $vehiculo?->descripcion) }}</textarea></div>
 
-    <h2 class="mt-2">2. Fotos (hasta {{ config('autoruta.max_fotos_vehiculo') }})</h2>
+    <h2 class="mt-2">2. Fotos <span class="texto-mutado" id="contadorFotos" style="font-size:15px;font-weight:600"></span></h2>
+    <p class="texto-mutado" style="font-size:13px;margin:0 0 10px">Hasta {{ config('autoruta.max_fotos_vehiculo') }} fotos en formato JPG, PNG, WEBP o HEIC (iPhone). Las achicamos automáticamente para que suban rápido.</p>
+
     @if ($vehiculo && $vehiculo->fotos->isNotEmpty())
-      <p class="texto-mutado" style="font-size:13px;margin:0 0 8px">Fotos actuales. Marca "Quitar" en las que quieras eliminar.</p>
-      <div class="fotos-actuales">
+      <div class="fotos-grilla" id="fotosActuales">
         @foreach ($vehiculo->fotos as $foto)
-          <label class="foto-actual">
+          <div class="foto-item" data-foto-id="{{ $foto->id }}">
             <img src="{{ \App\Support\Archivos::url('vehiculos/' . $foto->archivo) }}" alt="">
-            <span><input type="checkbox" name="fotosEliminar[]" value="{{ $foto->id }}"> Quitar</span>
-          </label>
+            <button type="button" class="foto-eliminar" data-url="{{ route('panel.fotos.eliminar', [$vehiculo, $foto]) }}" aria-label="Eliminar foto">&times;</button>
+          </div>
         @endforeach
       </div>
-      <p style="font-size:14px;font-weight:600;margin:14px 0 6px">Agregar más fotos</p>
     @endif
-    <input type="file" name="fotos[]" id="inputFotos" accept="image/*" multiple @if (! $vehiculo) required @endif>
-    <p class="texto-mutado" id="estadoFotos" style="font-size:13px;margin:6px 0 0">Puedes tomarlas con la cámara o elegirlas de tu galería. Las achicamos automáticamente para que suban rápido.</p>
-    <div id="vistaFotos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:10px"></div>
+
+    <div class="fotos-botones">
+      <label class="btn btn-outline-oscuro">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Tomar foto
+        <input type="file" id="inputCamara" accept="image/*" capture="environment" hidden>
+      </label>
+      <label class="btn btn-outline-oscuro">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        Elegir de la galería
+        <input type="file" name="fotos[]" id="inputFotos" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*" multiple hidden>
+      </label>
+    </div>
+    <p class="texto-mutado" id="estadoFotos" style="font-size:13px;margin:8px 0 0"></p>
+    <div class="fotos-grilla" id="vistaFotos"></div>
 
     <h2 class="mt-2">3. Ficha técnica (opcional)</h2>
     <div class="grid-2">
@@ -144,24 +156,36 @@ document.querySelectorAll('.con-puntos').forEach(campo => {
   formatear();
 });
 
-// Las fotos de celular pesan 3-8 MB: se reducen en el navegador y el formulario se envía
-// con fetch armando el FormData a mano. Así no dependemos de reemplazar input.files
-// (Safari de iPhone a veces envía el formulario vacío) y los errores se muestran sin perder nada.
+// Fotos: se pueden tomar con la cámara o elegir de la galería (se van sumando), se reducen
+// en el navegador y el formulario se envía con fetch armando el FormData a mano. Así no
+// dependemos de reemplazar input.files (Safari de iPhone a veces enviaba el formulario vacío).
 (function () {
   const MAX_FOTOS = {{ config('autoruta.max_fotos_vehiculo') }};
+  const ES_EDICION = {{ $vehiculo ? 'true' : 'false' }};
+  const FORMATOS_OK = ['image/jpeg', 'image/png', 'image/webp'];
   const LADO_MAX = 1400;
   const CALIDAD = 0.78;
   const form = document.getElementById('formPublicar');
-  const input = document.getElementById('inputFotos');
+  const inputGaleria = document.getElementById('inputFotos');
+  const inputCamara = document.getElementById('inputCamara');
   const vista = document.getElementById('vistaFotos');
   const estado = document.getElementById('estadoFotos');
+  const contador = document.getElementById('contadorFotos');
   const boton = document.getElementById('botonPublicar');
   const cajaErrores = document.getElementById('erroresEnvio');
   const TEXTO_BOTON = boton.textContent.trim();
-  let fotosListas = [];
+  const token = form.querySelector('[name=_token]').value;
+  let fotosNuevas = [];
   let preparando = false;
-  let seleccion = 0;
 
+  const fotosActuales = () => document.querySelectorAll('#fotosActuales .foto-item').length;
+
+  function actualizarContador() {
+    contador.textContent = `(${fotosActuales() + fotosNuevas.length}/${MAX_FOTOS})`;
+  }
+
+  // Convierte a JPEG de máx. 1400 px. HEIC/HEIF de iPhone se convierte si el navegador lo
+  // puede abrir (Safari sí); si no, devuelve null para avisar en vez de subir algo inválido.
   function reducir(archivo) {
     return new Promise(resolve => {
       const url = URL.createObjectURL(archivo);
@@ -174,15 +198,88 @@ document.querySelectorAll('.con-puntos').forEach(campo => {
         canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
         URL.revokeObjectURL(url);
         canvas.toBlob(blob => {
-          if (!blob || blob.size >= archivo.size) return resolve(archivo);
-          const nombre = archivo.name.replace(/\.[^.]+$/, '') + '.jpg';
-          resolve(new File([blob], nombre, { type: 'image/jpeg' }));
+          const nombre = (archivo.name || 'foto').replace(/\.[^.]+$/, '') + '.jpg';
+          if (blob && (blob.size < archivo.size || !FORMATOS_OK.includes(archivo.type))) {
+            return resolve(new File([blob], nombre, { type: 'image/jpeg' }));
+          }
+          resolve(FORMATOS_OK.includes(archivo.type) ? archivo : null);
         }, 'image/jpeg', CALIDAD);
       };
-      img.onerror = () => { URL.revokeObjectURL(url); resolve(archivo); };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(FORMATOS_OK.includes(archivo.type) ? archivo : null); };
       img.src = url;
     });
   }
+
+  function dibujarNuevas() {
+    vista.innerHTML = '';
+    fotosNuevas.forEach((f, i) => {
+      const item = document.createElement('div');
+      item.className = 'foto-item';
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(f);
+      const quitar = document.createElement('button');
+      quitar.type = 'button';
+      quitar.className = 'foto-eliminar';
+      quitar.setAttribute('aria-label', 'Quitar foto');
+      quitar.innerHTML = '&times;';
+      quitar.addEventListener('click', () => { fotosNuevas.splice(i, 1); dibujarNuevas(); });
+      item.append(img, quitar);
+      vista.appendChild(item);
+    });
+    actualizarContador();
+  }
+
+  async function agregar(input) {
+    const elegidas = Array.from(input.files);
+    input.value = '';
+    if (!elegidas.length) return;
+    const espacio = MAX_FOTOS - fotosActuales() - fotosNuevas.length;
+    const avisos = [];
+    if (espacio <= 0) { estado.textContent = `Ya tienes ${MAX_FOTOS} fotos, el máximo permitido.`; return; }
+    if (elegidas.length > espacio) avisos.push(`Solo se agregaron ${espacio} (máximo ${MAX_FOTOS} fotos).`);
+
+    preparando = true;
+    boton.disabled = true;
+    boton.textContent = 'Preparando fotos…';
+    estado.textContent = 'Preparando fotos…';
+
+    let rechazadas = 0;
+    for (const a of elegidas.slice(0, espacio)) {
+      const lista = await reducir(a);
+      if (lista) fotosNuevas.push(lista); else rechazadas++;
+    }
+    if (rechazadas) avisos.push(`${rechazadas} foto(s) no se pudieron abrir en este navegador (formato HEIC u otro no compatible). En el iPhone ve a Ajustes > Cámara > Formatos y elige "Más compatible", o usa Safari.`);
+
+    dibujarNuevas();
+    const totalMb = (fotosNuevas.reduce((s, f) => s + f.size, 0) / 1048576).toFixed(1);
+    estado.textContent = (fotosNuevas.length ? `${fotosNuevas.length} foto(s) nuevas listas (${totalMb} MB). ` : '') + avisos.join(' ');
+    preparando = false;
+    listo();
+  }
+
+  inputGaleria.addEventListener('change', () => agregar(inputGaleria));
+  inputCamara.addEventListener('change', () => agregar(inputCamara));
+
+  // Fotos ya publicadas (al editar): se eliminan al instante.
+  document.querySelectorAll('#fotosActuales .foto-eliminar').forEach(b => {
+    b.addEventListener('click', async () => {
+      if (!confirm('¿Eliminar esta foto del aviso?')) return;
+      b.disabled = true;
+      try {
+        const r = await fetch(b.dataset.url, {
+          method: 'DELETE',
+          credentials: 'same-origin',
+          headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': token, 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        const d = await r.json().catch(() => ({}));
+        if (r.ok) { b.closest('.foto-item').remove(); actualizarContador(); estado.textContent = 'Foto eliminada.'; }
+        else estado.textContent = d.message || 'No se pudo eliminar la foto.';
+      } catch (err) {
+        estado.textContent = 'No se pudo conectar con el servidor.';
+      }
+      b.disabled = false;
+    });
+  });
 
   function mostrarErrores(lista) {
     cajaErrores.innerHTML = '<strong>No se pudo guardar. Revisa lo siguiente:</strong><ul style="margin:6px 0 0;padding-left:18px">' +
@@ -196,49 +293,15 @@ document.querySelectorAll('.con-puntos').forEach(campo => {
     boton.textContent = TEXTO_BOTON;
   }
 
-  input.addEventListener('change', async () => {
-    const actual = ++seleccion;
-    let archivos = Array.from(input.files);
-    fotosListas = [];
-    vista.innerHTML = '';
-    if (!archivos.length) return;
-    let aviso = '';
-    if (archivos.length > MAX_FOTOS) {
-      archivos = archivos.slice(0, MAX_FOTOS);
-      aviso = ` Solo se usarán las primeras ${MAX_FOTOS}.`;
-    }
-    preparando = true;
-    boton.disabled = true;
-    boton.textContent = 'Preparando fotos…';
-    estado.textContent = `Preparando ${archivos.length} foto(s)…`;
-
-    const reducidas = [];
-    for (const a of archivos) reducidas.push(await reducir(a));
-    if (actual !== seleccion) return;
-    fotosListas = reducidas;
-    vista.innerHTML = '';
-
-    fotosListas.forEach(f => {
-      const img = document.createElement('img');
-      img.src = URL.createObjectURL(f);
-      img.style.cssText = 'width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid #e5e5e5';
-      vista.appendChild(img);
-    });
-    const totalMb = (fotosListas.reduce((s, f) => s + f.size, 0) / 1048576).toFixed(1);
-    estado.textContent = `${fotosListas.length} foto(s) listas (${totalMb} MB).` + aviso;
-    preparando = false;
-    listo();
-  });
-
   form.addEventListener('submit', async e => {
     if (!window.fetch || !window.FormData) return;
     e.preventDefault();
     if (preparando) return;
+    if (!ES_EDICION && !fotosNuevas.length) { mostrarErrores(['Agrega al menos una foto del vehículo.']); return; }
 
     const datos = new FormData(form);
     datos.delete('fotos[]');
-    const fotos = fotosListas.length ? fotosListas : Array.from(input.files);
-    fotos.forEach(f => datos.append('fotos[]', f, f.name));
+    fotosNuevas.forEach(f => datos.append('fotos[]', f, f.name));
 
     cajaErrores.hidden = true;
     boton.disabled = true;
@@ -267,6 +330,8 @@ document.querySelectorAll('.con-puntos').forEach(campo => {
     }
     listo();
   });
+
+  actualizarContador();
 })();
 </script>
 @endsection

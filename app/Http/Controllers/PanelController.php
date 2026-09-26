@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Vehiculo;
+use App\Models\VehiculoFoto;
 use App\Support\Archivos;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -82,10 +83,9 @@ class PanelController extends Controller
 
         $datos = $this->validar($request, $vehiculo);
 
-        $idsAQuitar = array_map('intval', $datos['fotosEliminar'] ?? []);
-        $fotosQuedan = $vehiculo->fotos->reject(fn ($f) => in_array($f->id, $idsAQuitar, true));
         $nuevas = $request->file('fotos', []);
-        $total = $fotosQuedan->count() + count($nuevas);
+        $actuales = $vehiculo->fotos()->count();
+        $total = $actuales + count($nuevas);
 
         if ($total < 1) {
             throw ValidationException::withMessages(['fotos' => 'El aviso debe tener al menos una foto.']);
@@ -96,15 +96,25 @@ class PanelController extends Controller
 
         $vehiculo->update($this->camposVehiculo($datos));
 
-        foreach ($vehiculo->fotos->whereIn('id', $idsAQuitar) as $foto) {
-            Archivos::borrar('vehiculos/' . $foto->archivo);
-            $foto->delete();
-        }
-        $fotosQuedan->values()->each(fn ($f, $i) => $f->update(['orden' => $i]));
-        $this->guardarFotos($vehiculo, $nuevas, $fotosQuedan->count());
+        $this->guardarFotos($vehiculo, $nuevas, $actuales);
         $this->actualizarContacto($request, $datos);
 
         return $this->responder($request, 'Publicación actualizada.');
+    }
+
+    public function eliminarFoto(Request $request, Vehiculo $vehiculo, VehiculoFoto $foto)
+    {
+        abort_unless((int) $vehiculo->user_id === (int) $request->user()->id && (int) $foto->vehiculo_id === (int) $vehiculo->id, 403);
+
+        if ($vehiculo->fotos()->count() <= 1) {
+            return response()->json(['message' => 'El aviso debe tener al menos una foto. Agrega otra y guarda los cambios antes de eliminar esta.'], 422);
+        }
+
+        Archivos::borrar('vehiculos/' . $foto->archivo);
+        $foto->delete();
+        $vehiculo->fotos()->get()->values()->each(fn ($f, $i) => $f->update(['orden' => $i]));
+
+        return response()->json(['ok' => true]);
     }
 
     public function marcarVendido(Request $request, Vehiculo $vehiculo)
@@ -153,13 +163,12 @@ class PanelController extends Controller
             'traccion' => 'nullable|in:4x2,4x4,awd',
             'duenosAnteriores' => 'nullable|integer|min:0|max:20',
             'fotos' => ($vehiculo ? 'nullable' : 'required') . '|array|max:' . config('autoruta.max_fotos_vehiculo'),
-            'fotos.*' => 'image|max:10240',
-            'fotosEliminar' => 'nullable|array',
-            'fotosEliminar.*' => 'integer',
+            'fotos.*' => 'image|mimes:jpg,jpeg,png,webp|max:10240',
         ], [
             'fotos.required' => 'Agrega al menos una foto del vehículo.',
             'fotos.max' => 'Puedes subir como máximo ' . config('autoruta.max_fotos_vehiculo') . ' fotos.',
-            'fotos.*.image' => 'Uno de los archivos no es una imagen válida (usa JPG o PNG).',
+            'fotos.*.image' => 'Uno de los archivos no es una imagen válida.',
+            'fotos.*.mimes' => 'Formato de foto no admitido. Usa JPG, PNG o WEBP (las fotos HEIC del iPhone se convierten solas al elegirlas en Safari).',
             'fotos.*.max' => 'Cada foto puede pesar como máximo 10 MB.',
         ]);
     }

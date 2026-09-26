@@ -23,6 +23,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/panel/publicar', [PanelController::class, 'guardar'])->name('panel.publicar.guardar');
     Route::get('/panel/vehiculos/{vehiculo}/editar', [PanelController::class, 'editar'])->name('panel.editar');
     Route::put('/panel/vehiculos/{vehiculo}', [PanelController::class, 'actualizar'])->name('panel.actualizar');
+    Route::delete('/panel/vehiculos/{vehiculo}/fotos/{foto}', [PanelController::class, 'eliminarFoto'])->name('panel.fotos.eliminar');
     Route::post('/panel/vehiculos/{vehiculo}/vendido', [PanelController::class, 'marcarVendido'])->name('panel.vendido');
     Route::delete('/panel/vehiculos/{vehiculo}', [PanelController::class, 'eliminar'])->name('panel.eliminar');
 });
