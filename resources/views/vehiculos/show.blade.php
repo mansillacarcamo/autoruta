@@ -8,15 +8,75 @@
 
   <div style="display:grid;gap:32px;margin-top:16px" class="ficha-grid">
     <div>
-      <div class="tarjeta-foto" style="border-radius:12px">
-        <img src="{{ $vehiculo->primeraFotoUrl() }}" alt="">
-      </div>
-      @if ($vehiculo->fotos->count() > 1)
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px">
-          @foreach ($vehiculo->fotos as $f)
-            <img src="{{ \App\Support\Archivos::url('vehiculos/' . $f->archivo) }}" style="aspect-ratio:1;object-fit:cover;border-radius:8px">
-          @endforeach
+      @if ($vehiculo->fotos->isEmpty())
+        <div class="tarjeta-foto" style="border-radius:12px"><img src="{{ $vehiculo->primeraFotoUrl() }}" alt=""></div>
+      @else
+        <div class="galeria" id="galeria">
+          <div class="galeria-principal">
+            <img id="galeriaFoto" src="{{ \App\Support\Archivos::url('vehiculos/' . $vehiculo->fotos->first()->archivo) }}" alt="{{ $vehiculo->marca }} {{ $vehiculo->modelo }}">
+            <button type="button" class="galeria-flecha anterior" aria-label="Foto anterior">&#8249;</button>
+            <button type="button" class="galeria-flecha siguiente" aria-label="Foto siguiente">&#8250;</button>
+            <span class="galeria-contador" id="galeriaContador"></span>
+          </div>
+          <div class="galeria-miniaturas">
+            @foreach ($vehiculo->fotos as $f)
+              <button type="button" class="galeria-miniatura"><img src="{{ \App\Support\Archivos::url('vehiculos/' . $f->archivo) }}" alt="" loading="lazy"></button>
+            @endforeach
+          </div>
         </div>
+        <script>
+          // Galería: foto grande con flechas, miniaturas y deslizar con el dedo. Las fotos que
+          // no cargan (por ejemplo, perdidas antes del respaldo) se sacan de la galería.
+          (function () {
+            var galeria = document.getElementById('galeria');
+            var grande = document.getElementById('galeriaFoto');
+            var contador = document.getElementById('galeriaContador');
+            var miniaturas = Array.from(galeria.querySelectorAll('.galeria-miniatura'));
+            var actual = 0;
+
+            function mostrar(i) {
+              if (!miniaturas.length) return;
+              actual = (i + miniaturas.length) % miniaturas.length;
+              grande.src = miniaturas[actual].querySelector('img').src;
+              miniaturas.forEach(function (m, j) { m.classList.toggle('activa', j === actual); });
+              contador.textContent = (actual + 1) + ' / ' + miniaturas.length;
+              galeria.classList.toggle('una-foto', miniaturas.length < 2);
+            }
+
+            miniaturas.forEach(function (m) {
+              m.addEventListener('click', function () { mostrar(miniaturas.indexOf(m)); });
+              var img = m.querySelector('img');
+              function quitar() {
+                var i = miniaturas.indexOf(m);
+                if (i === -1) return;
+                miniaturas.splice(i, 1);
+                m.remove();
+                if (!miniaturas.length) { grande.src = @json(asset('img/vehiculo-placeholder.svg')); galeria.classList.add('una-foto'); contador.textContent = ''; return; }
+                mostrar(actual >= miniaturas.length ? 0 : (i < actual ? actual - 1 : actual));
+              }
+              img.addEventListener('error', quitar);
+              if (img.complete && img.naturalWidth === 0) quitar();
+            });
+
+            galeria.querySelector('.anterior').addEventListener('click', function () { mostrar(actual - 1); });
+            galeria.querySelector('.siguiente').addEventListener('click', function () { mostrar(actual + 1); });
+            document.addEventListener('keydown', function (e) {
+              if (e.key === 'ArrowLeft') mostrar(actual - 1);
+              if (e.key === 'ArrowRight') mostrar(actual + 1);
+            });
+
+            var inicioX = null;
+            grande.addEventListener('touchstart', function (e) { inicioX = e.touches[0].clientX; }, { passive: true });
+            grande.addEventListener('touchend', function (e) {
+              if (inicioX === null) return;
+              var dx = e.changedTouches[0].clientX - inicioX;
+              if (Math.abs(dx) > 40) mostrar(actual + (dx < 0 ? 1 : -1));
+              inicioX = null;
+            });
+
+            mostrar(0);
+          })();
+        </script>
       @endif
 
       <h1 class="mt-3">{{ $vehiculo->marca }} {{ $vehiculo->modelo }} {{ $vehiculo->anio }}</h1>
