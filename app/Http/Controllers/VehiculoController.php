@@ -19,7 +19,7 @@ class VehiculoController extends Controller
             default => $query->orderByDesc('publicado_en'),
         };
 
-        $vehiculos = $query->get();
+        $vehiculos = $query->paginate(24)->withQueryString();
 
         return view('vehiculos.index', compact('vehiculos'));
     }

@@ -23,11 +23,15 @@ Route::view('/privacidad', 'legal.privacidad')->name('privacidad');
 
 Route::middleware('auth')->group(function () {
     Route::get('/panel', [PanelController::class, 'index'])->name('panel');
+    Route::get('/panel/cuenta', [\App\Http\Controllers\CuentaController::class, 'editar'])->name('panel.cuenta');
+    Route::put('/panel/cuenta', [\App\Http\Controllers\CuentaController::class, 'actualizarDatos'])->name('panel.cuenta.datos');
+    Route::put('/panel/cuenta/clave', [\App\Http\Controllers\CuentaController::class, 'actualizarClave'])->name('panel.cuenta.clave');
     Route::get('/panel/publicar', [PanelController::class, 'crear'])->name('panel.publicar');
     Route::post('/panel/publicar', [PanelController::class, 'guardar'])->name('panel.publicar.guardar');
     Route::get('/panel/vehiculos/{vehiculo}/editar', [PanelController::class, 'editar'])->name('panel.editar');
     Route::put('/panel/vehiculos/{vehiculo}', [PanelController::class, 'actualizar'])->name('panel.actualizar');
     Route::delete('/panel/vehiculos/{vehiculo}/fotos/{foto}', [PanelController::class, 'eliminarFoto'])->name('panel.fotos.eliminar');
+    Route::post('/panel/vehiculos/{vehiculo}/renovar', [PanelController::class, 'renovar'])->name('panel.renovar');
     Route::post('/panel/vehiculos/{vehiculo}/vendido', [PanelController::class, 'marcarVendido'])->name('panel.vendido');
     Route::delete('/panel/vehiculos/{vehiculo}', [PanelController::class, 'eliminar'])->name('panel.eliminar');
 });
@@ -48,6 +52,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/portada', [\App\Http\Controllers\Admin\PortadaController::class, 'subir'])->name('portada.subir');
     Route::delete('/portada/{medio}', [\App\Http\Controllers\Admin\PortadaController::class, 'eliminar'])->name('portada.eliminar');
     Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
+    Route::post('/usuarios/{usuario}/clave', [UsuarioController::class, 'restablecerClave'])->name('usuarios.clave');
 });
 
 require __DIR__.'/auth.php';

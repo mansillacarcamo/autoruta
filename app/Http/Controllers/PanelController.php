@@ -15,7 +15,7 @@ class PanelController extends Controller
     {
         $usuario = $request->user();
         $vehiculos = $usuario->vehiculos()->with('fotos')->orderByDesc('created_at')->get();
-        $activas = $vehiculos->where('estado', 'activa')->count();
+        $activas = $vehiculos->filter->estaVisible()->count();
 
         return view('panel.index', compact('vehiculos', 'activas'));
     }
@@ -37,7 +37,7 @@ class PanelController extends Controller
             return redirect()->route('panel');
         }
 
-        if ($usuario->vehiculos()->where('estado', 'activa')->count() >= config('autoruta.max_publicaciones_activas')) {
+        if ($usuario->vehiculos()->activos()->count() >= config('autoruta.max_publicaciones_activas')) {
             $mensaje = 'Ya tienes ' . config('autoruta.max_publicaciones_activas') . ' publicaciones activas.';
             if ($request->expectsJson()) {
                 return response()->json(['message' => $mensaje, 'errors' => ['limite' => [$mensaje]]], 422);
@@ -67,7 +67,7 @@ class PanelController extends Controller
 
     public function editar(Request $request, Vehiculo $vehiculo)
     {
-        abort_unless($vehiculo->user_id === $request->user()->id, 403);
+        abort_unless((int) $vehiculo->user_id === (int) $request->user()->id, 403);
         $vehiculo->load('fotos');
 
         return view('panel.publicar', compact('vehiculo'));
@@ -75,7 +75,7 @@ class PanelController extends Controller
 
     public function actualizar(Request $request, Vehiculo $vehiculo)
     {
-        abort_unless($vehiculo->user_id === $request->user()->id, 403);
+        abort_unless((int) $vehiculo->user_id === (int) $request->user()->id, 403);
 
         if (! $request->has('tipo')) {
             return $this->formularioVacio($request);
@@ -117,9 +117,22 @@ class PanelController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    public function renovar(Request $request, Vehiculo $vehiculo)
+    {
+        abort_unless((int) $vehiculo->user_id === (int) $request->user()->id, 403);
+
+        if (! $vehiculo->estaVisible() && $request->user()->vehiculos()->activos()->count() >= config('autoruta.max_publicaciones_activas')) {
+            return back()->with('error', 'Ya tienes ' . config('autoruta.max_publicaciones_activas') . ' publicaciones activas. Marca una como vendida o elimínala para renovar esta.');
+        }
+
+        $vehiculo->update(['estado' => 'activa', 'vence_en' => now()->addDays(config('autoruta.duracion_publicacion_dias'))]);
+
+        return back()->with('ok', 'Aviso renovado por ' . config('autoruta.duracion_publicacion_dias') . ' días.');
+    }
+
     public function marcarVendido(Request $request, Vehiculo $vehiculo)
     {
-        abort_unless($vehiculo->user_id === $request->user()->id, 403);
+        abort_unless((int) $vehiculo->user_id === (int) $request->user()->id, 403);
         $vehiculo->update(['estado' => 'vendida']);
 
         return back();
@@ -127,7 +140,7 @@ class PanelController extends Controller
 
     public function eliminar(Request $request, Vehiculo $vehiculo)
     {
-        abort_unless($vehiculo->user_id === $request->user()->id, 403);
+        abort_unless((int) $vehiculo->user_id === (int) $request->user()->id, 403);
 
         foreach ($vehiculo->fotos as $foto) {
             Archivos::borrar('vehiculos/' . $foto->archivo);

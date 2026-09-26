@@ -72,7 +72,7 @@
     </form>
 
     <div>
-      <p class="texto-mutado">{{ $vehiculos->count() }} {{ $vehiculos->count() === 1 ? 'vehículo encontrado' : 'vehículos encontrados' }}</p>
+      <p class="texto-mutado">{{ $vehiculos->total() }} {{ $vehiculos->total() === 1 ? 'vehículo encontrado' : 'vehículos encontrados' }}</p>
       @if ($vehiculos->isEmpty())
         <p class="caja texto-mutado" style="text-align:center;border-style:dashed">No hay vehículos que coincidan con estos filtros.</p>
       @else
@@ -81,6 +81,13 @@
             @include('vehiculos._tarjeta', ['v' => $v])
           @endforeach
         </div>
+        @if ($vehiculos->hasPages())
+          <nav class="paginacion" aria-label="Páginas">
+            @if ($vehiculos->onFirstPage())<span class="deshabilitado">← Anterior</span>@else<a href="{{ $vehiculos->previousPageUrl() }}">← Anterior</a>@endif
+            <span>Página {{ $vehiculos->currentPage() }} de {{ $vehiculos->lastPage() }}</span>
+            @if ($vehiculos->hasMorePages())<a href="{{ $vehiculos->nextPageUrl() }}">Siguiente →</a>@else<span class="deshabilitado">Siguiente →</span>@endif
+          </nav>
+        @endif
       @endif
     </div>
   </div>

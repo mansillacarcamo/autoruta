@@ -8,10 +8,13 @@
       <h1>Hola, {{ \Illuminate\Support\Str::of(auth()->user()->name)->trim()->before(' ') }}</h1>
       <p class="texto-mutado">Sesión iniciada como <strong>{{ auth()->user()->email }}</strong>.</p>
     </div>
-    <form method="post" action="{{ route('logout') }}">
-      @csrf
-      <button type="submit" class="btn btn-outline" style="color:#525252;border-color:#d4d4d4">Cerrar sesión</button>
-    </form>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a href="{{ route('panel.cuenta') }}" class="btn btn-outline" style="color:#525252;border-color:#d4d4d4">Mi cuenta</a>
+      <form method="post" action="{{ route('logout') }}">
+        @csrf
+        <button type="submit" class="btn btn-outline" style="color:#525252;border-color:#d4d4d4">Cerrar sesión</button>
+      </form>
+    </div>
   </div>
 
   @if (session('bienvenida'))
@@ -38,26 +41,43 @@
     @else
       <div class="mt-2" style="display:flex;flex-direction:column;gap:10px">
         @foreach ($vehiculos as $v)
-          <div class="caja" style="display:flex;gap:12px">
-            <img src="{{ $v->primeraFotoUrl() }}" style="width:80px;height:64px;object-fit:cover;border-radius:8px;background:var(--gris-claro)">
-            <div style="flex:1">
+          <div class="caja aviso-panel">
+            <img src="{{ $v->primeraFotoUrl() }}" alt="" data-fotos="{{ json_encode($v->fotosUrls()) }}" data-sin-foto="{{ asset('img/vehiculo-placeholder.svg') }}" onerror="siguienteFoto(this)">
+            <div style="flex:1;min-width:0">
               <p style="font-weight:600;margin:0">{{ $v->marca }} {{ $v->modelo }} {{ $v->anio }}</p>
               <p class="tarjeta-precio" style="margin:2px 0">{{ $v->precioFormateado() }}</p>
-              <p class="texto-mutado" style="font-size:12px;margin:0">{{ ucfirst($v->estado) }} · {{ $v->vistas }} vistas</p>
-              @if ($v->estado !== 'vendida')
-              <div style="margin-top:6px;display:flex;gap:12px;flex-wrap:wrap">
-                <a href="{{ route('panel.editar', $v) }}" style="color:var(--acento);font-size:12px;font-weight:600">Editar</a>
-                <a href="{{ route('vehiculos.show', $v) }}" style="color:#525252;font-size:12px;font-weight:600">Ver aviso</a>
-                <form method="post" action="{{ route('panel.vendido', $v) }}">
-                  @csrf
-                  <button type="submit" style="background:none;border:none;color:#15803d;font-size:12px;font-weight:600;cursor:pointer;padding:0">Marcar como vendido</button>
-                </form>
-                <form method="post" action="{{ route('panel.eliminar', $v) }}">
+              <p style="font-size:12px;margin:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                @if ($v->estado === 'vendida')
+                  <span class="estado-aviso gris">Vendido</span>
+                @elseif ($v->estaVencida())
+                  <span class="estado-aviso rojo">Vencido</span>
+                @else
+                  <span class="estado-aviso verde">Activo · vence en {{ $v->diasRestantes() }} días</span>
+                @endif
+                <span class="texto-mutado">{{ $v->vistas }} vistas</span>
+              </p>
+              <div class="aviso-panel-acciones">
+                @if ($v->estado !== 'vendida')
+                  <a href="{{ route('panel.editar', $v) }}" style="color:var(--acento)">Editar</a>
+                @endif
+                <a href="{{ route('vehiculos.show', $v) }}" style="color:#525252">Ver aviso</a>
+                @if ($v->estaVencida() || ($v->estado === 'activa' && $v->diasRestantes() !== null && $v->diasRestantes() <= 10))
+                  <form method="post" action="{{ route('panel.renovar', $v) }}">
+                    @csrf
+                    <button type="submit" style="color:#1d4ed8">Renovar {{ config('autoruta.duracion_publicacion_dias') }} días</button>
+                  </form>
+                @endif
+                @if ($v->estado !== 'vendida')
+                  <form method="post" action="{{ route('panel.vendido', $v) }}" onsubmit="return confirm('¿Marcar este vehículo como vendido? Dejará de mostrarse en la web.')">
+                    @csrf
+                    <button type="submit" style="color:#15803d">Marcar como vendido</button>
+                  </form>
+                @endif
+                <form method="post" action="{{ route('panel.eliminar', $v) }}" onsubmit="return confirm('¿Eliminar este aviso y sus fotos? No se puede deshacer.')">
                   @csrf @method('DELETE')
-                  <button type="submit" style="background:none;border:none;color:#b91c1c;font-size:12px;font-weight:600;cursor:pointer;padding:0">Eliminar</button>
+                  <button type="submit" style="color:#b91c1c">Eliminar</button>
                 </form>
               </div>
-              @endif
             </div>
           </div>
         @endforeach

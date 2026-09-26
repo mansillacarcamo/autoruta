@@ -42,9 +42,26 @@ class Vehiculo extends Model
         return $this->hasMany(VehiculoFoto::class)->orderBy('orden');
     }
 
+    // Activa y sin vencer: los avisos duran config('autoruta.duracion_publicacion_dias') y se pueden renovar.
     public function scopeActivos($query)
     {
-        return $query->where('estado', 'activa');
+        return $query->where('estado', 'activa')
+            ->where(fn ($q) => $q->whereNull('vence_en')->orWhere('vence_en', '>', now()));
+    }
+
+    public function estaVencida(): bool
+    {
+        return $this->estado === 'activa' && $this->vence_en && $this->vence_en->isPast();
+    }
+
+    public function estaVisible(): bool
+    {
+        return $this->estado === 'activa' && ! $this->estaVencida();
+    }
+
+    public function diasRestantes(): ?int
+    {
+        return $this->vence_en ? max(0, (int) ceil(now()->diffInDays($this->vence_en, false))) : null;
     }
 
     public function primeraFotoUrl(): string

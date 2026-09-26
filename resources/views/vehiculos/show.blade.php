@@ -6,6 +6,13 @@
 <div class="contenedor" style="padding:32px 16px">
   <a href="{{ route('vehiculos.index') }}" style="font-size:14px;font-weight:600;color:#525252">← Volver al listado</a>
 
+  @if (! $vehiculo->estaVisible())
+    <p class="aviso-no-disponible">
+      {{ $vehiculo->estado === 'vendida' ? 'Este vehículo ya fue vendido.' : 'Esta publicación ya no está vigente.' }}
+      <a href="{{ route('vehiculos.index', ['tipo' => $vehiculo->tipo]) }}">Ver vehículos similares →</a>
+    </p>
+  @endif
+
   <div style="display:grid;gap:32px;margin-top:16px" class="ficha-grid">
     <div>
       @if ($vehiculo->fotos->isEmpty())
@@ -278,6 +285,7 @@
             </div>
           </div>
 
+          @if ($vehiculo->estaVisible())
           <a href="https://wa.me/{{ $numeroWa }}?text={{ $mensajeWa }}" target="_blank" rel="noopener" class="btn btn-block vendedor-whatsapp">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1s-.5-.1-.7.1-.8 1-1 1.2-.4.2-.7.1a8.2 8.2 0 0 1-4-3.5c-.3-.5.3-.5.9-1.6.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6a1.1 1.1 0 0 0-.8.4 3.4 3.4 0 0 0-1.1 2.5 5.9 5.9 0 0 0 1.2 3.1 13.4 13.4 0 0 0 5.2 4.6c1.9.8 2.7.9 3.6.7a3.1 3.1 0 0 0 2-1.4 2.5 2.5 0 0 0 .2-1.4c-.1-.1-.3-.2-.6-.3zM12 21.8a9.8 9.8 0 0 1-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4a9.8 9.8 0 1 1 8.3 4.6zm0-21.6A11.8 11.8 0 0 0 1.9 17.8L.2 24l6.4-1.7A11.8 11.8 0 1 0 12 .2z"/></svg>
             Contactar por WhatsApp
@@ -286,6 +294,10 @@
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
             Llamar al vendedor
           </a>
+
+          @else
+            <p class="texto-mutado" style="font-size:14px;margin:0">{{ $vehiculo->estado === 'vendida' ? 'Vehículo vendido: el contacto ya no está disponible.' : 'Publicación no vigente: el contacto no está disponible.' }}</p>
+          @endif
 
           <div class="vendedor-enlaces">
             <button type="button" id="compartirAviso">

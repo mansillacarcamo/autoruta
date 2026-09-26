@@ -30,7 +30,7 @@
   @else
     <div class="admin-tabla-envoltura">
       <table class="admin-tabla">
-        <thead><tr><th>Negocio</th><th>Rubro</th><th>Banners</th><th>Estado</th><th></th></tr></thead>
+        <thead><tr><th>Negocio</th><th>Rubro</th><th>Banners</th><th>Estado</th><th>Vence</th><th></th></tr></thead>
         <tbody>
           @foreach ($negocios as $n)
             <tr>
@@ -38,6 +38,11 @@
               <td>{{ \App\Models\Anunciante::ETIQUETA_RUBRO[$n->rubro] ?? $n->rubro }}</td>
               <td>{{ $n->banners_count }} / {{ config('autoruta.max_banners_negocio') }}</td>
               <td><span class="admin-etiqueta {{ $n->estado === 'activo' ? 'verde' : ($n->estado === 'vencido' ? 'roja' : 'gris') }}">{{ \App\Models\Anunciante::ETIQUETA_ESTADO[$n->estado] ?? $n->estado }}</span></td>
+              <td>
+                @if ($n->vence_en)
+                  <span class="admin-etiqueta {{ $n->vence_en->isPast() ? 'roja' : ($n->vence_en->diffInDays(now()) <= 5 ? 'gris' : '') }}">{{ $n->vence_en->format('d-m-Y') }}{{ $n->vence_en->isPast() ? ' · vencido' : '' }}</span>
+                @else — @endif
+              </td>
               <td style="text-align:right"><a href="{{ route('admin.negocios.editar', $n) }}" style="font-weight:600;color:var(--acento)">Editar →</a></td>
             </tr>
           @endforeach
