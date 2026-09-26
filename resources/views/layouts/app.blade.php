@@ -95,6 +95,10 @@
       </div>
     </div>
 
+    <div class="contador-visitas">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      <span><strong>{{ number_format(config('autoruta.visitas_inicio') + (int) \DB::table('visitas')->where('id', 1)->value('total'), 0, ',', '.') }}</strong> visitas</span>
+    </div>
     <div class="footer-abajo">
       &copy; {{ date('Y') }} {{ config('autoruta.nombre_sitio') }}. Todos los derechos reservados.
       <br>Desarrollado por <a href="https://www.bynari.cl" target="_blank" rel="noopener" style="font-weight:600">www.bynari.cl</a>

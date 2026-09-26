@@ -9,6 +9,7 @@ return [
     'precio_max_vehiculo' => 500000000,
     'anio_min_vehiculo' => 1950,
     'max_banners_negocio' => 3,
+    'visitas_inicio' => 1000,
 
     'contacto_whatsapp' => '+56962148407',
     'contacto_telefono' => '+56 9 6214 8407',

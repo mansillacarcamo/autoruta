@@ -110,6 +110,9 @@ img { max-width: 100%; display: block; }
 .footer ul { list-style: none; padding: 0; margin: 0; }
 .footer li { margin-bottom: 8px; font-size: 14px; }
 .footer a:hover { color: var(--acento); }
+.contador-visitas { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 0 20px; font-size: 14px; }
+.contador-visitas svg { color: var(--acento); }
+.contador-visitas strong { color: #fff; font-size: 16px; }
 .footer-abajo { border-top: 1px solid var(--carbon-claro); padding: 16px 0; text-align: center; font-size: 12px; }
 
 /* Fondo automotriz para login/registro (auto en movimiento, silueta con lineas de velocidad) */
