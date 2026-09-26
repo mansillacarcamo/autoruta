@@ -44,15 +44,36 @@ class PanelController extends Controller
         }
 
         if (! $request->has('tipo')) {
-            \Illuminate\Support\Facades\Log::warning('Publicar: formulario llegó vacío', [
-                'content_length' => $request->server('CONTENT_LENGTH'),
+            $diagnostico = [
+                'content_length' => $request->server('CONTENT_LENGTH') ?? $request->header('Content-Length'),
                 'content_type' => $request->header('Content-Type'),
+                'transfer_encoding' => $request->header('Transfer-Encoding'),
                 'campos' => array_keys($request->except('_token')),
                 'archivos' => count($request->allFiles()),
                 'post_max_size' => ini_get('post_max_size'),
                 'upload_max_filesize' => ini_get('upload_max_filesize'),
+                'servidor' => $request->server('SERVER_SOFTWARE') ?: PHP_SAPI,
                 'user_agent' => $request->userAgent(),
-            ]);
+            ];
+            \Illuminate\Support\Facades\Log::warning('Publicar: formulario llegó vacío', $diagnostico);
+
+            // Mensaje con datos técnicos para poder diagnosticar desde una captura de pantalla.
+            $mensaje = sprintf(
+                'El servidor no recibió los datos del formulario. Envía una captura de este mensaje a soporte. [llegaron %s bytes, tipo %s, campos: %s, archivos: %d, límite envío %s, límite archivo %s, %s]',
+                $diagnostico['content_length'] ?? '?',
+                strtok((string) $diagnostico['content_type'], ';') ?: '?',
+                implode(',', $diagnostico['campos']) ?: 'ninguno',
+                $diagnostico['archivos'],
+                $diagnostico['post_max_size'],
+                $diagnostico['upload_max_filesize'],
+                $diagnostico['servidor'],
+            );
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $mensaje, 'errors' => ['servidor' => [$mensaje]]], 422);
+            }
+
+            return back()->with('error', $mensaje);
         }
 
         $request->merge([
@@ -75,7 +96,6 @@ class PanelController extends Controller
             'combustible' => 'nullable|in:bencina,diesel,hibrido,electrico,gas',
             'version' => 'nullable|string|max:100',
             'cilindrada' => 'nullable|string|max:20',
-            'color' => 'nullable|string|max:40',
             'puertas' => 'nullable|integer|min:2|max:6',
             'traccion' => 'nullable|in:4x2,4x4,awd',
             'duenosAnteriores' => 'nullable|integer|min:0|max:20',
@@ -104,7 +124,6 @@ class PanelController extends Controller
             'transmision' => $datos['transmision'] ?? null,
             'combustible' => $datos['combustible'] ?? null,
             'cilindrada' => $datos['cilindrada'] ?? null,
-            'color' => $datos['color'] ?? null,
             'puertas' => $datos['puertas'] ?? null,
             'traccion' => $datos['traccion'] ?? null,
             'duenos_anteriores' => $datos['duenosAnteriores'] ?? null,

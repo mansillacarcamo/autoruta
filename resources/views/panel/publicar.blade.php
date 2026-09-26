@@ -84,7 +84,6 @@
     <div class="grid-2">
       <div class="form-grupo"><label>Versión</label><input type="text" name="version" value="{{ old('version') }}"></div>
       <div class="form-grupo"><label>Cilindrada</label><input type="text" name="cilindrada" placeholder="Ej. 2.0L" value="{{ old('cilindrada') }}"></div>
-      <div class="form-grupo"><label>Color</label><input type="text" name="color" value="{{ old('color') }}"></div>
       <div class="form-grupo"><label>Puertas</label><input type="number" name="puertas" min="2" max="6" value="{{ old('puertas') }}"></div>
       <div class="form-grupo">
         <label>Tracción</label>
