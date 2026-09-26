@@ -44,11 +44,27 @@
           @endif
           <div class="admin-medio-pie">
             <span>{{ \App\Models\Anunciante::POSICIONES[$b->posicion][0] ?? (\App\Models\Anunciante::ETIQUETA_POSICION[$b->posicion] ?? $b->posicion) }}</span>
+            <span class="admin-etiqueta verde" title="Personas que hicieron clic en este banner">{{ number_format($b->clics, 0, ',', '.') }} clics</span>
             <form method="post" action="{{ route('admin.negocios.banners.eliminar', [$negocio, $b]) }}" onsubmit="return confirm('¿Eliminar este banner?')">
               @csrf @method('DELETE')
               <button type="submit" class="btn-peligro">Eliminar</button>
             </form>
           </div>
+          <form method="post" action="{{ route('admin.negocios.banners.actualizar', [$negocio, $b]) }}" class="banner-edicion">
+            @csrf @method('PUT')
+            <label>Link al hacer clic</label>
+            <input type="text" name="linkUrl" required value="{{ $b->link_url }}" placeholder="https://www.minegocio.cl">
+            <label>Ubicación</label>
+            <select name="posicion">
+              @foreach (\App\Models\Anunciante::POSICIONES as $v => [$etiqueta, $medida])
+                <option value="{{ $v }}" @selected($b->posicion === $v)>{{ $etiqueta }} — {{ $medida }}</option>
+              @endforeach
+            </select>
+            <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
+              <button type="submit" class="btn btn-acento" style="padding:7px 14px;font-size:13px">Guardar</button>
+              <a href="{{ $b->urlClic() }}" target="_blank" rel="noopener" style="font-size:12px;color:#525252">Probar link ↗</a>
+            </div>
+          </form>
         </div>
       @endforeach
     </div>
@@ -72,7 +88,7 @@
           <select name="tipoMedio"><option value="imagen">Imagen</option><option value="video">Video</option></select>
         </div>
       </div>
-      <div class="form-grupo"><label>Link al hacer clic</label><input type="text" name="linkUrl" required placeholder="https://..."></div>
+      <div class="form-grupo"><label>Link al hacer clic</label><input type="text" name="linkUrl" required placeholder="www.minegocio.cl o https://wa.me/56912345678" value="{{ old('linkUrl') }}"><p class="admin-ayuda">Puede ser la web del negocio, su Instagram o su WhatsApp (https://wa.me/569XXXXXXXX). Si no escribes https:// se agrega solo.</p></div>
       <div class="form-grupo"><label>Archivo</label><input type="file" name="archivo" accept="image/*,video/*" required><p class="admin-ayuda">JPG, PNG, WEBP, MP4 o WEBM. Máximo 20 MB.</p></div>
       <button type="submit" class="btn btn-acento">Subir banner</button>
     </form>

@@ -332,7 +332,7 @@
       </script>
 
       @if ($negocioDestacado)
-        <a href="{{ $negocioDestacado->link_url }}" target="_blank" rel="noopener" class="caja mt-2" style="display:block;padding:0;overflow:hidden">
+        <a href="{{ $negocioDestacado->urlClic() }}" target="_blank" rel="sponsored noopener" class="caja mt-2" style="display:block;padding:0;overflow:hidden">
           <div style="aspect-ratio:16/9;background:var(--gris-claro)">
             @if ($negocioDestacado->tipo_medio === 'video')
               <video src="{{ $negocioDestacado->url() }}" style="width:100%;height:100%;object-fit:cover" autoplay muted loop playsinline></video>

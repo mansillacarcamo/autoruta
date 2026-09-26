@@ -17,6 +17,8 @@ Route::get('/media/{carpeta}/{archivo}', [\App\Http\Controllers\MediaController:
     ->where(['carpeta' => 'vehiculos|negocios|portada', 'archivo' => '[A-Za-z0-9_.-]+'])
     ->name('media');
 
+Route::get('/publicidad/{banner}', [\App\Http\Controllers\PublicidadController::class, 'clic'])->name('publicidad.clic');
+
 Route::view('/como-funciona', 'como-funciona')->name('como-funciona');
 Route::view('/terminos', 'legal.terminos')->name('terminos');
 Route::view('/privacidad', 'legal.privacidad')->name('privacidad');
@@ -48,6 +50,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/negocios/{negocio}', [NegocioController::class, 'editar'])->name('negocios.editar');
     Route::put('/negocios/{negocio}', [NegocioController::class, 'actualizar'])->name('negocios.actualizar');
     Route::post('/negocios/{negocio}/banners', [NegocioController::class, 'subirBanner'])->name('negocios.banners.subir');
+    Route::put('/negocios/{negocio}/banners/{banner}', [NegocioController::class, 'actualizarBanner'])->name('negocios.banners.actualizar');
     Route::delete('/negocios/{negocio}/banners/{banner}', [NegocioController::class, 'eliminarBanner'])->name('negocios.banners.eliminar');
     Route::get('/portada', [\App\Http\Controllers\Admin\PortadaController::class, 'index'])->name('portada.index');
     Route::post('/portada', [\App\Http\Controllers\Admin\PortadaController::class, 'subir'])->name('portada.subir');

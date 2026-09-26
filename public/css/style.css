@@ -478,3 +478,8 @@ body { overflow-x: clip; }
 .paginacion a, .paginacion .deshabilitado { padding: 9px 16px; border-radius: 8px; border: 1px solid #d4d4d4; }
 .paginacion a:hover { border-color: var(--acento); color: var(--acento); }
 .paginacion .deshabilitado { color: #a3a3a3; border-color: #eee; }
+
+/* Edición de banners en el admin */
+.banner-edicion { padding: 10px 12px 12px; border-top: 1px solid #f0f0f2; font-size: 12px; }
+.banner-edicion label { display: block; font-weight: 600; color: #525252; margin: 6px 0 3px; }
+.banner-edicion input, .banner-edicion select { width: 100%; padding: 7px 9px; border: 1px solid #d4d4d4; border-radius: 6px; font-size: 13px; }

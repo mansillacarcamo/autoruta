@@ -30,13 +30,14 @@
   @else
     <div class="admin-tabla-envoltura">
       <table class="admin-tabla">
-        <thead><tr><th>Negocio</th><th>Rubro</th><th>Banners</th><th>Estado</th><th>Vence</th><th></th></tr></thead>
+        <thead><tr><th>Negocio</th><th>Rubro</th><th>Banners</th><th>Clics</th><th>Estado</th><th>Vence</th><th></th></tr></thead>
         <tbody>
           @foreach ($negocios as $n)
             <tr>
               <td><strong>{{ $n->nombre_negocio }}</strong></td>
               <td>{{ \App\Models\Anunciante::ETIQUETA_RUBRO[$n->rubro] ?? $n->rubro }}</td>
               <td>{{ $n->banners_count }} / {{ config('autoruta.max_banners_negocio') }}</td>
+              <td>{{ number_format((int) $n->banners_sum_clics, 0, ',', '.') }}</td>
               <td><span class="admin-etiqueta {{ $n->estado === 'activo' ? 'verde' : ($n->estado === 'vencido' ? 'roja' : 'gris') }}">{{ \App\Models\Anunciante::ETIQUETA_ESTADO[$n->estado] ?? $n->estado }}</span></td>
               <td>
                 @if ($n->vence_en)

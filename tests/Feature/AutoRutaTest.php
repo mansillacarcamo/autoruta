@@ -318,4 +318,33 @@ class AutoRutaTest extends TestCase
         $this->actingAs($admin)->post('/admin/configuracion/correo-prueba')->assertSessionHas('error');
         $this->actingAs($admin)->get('/admin/configuracion')->assertSee('No conectado');
     }
+    public function test_banners_de_publicidad_con_link_y_contador_de_clics(): void
+    {
+        $admin = User::where('usuario', 'cesar')->firstOrFail();
+        $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Taller Sur', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
+
+        // Link sin https:// se completa solo; links peligrosos se rechazan.
+        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
+            'tipoMedio' => 'imagen', 'posicion' => 'superior', 'linkUrl' => 'javascript:alert(1)', 'archivo' => UploadedFile::fake()->image('b.jpg', 728, 90),
+        ])->assertSessionHasErrors('linkUrl');
+        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
+            'tipoMedio' => 'imagen', 'posicion' => 'superior', 'linkUrl' => 'www.tallersur.cl', 'archivo' => UploadedFile::fake()->image('b.jpg', 728, 90),
+        ])->assertSessionHas('ok');
+        $banner = $negocio->banners()->firstOrFail();
+        $this->assertSame('https://www.tallersur.cl', $banner->link_url);
+
+        // En la web el banner apunta a la ruta que cuenta el clic.
+        auth()->logout();
+        $this->get('/')->assertSee(route('publicidad.clic', $banner), false);
+        $this->get(route('publicidad.clic', $banner))->assertRedirect('https://www.tallersur.cl');
+        $this->get(route('publicidad.clic', $banner))->assertRedirect('https://www.tallersur.cl');
+        $this->assertSame(2, $banner->fresh()->clics);
+
+        // El admin puede cambiar el link y sus propios clics no cuentan.
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", ['linkUrl' => 'https://wa.me/56912345678', 'posicion' => 'inferior'])->assertSessionHas('ok');
+        $this->actingAs($admin)->get(route('publicidad.clic', $banner))->assertRedirect('https://wa.me/56912345678');
+        $this->assertSame(2, $banner->fresh()->clics);
+        $this->actingAs($admin)->get('/admin/negocios')->assertOk()->assertSee('Taller Sur');
+        $this->actingAs($admin)->get("/admin/negocios/{$negocio->id}")->assertOk()->assertSee('2 clics');
+    }
 }

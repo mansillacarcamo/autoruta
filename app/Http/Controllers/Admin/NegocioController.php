@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Anunciante;
+use App\Models\AnuncianteBanner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -12,7 +13,7 @@ class NegocioController extends Controller
 {
     public function index()
     {
-        $negocios = Anunciante::withCount('banners')->orderByDesc('created_at')->get();
+        $negocios = Anunciante::withCount('banners')->withSum('banners', 'clics')->orderByDesc('created_at')->get();
         $precioActual = (int) (DB::table('configuracion_sitio')->where('clave', 'precio_publicidad_negocio')->value('valor') ?? 15000);
 
         return view('admin.negocios.index', compact('negocios', 'precioActual'));
@@ -101,7 +102,7 @@ class NegocioController extends Controller
         $datos = $request->validate([
             'tipoMedio' => 'required|in:imagen,video',
             'posicion' => 'required|in:' . implode(',', array_keys(Anunciante::POSICIONES)),
-            'linkUrl' => 'required|string|max:255',
+            'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
             'archivo' => 'required|file|mimes:jpg,jpeg,png,webp,mp4,webm|max:20480',
         ]);
 
@@ -114,11 +115,34 @@ class NegocioController extends Controller
         $negocio->banners()->create([
             'tipo_medio' => $datos['tipoMedio'],
             'archivo' => $nombre,
-            'link_url' => $datos['linkUrl'],
+            'link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']),
             'posicion' => $datos['posicion'],
         ]);
 
         return back()->with('ok', 'Banner subido.');
+    }
+
+    public function actualizarBanner(Request $request, Anunciante $negocio, AnuncianteBanner $banner)
+    {
+        abort_unless((int) $banner->anunciante_id === (int) $negocio->id, 404);
+
+        $datos = $request->validate([
+            'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
+            'posicion' => 'required|in:' . implode(',', array_keys(Anunciante::POSICIONES)),
+        ]);
+
+        $banner->update(['link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']), 'posicion' => $datos['posicion']]);
+
+        return back()->with('ok', 'Banner actualizado.');
+    }
+
+    private function reglaLink(): \Closure
+    {
+        return function (string $atributo, mixed $valor, \Closure $falla) {
+            if (! AnuncianteBanner::normalizarLink($valor)) {
+                $falla('El link no es válido. Ejemplo: https://www.minegocio.cl o https://wa.me/56912345678');
+            }
+        };
     }
 
     public function eliminarBanner(Anunciante $negocio, \App\Models\AnuncianteBanner $banner)
