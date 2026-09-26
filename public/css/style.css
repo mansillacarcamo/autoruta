@@ -400,7 +400,7 @@ body { overflow-x: clip; }
 
 /* Galería de fotos del aviso */
 .galeria-principal { position: relative; border-radius: 12px; overflow: hidden; background: #0b0c14; aspect-ratio: 4/3; }
-.galeria-principal img { width: 100%; height: 100%; object-fit: contain; user-select: none; }
+.galeria-principal img { width: 100%; height: 100%; object-fit: cover; user-select: none; }
 .galeria-flecha { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: none; background: rgba(255,255,255,.9); color: #171717; font-size: 30px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,.25); transition: .15s; }
 .galeria-flecha:hover { background: var(--acento); color: #fff; }
 .galeria-flecha.anterior { left: 12px; }
@@ -413,3 +413,49 @@ body { overflow-x: clip; }
 .galeria-miniatura:hover { opacity: 1; }
 .galeria-miniatura.activa { border-color: var(--acento); opacity: 1; }
 @media (max-width: 600px) { .galeria-flecha { width: 36px; height: 36px; font-size: 24px; } }
+
+/* Zoom de fotos: botón lupa y visor a pantalla completa */
+.galeria-principal img { cursor: zoom-in; }
+.galeria-zoom { position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(255,255,255,.9); color: #171717; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+.galeria-zoom:hover { background: var(--acento); color: #fff; }
+.visor { position: fixed; inset: 0; z-index: 200; background: #04050d; display: flex; align-items: center; justify-content: center; }
+.visor[hidden] { display: none; }
+.visor-area { position: absolute; inset: 56px 0 70px; overflow: hidden; display: flex; align-items: center; justify-content: center; touch-action: none; }
+.visor-area img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform .2s ease; user-select: none; cursor: zoom-in; }
+.visor-area img.sin-transicion { transition: none; }
+.visor.con-zoom .visor-area img { cursor: grab; }
+.visor-cerrar { position: absolute; top: 10px; right: 14px; width: 44px; height: 44px; border-radius: 50%; border: none; background: rgba(255,255,255,.12); color: #fff; font-size: 30px; line-height: 1; cursor: pointer; }
+.visor-cerrar:hover { background: var(--acento); }
+.visor .galeria-flecha { z-index: 2; }
+.visor.una-foto .galeria-flecha { display: none; }
+.visor-barra { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,.12); color: #fff; border-radius: 999px; padding: 6px 8px; font-size: 14px; font-weight: 700; }
+.visor-barra button { width: 34px; height: 34px; border-radius: 50%; border: none; background: rgba(255,255,255,.18); color: #fff; font-size: 20px; line-height: 1; cursor: pointer; }
+.visor-barra button:hover { background: var(--acento); }
+.visor-ayuda { position: absolute; bottom: 6px; left: 0; right: 0; margin: 0; text-align: center; color: #a3a3a3; font-size: 12px; }
+
+/* Recuadro del vendedor en el aviso */
+@media (min-width: 900px) { .ficha-lateral { position: sticky; top: 104px; } }
+.vendedor { border: 1px solid #e8e8ec; border-radius: 16px; overflow: hidden; background: #fff; box-shadow: 0 8px 30px rgba(4,5,13,.08); }
+.vendedor-cabecera { background: linear-gradient(135deg, var(--carbon), #1d1e2a); color: #fff; padding: 18px 20px; }
+.vendedor-cabecera small { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #a3a3a3; font-weight: 600; }
+.vendedor-vehiculo { margin: 4px 0 2px; font-size: 16px; font-weight: 600; }
+.vendedor-precio { margin: 0; font-size: 26px; font-weight: 800; color: #fff; }
+.vendedor-cuerpo { padding: 18px 20px 16px; }
+.vendedor-titulo { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #737373; margin: 0 0 12px; }
+.vendedor-datos { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.vendedor-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--acento), var(--acento-oscuro)); color: #fff; font-weight: 700; font-size: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.vendedor-datos small { display: block; font-size: 11px; color: #737373; }
+.vendedor-datos strong { display: block; font-size: 16px; }
+.vendedor-datos div > span { display: block; font-size: 12px; color: #737373; }
+.vendedor-whatsapp, .vendedor-llamar { display: flex !important; align-items: center; justify-content: center; gap: 8px; padding: 13px 16px; font-size: 15px; border-radius: 10px; }
+.vendedor-whatsapp { background: #25D366; color: #fff; box-shadow: 0 6px 16px rgba(37,211,102,.3); }
+.vendedor-whatsapp:hover { background: #1ebe5a; }
+.vendedor-llamar { margin-top: 10px; background: #fff; color: #171717; border: 1px solid #d4d4d4; }
+.vendedor-llamar:hover { border-color: var(--carbon); background: var(--gris-claro); }
+.vendedor-enlaces { display: flex; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid #f0f0f2; }
+.vendedor-enlaces a, .vendedor-enlaces button { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; padding: 0; font: inherit; font-size: 13px; font-weight: 600; color: #525252; cursor: pointer; }
+.vendedor-enlaces a:hover, .vendedor-enlaces button:hover { color: var(--acento); }
+.vendedor-consejos { background: #fafafa; border-top: 1px solid #f0f0f2; padding: 14px 20px 16px; font-size: 12px; color: #525252; }
+.vendedor-consejos strong { display: block; font-size: 13px; color: #171717; margin-bottom: 6px; }
+.vendedor-consejos ul { margin: 0; padding-left: 16px; }
+.vendedor-consejos li { margin-bottom: 3px; }
