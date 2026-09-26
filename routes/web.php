@@ -21,6 +21,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/panel', [PanelController::class, 'index'])->name('panel');
     Route::get('/panel/publicar', [PanelController::class, 'crear'])->name('panel.publicar');
     Route::post('/panel/publicar', [PanelController::class, 'guardar'])->name('panel.publicar.guardar');
+    Route::get('/panel/vehiculos/{vehiculo}/editar', [PanelController::class, 'editar'])->name('panel.editar');
+    Route::put('/panel/vehiculos/{vehiculo}', [PanelController::class, 'actualizar'])->name('panel.actualizar');
     Route::post('/panel/vehiculos/{vehiculo}/vendido', [PanelController::class, 'marcarVendido'])->name('panel.vendido');
     Route::delete('/panel/vehiculos/{vehiculo}', [PanelController::class, 'eliminar'])->name('panel.eliminar');
 });

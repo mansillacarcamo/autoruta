@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Vehiculo;
+use App\Support\Archivos;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class PanelController extends Controller
 {
@@ -23,7 +25,7 @@ class PanelController extends Controller
             return redirect()->route('panel')->with('error', 'Las cuentas de negocio no publican vehículos.');
         }
 
-        return view('panel.publicar');
+        return view('panel.publicar', ['vehiculo' => null]);
     }
 
     public function guardar(Request $request)
@@ -44,44 +46,95 @@ class PanelController extends Controller
         }
 
         if (! $request->has('tipo')) {
-            $diagnostico = [
-                'content_length' => $request->server('CONTENT_LENGTH') ?? $request->header('Content-Length'),
-                'content_type' => $request->header('Content-Type'),
-                'transfer_encoding' => $request->header('Transfer-Encoding'),
-                'campos' => array_keys($request->except('_token')),
-                'archivos' => count($request->allFiles()),
-                'post_max_size' => ini_get('post_max_size'),
-                'upload_max_filesize' => ini_get('upload_max_filesize'),
-                'servidor' => $request->server('SERVER_SOFTWARE') ?: PHP_SAPI,
-                'user_agent' => $request->userAgent(),
-            ];
-            \Illuminate\Support\Facades\Log::warning('Publicar: formulario llegó vacío', $diagnostico);
-
-            // Mensaje con datos técnicos para poder diagnosticar desde una captura de pantalla.
-            $mensaje = sprintf(
-                'El servidor no recibió los datos del formulario. Envía una captura de este mensaje a soporte. [llegaron %s bytes, tipo %s, campos: %s, archivos: %d, límite envío %s, límite archivo %s, %s]',
-                $diagnostico['content_length'] ?? '?',
-                strtok((string) $diagnostico['content_type'], ';') ?: '?',
-                implode(',', $diagnostico['campos']) ?: 'ninguno',
-                $diagnostico['archivos'],
-                $diagnostico['post_max_size'],
-                $diagnostico['upload_max_filesize'],
-                $diagnostico['servidor'],
-            );
-
-            if ($request->expectsJson()) {
-                return response()->json(['message' => $mensaje, 'errors' => ['servidor' => [$mensaje]]], 422);
-            }
-
-            return back()->with('error', $mensaje);
+            return $this->formularioVacio($request);
         }
 
+        $datos = $this->validar($request, null);
+
+        $vehiculo = Vehiculo::create($this->camposVehiculo($datos) + [
+            'user_id' => $usuario->id,
+            'estado' => 'activa',
+            'publicado_en' => now(),
+            'vence_en' => now()->addDays(config('autoruta.duracion_publicacion_dias')),
+        ]);
+
+        $this->guardarFotos($vehiculo, $request->file('fotos', []));
+        $this->actualizarContacto($request, $datos);
+
+        return $this->responder($request, 'Vehículo publicado.');
+    }
+
+    public function editar(Request $request, Vehiculo $vehiculo)
+    {
+        abort_unless($vehiculo->user_id === $request->user()->id, 403);
+        $vehiculo->load('fotos');
+
+        return view('panel.publicar', compact('vehiculo'));
+    }
+
+    public function actualizar(Request $request, Vehiculo $vehiculo)
+    {
+        abort_unless($vehiculo->user_id === $request->user()->id, 403);
+
+        if (! $request->has('tipo')) {
+            return $this->formularioVacio($request);
+        }
+
+        $datos = $this->validar($request, $vehiculo);
+
+        $idsAQuitar = array_map('intval', $datos['fotosEliminar'] ?? []);
+        $fotosQuedan = $vehiculo->fotos->reject(fn ($f) => in_array($f->id, $idsAQuitar, true));
+        $nuevas = $request->file('fotos', []);
+        $total = $fotosQuedan->count() + count($nuevas);
+
+        if ($total < 1) {
+            throw ValidationException::withMessages(['fotos' => 'El aviso debe tener al menos una foto.']);
+        }
+        if ($total > config('autoruta.max_fotos_vehiculo')) {
+            throw ValidationException::withMessages(['fotos' => 'El aviso puede tener como máximo ' . config('autoruta.max_fotos_vehiculo') . ' fotos en total.']);
+        }
+
+        $vehiculo->update($this->camposVehiculo($datos));
+
+        foreach ($vehiculo->fotos->whereIn('id', $idsAQuitar) as $foto) {
+            Archivos::borrar('vehiculos/' . $foto->archivo);
+            $foto->delete();
+        }
+        $fotosQuedan->values()->each(fn ($f, $i) => $f->update(['orden' => $i]));
+        $this->guardarFotos($vehiculo, $nuevas, $fotosQuedan->count());
+        $this->actualizarContacto($request, $datos);
+
+        return $this->responder($request, 'Publicación actualizada.');
+    }
+
+    public function marcarVendido(Request $request, Vehiculo $vehiculo)
+    {
+        abort_unless($vehiculo->user_id === $request->user()->id, 403);
+        $vehiculo->update(['estado' => 'vendida']);
+
+        return back();
+    }
+
+    public function eliminar(Request $request, Vehiculo $vehiculo)
+    {
+        abort_unless($vehiculo->user_id === $request->user()->id, 403);
+
+        foreach ($vehiculo->fotos as $foto) {
+            Archivos::borrar('vehiculos/' . $foto->archivo);
+        }
+        $vehiculo->delete();
+
+        return back();
+    }
+
+    private function validar(Request $request, ?Vehiculo $vehiculo): array
+    {
         $request->merge([
             'precio' => preg_replace('/\D/', '', (string) $request->input('precio')),
             'kilometraje' => preg_replace('/\D/', '', (string) $request->input('kilometraje')),
         ]);
 
-        $datos = $request->validate([
+        return $request->validate([
             'tipo' => 'required|in:' . implode(',', array_keys(Vehiculo::ETIQUETA_TIPO)),
             'marca' => 'required|string|max:60',
             'modelo' => 'required|string|max:60',
@@ -99,18 +152,21 @@ class PanelController extends Controller
             'puertas' => 'nullable|integer|min:2|max:6',
             'traccion' => 'nullable|in:4x2,4x4,awd',
             'duenosAnteriores' => 'nullable|integer|min:0|max:20',
-            'fotos' => 'required|array|min:1|max:' . config('autoruta.max_fotos_vehiculo'),
+            'fotos' => ($vehiculo ? 'nullable' : 'required') . '|array|max:' . config('autoruta.max_fotos_vehiculo'),
             'fotos.*' => 'image|max:10240',
+            'fotosEliminar' => 'nullable|array',
+            'fotosEliminar.*' => 'integer',
         ], [
             'fotos.required' => 'Agrega al menos una foto del vehículo.',
             'fotos.max' => 'Puedes subir como máximo ' . config('autoruta.max_fotos_vehiculo') . ' fotos.',
             'fotos.*.image' => 'Uno de los archivos no es una imagen válida (usa JPG o PNG).',
             'fotos.*.max' => 'Cada foto puede pesar como máximo 10 MB.',
         ]);
+    }
 
-        $vehiculo = Vehiculo::create([
-            'user_id' => $usuario->id,
-            'estado' => 'activa',
+    private function camposVehiculo(array $datos): array
+    {
+        return [
             'tipo' => $datos['tipo'],
             'marca' => $datos['marca'],
             'modelo' => $datos['modelo'],
@@ -127,47 +183,70 @@ class PanelController extends Controller
             'puertas' => $datos['puertas'] ?? null,
             'traccion' => $datos['traccion'] ?? null,
             'duenos_anteriores' => $datos['duenosAnteriores'] ?? null,
-            'publicado_en' => now(),
-            'vence_en' => now()->addDays(config('autoruta.duracion_publicacion_dias')),
-        ]);
+        ];
+    }
 
-        foreach ($request->file('fotos') as $i => $foto) {
-            $nombre = \App\Support\Archivos::guardar($foto, 'vehiculos', "veh{$vehiculo->id}_{$i}_" . time() . '.' . $foto->extension());
-            $vehiculo->fotos()->create(['archivo' => $nombre, 'orden' => $i]);
+    private function guardarFotos(Vehiculo $vehiculo, array $fotos, int $ordenInicial = 0): void
+    {
+        foreach (array_values($fotos) as $i => $foto) {
+            $orden = $ordenInicial + $i;
+            $nombre = Archivos::guardar($foto, 'vehiculos', "veh{$vehiculo->id}_{$orden}_" . time() . '.' . $foto->extension());
+            $vehiculo->fotos()->create(['archivo' => $nombre, 'orden' => $orden]);
         }
+    }
 
-        $usuario->update([
+    private function actualizarContacto(Request $request, array $datos): void
+    {
+        $request->user()->update([
             'telefono_whatsapp' => $datos['telefonoWhatsapp'],
             'region' => $datos['region'],
             'comuna' => $datos['comuna'],
         ]);
+    }
 
+    private function responder(Request $request, string $mensaje)
+    {
         if ($request->expectsJson()) {
-            session()->flash('ok', 'Vehículo publicado.');
+            session()->flash('ok', $mensaje);
 
             return response()->json(['redirect' => route('panel')]);
         }
 
-        return redirect()->route('panel')->with('ok', 'Vehículo publicado.');
+        return redirect()->route('panel')->with('ok', $mensaje);
     }
 
-    public function marcarVendido(Request $request, Vehiculo $vehiculo)
+    // Cuando el formulario llega sin datos se muestra un diagnóstico técnico en pantalla,
+    // para poder identificar el problema desde una captura del usuario.
+    private function formularioVacio(Request $request)
     {
-        abort_unless($vehiculo->user_id === $request->user()->id, 403);
-        $vehiculo->update(['estado' => 'vendida']);
+        $diagnostico = [
+            'content_length' => $request->server('CONTENT_LENGTH') ?? $request->header('Content-Length'),
+            'content_type' => $request->header('Content-Type'),
+            'transfer_encoding' => $request->header('Transfer-Encoding'),
+            'campos' => array_keys($request->except('_token')),
+            'archivos' => count($request->allFiles()),
+            'post_max_size' => ini_get('post_max_size'),
+            'upload_max_filesize' => ini_get('upload_max_filesize'),
+            'servidor' => $request->server('SERVER_SOFTWARE') ?: PHP_SAPI,
+            'user_agent' => $request->userAgent(),
+        ];
+        Log::warning('Publicar: formulario llegó vacío', $diagnostico);
 
-        return back();
-    }
+        $mensaje = sprintf(
+            'El servidor no recibió los datos del formulario. Envía una captura de este mensaje a soporte. [llegaron %s bytes, tipo %s, campos: %s, archivos: %d, límite envío %s, límite archivo %s, %s]',
+            $diagnostico['content_length'] ?? '?',
+            strtok((string) $diagnostico['content_type'], ';') ?: '?',
+            implode(',', $diagnostico['campos']) ?: 'ninguno',
+            $diagnostico['archivos'],
+            $diagnostico['post_max_size'],
+            $diagnostico['upload_max_filesize'],
+            $diagnostico['servidor'],
+        );
 
-    public function eliminar(Request $request, Vehiculo $vehiculo)
-    {
-        abort_unless($vehiculo->user_id === $request->user()->id, 403);
-
-        foreach ($vehiculo->fotos as $foto) {
-            \App\Support\Archivos::borrar('vehiculos/' . $foto->archivo);
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $mensaje, 'errors' => ['servidor' => [$mensaje]]], 422);
         }
-        $vehiculo->delete();
 
-        return back();
+        return back()->with('error', $mensaje);
     }
 }

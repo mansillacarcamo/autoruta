@@ -1,14 +1,20 @@
 @extends('layouts.app')
-@section('titulo', 'Publicar vehículo')
+@section('titulo', $vehiculo ? 'Editar publicación' : 'Publicar vehículo')
 
 @section('contenido')
 <div class="contenedor" style="max-width:760px;padding:32px 16px">
-  <h1>Publicar vehículo</h1>
-  <p class="texto-mutado">Publicar siempre es gratis, sin límites.</p>
+  @if ($vehiculo)
+    <p style="margin:0 0 8px"><a href="{{ route('panel') }}" class="texto-mutado" style="font-size:14px">← Volver a mi panel</a></p>
+    <h1>Editar publicación</h1>
+    <p class="texto-mutado">{{ $vehiculo->marca }} {{ $vehiculo->modelo }} {{ $vehiculo->anio }}</p>
+  @else
+    <h1>Publicar vehículo</h1>
+    <p class="texto-mutado">Publicar siempre es gratis, sin límites.</p>
+  @endif
 
   @if ($errors->any())
     <div class="alerta-error mt-2">
-      <strong>No se pudo publicar. Revisa lo siguiente:</strong>
+      <strong>No se pudo guardar. Revisa lo siguiente:</strong>
       <ul style="margin:6px 0 0;padding-left:18px">
         @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
       </ul>
@@ -18,40 +24,41 @@
 
   <div class="alerta-error mt-2" id="erroresEnvio" hidden></div>
 
-  <form method="post" action="{{ route('panel.publicar.guardar') }}" enctype="multipart/form-data" class="mt-3" id="formPublicar">
+  <form method="post" action="{{ $vehiculo ? route('panel.actualizar', $vehiculo) : route('panel.publicar.guardar') }}" enctype="multipart/form-data" class="mt-3" id="formPublicar">
     @csrf
+    @if ($vehiculo) @method('PUT') @endif
     <h2>1. Datos básicos</h2>
     <div class="grid-2">
       <div class="form-grupo">
         <label>Tipo de vehículo</label>
         <select name="tipo" required>
           @foreach (\App\Models\Vehiculo::ETIQUETA_TIPO as $valor => $etiqueta)
-            <option value="{{ $valor }}" @selected(old('tipo') === $valor)>{{ $etiqueta }}</option>
+            <option value="{{ $valor }}" @selected(old('tipo', $vehiculo?->tipo) === $valor)>{{ $etiqueta }}</option>
           @endforeach
         </select>
       </div>
       <div class="form-grupo">
         <label>Marca</label>
         <select name="marca" required>
-          @foreach (config('marcas') as $m)<option value="{{ $m }}" @selected(old('marca') === $m)>{{ $m }}</option>@endforeach
+          @foreach (config('marcas') as $m)<option value="{{ $m }}" @selected(old('marca', $vehiculo?->marca) === $m)>{{ $m }}</option>@endforeach
         </select>
       </div>
-      <div class="form-grupo"><label>Modelo</label><input type="text" name="modelo" required placeholder="Ej. Hilux" value="{{ old('modelo') }}"></div>
-      <div class="form-grupo"><label>Año</label><input type="number" name="anio" required placeholder="Ej. 2020" value="{{ old('anio') }}"></div>
-      <div class="form-grupo"><label>Kilometraje</label><input type="text" inputmode="numeric" class="con-puntos" name="kilometraje" required placeholder="Ej. 45.000" value="{{ old('kilometraje') }}"></div>
-      <div class="form-grupo"><label>Precio (CLP)</label><div class="campo-precio"><span>$</span><input type="text" inputmode="numeric" class="con-puntos" name="precio" required placeholder="Ej. 12.500.000" value="{{ old('precio') }}"></div></div>
+      <div class="form-grupo"><label>Modelo</label><input type="text" name="modelo" required placeholder="Ej. Hilux" value="{{ old('modelo', $vehiculo?->modelo) }}"></div>
+      <div class="form-grupo"><label>Año</label><input type="number" name="anio" required placeholder="Ej. 2020" value="{{ old('anio', $vehiculo?->anio) }}"></div>
+      <div class="form-grupo"><label>Kilometraje</label><input type="text" inputmode="numeric" class="con-puntos" name="kilometraje" required placeholder="Ej. 45.000" value="{{ old('kilometraje', $vehiculo?->kilometraje) }}"></div>
+      <div class="form-grupo"><label>Precio (CLP)</label><div class="campo-precio"><span>$</span><input type="text" inputmode="numeric" class="con-puntos" name="precio" required placeholder="Ej. 12.500.000" value="{{ old('precio', $vehiculo?->precio) }}"></div></div>
       <div class="form-grupo">
         <label>Transmisión</label>
         <select name="transmision">
           <option value="">Selecciona</option>
-          @foreach (\App\Models\Vehiculo::ETIQUETA_TRANSMISION as $valor => $etiqueta)<option value="{{ $valor }}" @selected(old('transmision') === $valor)>{{ $etiqueta }}</option>@endforeach
+          @foreach (\App\Models\Vehiculo::ETIQUETA_TRANSMISION as $valor => $etiqueta)<option value="{{ $valor }}" @selected(old('transmision', $vehiculo?->transmision) === $valor)>{{ $etiqueta }}</option>@endforeach
         </select>
       </div>
       <div class="form-grupo">
         <label>Combustible</label>
         <select name="combustible">
           <option value="">Selecciona</option>
-          @foreach (\App\Models\Vehiculo::ETIQUETA_COMBUSTIBLE as $valor => $etiqueta)<option value="{{ $valor }}" @selected(old('combustible') === $valor)>{{ $etiqueta }}</option>@endforeach
+          @foreach (\App\Models\Vehiculo::ETIQUETA_COMBUSTIBLE as $valor => $etiqueta)<option value="{{ $valor }}" @selected(old('combustible', $vehiculo?->combustible) === $valor)>{{ $etiqueta }}</option>@endforeach
         </select>
       </div>
       <div class="form-grupo">
@@ -59,13 +66,13 @@
         <select name="region" id="selectRegion" required onchange="actualizarComunas()">
           <option value="">Selecciona tu región</option>
           @foreach (array_keys(config('regiones')) as $r)
-            <option value="{{ $r }}" @selected(old('region', auth()->user()->region) === $r)>{{ $r }}</option>
+            <option value="{{ $r }}" @selected(old('region', $vehiculo?->region ?? auth()->user()->region) === $r)>{{ $r }}</option>
           @endforeach
         </select>
       </div>
       <div class="form-grupo">
         <label>Comuna</label>
-        <select name="comuna" id="selectComuna" required data-seleccionada="{{ old('comuna', auth()->user()->comuna) }}"><option value="">Selecciona una región primero</option></select>
+        <select name="comuna" id="selectComuna" required data-seleccionada="{{ old('comuna', $vehiculo?->comuna ?? auth()->user()->comuna) }}"><option value="">Selecciona una región primero</option></select>
       </div>
       <div class="form-grupo">
         <label>WhatsApp de contacto</label>
@@ -73,29 +80,41 @@
         <p class="texto-mutado" style="font-size:12px;margin:4px 0 0">Los compradores te escribirán a este número desde el botón de WhatsApp de tu aviso.</p>
       </div>
     </div>
-    <div class="form-grupo"><label>Descripción</label><textarea name="descripcion" required rows="4" maxlength="3000">{{ old('descripcion') }}</textarea></div>
+    <div class="form-grupo"><label>Descripción</label><textarea name="descripcion" required rows="4" maxlength="3000">{{ old('descripcion', $vehiculo?->descripcion) }}</textarea></div>
 
     <h2 class="mt-2">2. Fotos (hasta {{ config('autoruta.max_fotos_vehiculo') }})</h2>
-    <input type="file" name="fotos[]" id="inputFotos" accept="image/*" multiple required>
+    @if ($vehiculo && $vehiculo->fotos->isNotEmpty())
+      <p class="texto-mutado" style="font-size:13px;margin:0 0 8px">Fotos actuales. Marca "Quitar" en las que quieras eliminar.</p>
+      <div class="fotos-actuales">
+        @foreach ($vehiculo->fotos as $foto)
+          <label class="foto-actual">
+            <img src="{{ \App\Support\Archivos::url('vehiculos/' . $foto->archivo) }}" alt="">
+            <span><input type="checkbox" name="fotosEliminar[]" value="{{ $foto->id }}"> Quitar</span>
+          </label>
+        @endforeach
+      </div>
+      <p style="font-size:14px;font-weight:600;margin:14px 0 6px">Agregar más fotos</p>
+    @endif
+    <input type="file" name="fotos[]" id="inputFotos" accept="image/*" multiple @if (! $vehiculo) required @endif>
     <p class="texto-mutado" id="estadoFotos" style="font-size:13px;margin:6px 0 0">Puedes tomarlas con la cámara o elegirlas de tu galería. Las achicamos automáticamente para que suban rápido.</p>
     <div id="vistaFotos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:10px"></div>
 
     <h2 class="mt-2">3. Ficha técnica (opcional)</h2>
     <div class="grid-2">
-      <div class="form-grupo"><label>Versión</label><input type="text" name="version" value="{{ old('version') }}"></div>
-      <div class="form-grupo"><label>Cilindrada</label><input type="text" name="cilindrada" placeholder="Ej. 2.0L" value="{{ old('cilindrada') }}"></div>
-      <div class="form-grupo"><label>Puertas</label><input type="number" name="puertas" min="2" max="6" value="{{ old('puertas') }}"></div>
+      <div class="form-grupo"><label>Versión</label><input type="text" name="version" value="{{ old('version', $vehiculo?->version) }}"></div>
+      <div class="form-grupo"><label>Cilindrada</label><input type="text" name="cilindrada" placeholder="Ej. 2.0L" value="{{ old('cilindrada', $vehiculo?->cilindrada) }}"></div>
+      <div class="form-grupo"><label>Puertas</label><input type="number" name="puertas" min="2" max="6" value="{{ old('puertas', $vehiculo?->puertas) }}"></div>
       <div class="form-grupo">
         <label>Tracción</label>
         <select name="traccion">
           <option value="">Selecciona</option>
-          @foreach (\App\Models\Vehiculo::ETIQUETA_TRACCION as $valor => $etiqueta)<option value="{{ $valor }}" @selected(old('traccion') === $valor)>{{ $etiqueta }}</option>@endforeach
+          @foreach (\App\Models\Vehiculo::ETIQUETA_TRACCION as $valor => $etiqueta)<option value="{{ $valor }}" @selected(old('traccion', $vehiculo?->traccion) === $valor)>{{ $etiqueta }}</option>@endforeach
         </select>
       </div>
-      <div class="form-grupo"><label>Dueños anteriores</label><input type="number" name="duenosAnteriores" min="0" value="{{ old('duenosAnteriores') }}"></div>
+      <div class="form-grupo"><label>Dueños anteriores</label><input type="number" name="duenosAnteriores" min="0" value="{{ old('duenosAnteriores', $vehiculo?->duenos_anteriores) }}"></div>
     </div>
 
-    <button type="submit" id="botonPublicar" class="btn btn-acento btn-block mt-2" style="padding:14px">Publicar vehículo</button>
+    <button type="submit" id="botonPublicar" class="btn btn-acento btn-block mt-2" style="padding:14px">{{ $vehiculo ? 'Guardar cambios' : 'Publicar vehículo' }}</button>
   </form>
 </div>
 
@@ -138,6 +157,7 @@ document.querySelectorAll('.con-puntos').forEach(campo => {
   const estado = document.getElementById('estadoFotos');
   const boton = document.getElementById('botonPublicar');
   const cajaErrores = document.getElementById('erroresEnvio');
+  const TEXTO_BOTON = boton.textContent.trim();
   let fotosListas = [];
   let preparando = false;
   let seleccion = 0;
@@ -165,7 +185,7 @@ document.querySelectorAll('.con-puntos').forEach(campo => {
   }
 
   function mostrarErrores(lista) {
-    cajaErrores.innerHTML = '<strong>No se pudo publicar. Revisa lo siguiente:</strong><ul style="margin:6px 0 0;padding-left:18px">' +
+    cajaErrores.innerHTML = '<strong>No se pudo guardar. Revisa lo siguiente:</strong><ul style="margin:6px 0 0;padding-left:18px">' +
       lista.map(t => '<li>' + String(t).replace(/</g, '&lt;') + '</li>').join('') + '</ul>';
     cajaErrores.hidden = false;
     cajaErrores.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -173,7 +193,7 @@ document.querySelectorAll('.con-puntos').forEach(campo => {
 
   function listo() {
     boton.disabled = false;
-    boton.textContent = 'Publicar vehículo';
+    boton.textContent = TEXTO_BOTON;
   }
 
   input.addEventListener('change', async () => {
@@ -222,7 +242,7 @@ document.querySelectorAll('.con-puntos').forEach(campo => {
 
     cajaErrores.hidden = true;
     boton.disabled = true;
-    boton.textContent = 'Publicando…';
+    boton.textContent = 'Guardando…';
 
     try {
       const r = await fetch(form.action, {

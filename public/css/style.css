@@ -383,3 +383,11 @@ body { overflow-x: clip; }
 .carrusel.sin-desplazamiento .carrusel-flecha { display: none; }
 @media (max-width: 520px) { .carrusel-flecha { display: none; } }
 .banner-lateral-columna { display: flex; flex-direction: column; gap: 16px; }
+
+/* Fotos actuales al editar una publicación */
+.fotos-actuales { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+.foto-actual { border: 1px solid #e5e5e5; border-radius: 10px; overflow: hidden; cursor: pointer; background: #fff; }
+.foto-actual img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+.foto-actual span { display: flex; align-items: center; gap: 6px; padding: 6px 8px; font-size: 12px; font-weight: 600; color: #b91c1c; }
+.foto-actual:has(input:checked) { border-color: #b91c1c; }
+.foto-actual:has(input:checked) img { opacity: .35; }

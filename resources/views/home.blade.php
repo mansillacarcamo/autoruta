@@ -35,26 +35,6 @@
 </section>
 
 <section class="seccion contenedor">
-  <div class="seccion-titulo">
-    <h2>Destacados</h2>
-    <a href="{{ route('vehiculos.index') }}">Ver todos →</a>
-  </div>
-  @if ($destacados->isEmpty())
-    <p class="texto-mutado">Todavía no hay vehículos publicados.</p>
-  @else
-    <div class="carrusel" data-carrusel>
-      <button type="button" class="carrusel-flecha anterior" aria-label="Anterior">&#8249;</button>
-      <div class="carrusel-pista">
-        @foreach ($destacados as $v)
-          @include('vehiculos._tarjeta', ['v' => $v])
-        @endforeach
-      </div>
-      <button type="button" class="carrusel-flecha siguiente" aria-label="Siguiente">&#8250;</button>
-    </div>
-  @endif
-</section>
-
-<section class="seccion contenedor">
   <h2>Últimos publicados</h2>
   <div class="carrusel" data-carrusel>
     <button type="button" class="carrusel-flecha anterior" aria-label="Anterior">&#8249;</button>
@@ -68,6 +48,26 @@
   @if ($ultimos->isEmpty())<p class="texto-mutado" id="sinVehiculos">Todavía no hay vehículos publicados.</p>@endif
   @include('partials.vehiculos-en-vivo', ['modo' => 'insertar', 'grilla' => 'grillaUltimos', 'desde' => (int) \App\Models\Vehiculo::max('id'), 'maxTarjetas' => 12])
 </section>
+
+@if ($destacados->isNotEmpty())
+<section class="seccion contenedor">
+  <div class="seccion-titulo">
+    <h2>Destacados</h2>
+    <a href="{{ route('vehiculos.index') }}">Ver todos →</a>
+  </div>
+    <div class="carrusel" data-carrusel>
+      <button type="button" class="carrusel-flecha anterior" aria-label="Anterior">&#8249;</button>
+      <div class="carrusel-pista">
+        @foreach ($destacados as $v)
+          @include('vehiculos._tarjeta', ['v' => $v])
+        @endforeach
+      </div>
+      <button type="button" class="carrusel-flecha siguiente" aria-label="Siguiente">&#8250;</button>
+    </div>
+</section>
+@endif
+
+
 
 <script>
   // Carruseles de Destacados y Últimos publicados: avanzan solos cada 4 s y se pausan

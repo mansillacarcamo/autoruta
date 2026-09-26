@@ -30,7 +30,7 @@
     </div>
     <p class="texto-mutado" style="font-size:13px">{{ $activas }} de {{ config('autoruta.max_publicaciones_activas') }} publicaciones activas.</p>
     <p style="background:var(--gris-claro);border-radius:8px;padding:8px 12px;font-size:13px">
-      ¿Vendiste tu vehículo? Marcálo como vendido o elimina la publicación aquí abajo.
+      Puedes editar tus avisos, marcarlos como vendidos o eliminarlos aquí abajo.
     </p>
 
     @if ($vehiculos->isEmpty())
@@ -45,7 +45,9 @@
               <p class="tarjeta-precio" style="margin:2px 0">{{ $v->precioFormateado() }}</p>
               <p class="texto-mutado" style="font-size:12px;margin:0">{{ ucfirst($v->estado) }} · {{ $v->vistas }} vistas</p>
               @if ($v->estado !== 'vendida')
-              <div style="margin-top:6px;display:flex;gap:12px">
+              <div style="margin-top:6px;display:flex;gap:12px;flex-wrap:wrap">
+                <a href="{{ route('panel.editar', $v) }}" style="color:var(--acento);font-size:12px;font-weight:600">Editar</a>
+                <a href="{{ route('vehiculos.show', $v) }}" style="color:#525252;font-size:12px;font-weight:600">Ver aviso</a>
                 <form method="post" action="{{ route('panel.vendido', $v) }}">
                   @csrf
                   <button type="submit" style="background:none;border:none;color:#15803d;font-size:12px;font-weight:600;cursor:pointer;padding:0">Marcar como vendido</button>
