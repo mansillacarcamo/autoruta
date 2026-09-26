@@ -29,4 +29,19 @@
 
   <button type="submit" class="btn btn-acento">Guardar configuración</button>
 </form>
+
+<div class="admin-tarjeta" style="margin-top:22px">
+  <h2>Límites del servidor para subir archivos</h2>
+  <p class="texto-mutado" style="font-size:14px;margin:0 0 14px">Información técnica. Si las publicaciones con fotos fallan, compártela con soporte.</p>
+  <div class="admin-tabla-envoltura">
+    <table class="admin-tabla">
+      <tbody>
+        <tr><td>Tamaño máximo por archivo (upload_max_filesize)</td><td><strong>{{ ini_get('upload_max_filesize') }}</strong></td></tr>
+        <tr><td>Tamaño máximo por envío (post_max_size)</td><td><strong>{{ ini_get('post_max_size') }}</strong></td></tr>
+        <tr><td>Archivos máximos por envío (max_file_uploads)</td><td><strong>{{ ini_get('max_file_uploads') }}</strong></td></tr>
+        <tr><td>Versión de PHP</td><td><strong>{{ PHP_VERSION }}</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 @endsection

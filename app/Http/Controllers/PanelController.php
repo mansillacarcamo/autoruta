@@ -35,7 +35,24 @@ class PanelController extends Controller
         }
 
         if ($usuario->vehiculos()->where('estado', 'activa')->count() >= config('autoruta.max_publicaciones_activas')) {
-            return back()->withInput()->with('error', 'Ya tienes ' . config('autoruta.max_publicaciones_activas') . ' publicaciones activas.');
+            $mensaje = 'Ya tienes ' . config('autoruta.max_publicaciones_activas') . ' publicaciones activas.';
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $mensaje, 'errors' => ['limite' => [$mensaje]]], 422);
+            }
+
+            return back()->withInput()->with('error', $mensaje);
+        }
+
+        if (! $request->has('tipo')) {
+            \Illuminate\Support\Facades\Log::warning('Publicar: formulario llegó vacío', [
+                'content_length' => $request->server('CONTENT_LENGTH'),
+                'content_type' => $request->header('Content-Type'),
+                'campos' => array_keys($request->except('_token')),
+                'archivos' => count($request->allFiles()),
+                'post_max_size' => ini_get('post_max_size'),
+                'upload_max_filesize' => ini_get('upload_max_filesize'),
+                'user_agent' => $request->userAgent(),
+            ]);
         }
 
         $request->merge([
@@ -105,6 +122,12 @@ class PanelController extends Controller
             'region' => $datos['region'],
             'comuna' => $datos['comuna'],
         ]);
+
+        if ($request->expectsJson()) {
+            session()->flash('ok', 'Vehículo publicado.');
+
+            return response()->json(['redirect' => route('panel')]);
+        }
 
         return redirect()->route('panel')->with('ok', 'Vehículo publicado.');
     }

@@ -16,6 +16,8 @@
     </div>
   @endif
 
+  <div class="alerta-error mt-2" id="erroresEnvio" hidden></div>
+
   <form method="post" action="{{ route('panel.publicar.guardar') }}" enctype="multipart/form-data" class="mt-3" id="formPublicar">
     @csrf
     <h2>1. Datos básicos</h2>
@@ -124,16 +126,22 @@ document.querySelectorAll('.con-puntos').forEach(campo => {
   formatear();
 });
 
-// Las fotos de celular pesan 3-8 MB; se reducen en el navegador antes de enviarlas
-// para no chocar con el límite de subida del servidor.
+// Las fotos de celular pesan 3-8 MB: se reducen en el navegador y el formulario se envía
+// con fetch armando el FormData a mano. Así no dependemos de reemplazar input.files
+// (Safari de iPhone a veces envía el formulario vacío) y los errores se muestran sin perder nada.
 (function () {
   const MAX_FOTOS = {{ config('autoruta.max_fotos_vehiculo') }};
-  const LADO_MAX = 1600;
+  const LADO_MAX = 1400;
+  const CALIDAD = 0.78;
+  const form = document.getElementById('formPublicar');
   const input = document.getElementById('inputFotos');
   const vista = document.getElementById('vistaFotos');
   const estado = document.getElementById('estadoFotos');
   const boton = document.getElementById('botonPublicar');
+  const cajaErrores = document.getElementById('erroresEnvio');
+  let fotosListas = [];
   let preparando = false;
+  let seleccion = 0;
 
   function reducir(archivo) {
     return new Promise(resolve => {
@@ -150,16 +158,31 @@ document.querySelectorAll('.con-puntos').forEach(campo => {
           if (!blob || blob.size >= archivo.size) return resolve(archivo);
           const nombre = archivo.name.replace(/\.[^.]+$/, '') + '.jpg';
           resolve(new File([blob], nombre, { type: 'image/jpeg' }));
-        }, 'image/jpeg', 0.82);
+        }, 'image/jpeg', CALIDAD);
       };
       img.onerror = () => { URL.revokeObjectURL(url); resolve(archivo); };
       img.src = url;
     });
   }
 
+  function mostrarErrores(lista) {
+    cajaErrores.innerHTML = '<strong>No se pudo publicar. Revisa lo siguiente:</strong><ul style="margin:6px 0 0;padding-left:18px">' +
+      lista.map(t => '<li>' + String(t).replace(/</g, '&lt;') + '</li>').join('') + '</ul>';
+    cajaErrores.hidden = false;
+    cajaErrores.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function listo() {
+    boton.disabled = false;
+    boton.textContent = 'Publicar vehículo';
+  }
+
   input.addEventListener('change', async () => {
+    const actual = ++seleccion;
     let archivos = Array.from(input.files);
-    if (!archivos.length) { vista.innerHTML = ''; return; }
+    fotosListas = [];
+    vista.innerHTML = '';
+    if (!archivos.length) return;
     let aviso = '';
     if (archivos.length > MAX_FOTOS) {
       archivos = archivos.slice(0, MAX_FOTOS);
@@ -170,33 +193,60 @@ document.querySelectorAll('.con-puntos').forEach(campo => {
     boton.textContent = 'Preparando fotos…';
     estado.textContent = `Preparando ${archivos.length} foto(s)…`;
 
-    const listas = [];
-    for (const a of archivos) listas.push(await reducir(a));
-
-    if (window.DataTransfer) {
-      const dt = new DataTransfer();
-      listas.forEach(f => dt.items.add(f));
-      input.files = dt.files;
-    }
-
+    const reducidas = [];
+    for (const a of archivos) reducidas.push(await reducir(a));
+    if (actual !== seleccion) return;
+    fotosListas = reducidas;
     vista.innerHTML = '';
-    listas.forEach(f => {
+
+    fotosListas.forEach(f => {
       const img = document.createElement('img');
       img.src = URL.createObjectURL(f);
       img.style.cssText = 'width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid #e5e5e5';
       vista.appendChild(img);
     });
-    const totalMb = (listas.reduce((s, f) => s + f.size, 0) / 1048576).toFixed(1);
-    estado.textContent = `${listas.length} foto(s) listas (${totalMb} MB).` + aviso;
+    const totalMb = (fotosListas.reduce((s, f) => s + f.size, 0) / 1048576).toFixed(1);
+    estado.textContent = `${fotosListas.length} foto(s) listas (${totalMb} MB).` + aviso;
     preparando = false;
-    boton.disabled = false;
-    boton.textContent = 'Publicar vehículo';
+    listo();
   });
 
-  document.getElementById('formPublicar').addEventListener('submit', e => {
-    if (preparando) { e.preventDefault(); return; }
+  form.addEventListener('submit', async e => {
+    if (!window.fetch || !window.FormData) return;
+    e.preventDefault();
+    if (preparando) return;
+
+    const datos = new FormData(form);
+    datos.delete('fotos[]');
+    const fotos = fotosListas.length ? fotosListas : Array.from(input.files);
+    fotos.forEach(f => datos.append('fotos[]', f, f.name));
+
+    cajaErrores.hidden = true;
     boton.disabled = true;
     boton.textContent = 'Publicando…';
+
+    try {
+      const r = await fetch(form.action, {
+        method: 'POST',
+        body: datos,
+        credentials: 'same-origin',
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      });
+      if (r.ok) {
+        const d = await r.json();
+        window.location.href = d.redirect;
+        return;
+      }
+      let d = {};
+      try { d = await r.json(); } catch (err) {}
+      if (r.status === 422 && d.errors) mostrarErrores(Object.values(d.errors).flat());
+      else if (r.status === 413) mostrarErrores([d.message || 'Las fotos pesan demasiado. Sube menos fotos o fotos más livianas.']);
+      else if (r.status === 419) mostrarErrores(['Tu sesión expiró. Recarga la página e inténtalo de nuevo.']);
+      else mostrarErrores([`Ocurrió un error en el servidor (código ${r.status}). Inténtalo de nuevo en unos minutos.`]);
+    } catch (err) {
+      mostrarErrores(['No se pudo conectar con el servidor. Revisa tu conexión a internet e inténtalo de nuevo.']);
+    }
+    listo();
   });
 })();
 </script>
