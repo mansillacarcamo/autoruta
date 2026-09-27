@@ -1,5 +1,4 @@
 @php
-  $conteoPorTipo = \App\Models\Vehiculo::activos()->selectRaw('tipo, count(*) as total')->groupBy('tipo')->pluck('total', 'tipo');
   $tipoActual = request('tipo');
   $iconosTipo = [
     'auto' => '<path d="M3 15v-3l2.5-5h13L21 12v3"/><path d="M2 15h20v3H2z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/><path d="M5.5 12h13"/>',
@@ -17,13 +16,11 @@
   <a href="{{ route('vehiculos.index', request()->except(['tipo', 'page'])) }}" class="categoria {{ ! $tipoActual && request()->routeIs('vehiculos.index') ? 'activa' : '' }}">
     <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
     <span>Todos</span>
-    <small>{{ $conteoPorTipo->sum() }}</small>
   </a>
   @foreach (\App\Models\Vehiculo::ETIQUETA_TIPO as $valor => $etiqueta)
     <a href="{{ route('vehiculos.index', array_merge(request()->except(['tipo', 'page']), ['tipo' => $valor])) }}" class="categoria {{ $tipoActual === $valor ? 'activa' : '' }}">
       <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">{!! $iconosTipo[$valor] ?? $iconosTipo['otro'] !!}</svg>
       <span>{{ $etiqueta }}</span>
-      <small>{{ $conteoPorTipo[$valor] ?? 0 }}</small>
     </a>
   @endforeach
 </nav>
