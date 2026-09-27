@@ -34,6 +34,8 @@
   @include('partials.categorias')
 </section>
 
+@include('partials.banners-laterales-movil', ['fila' => 1])
+
 <section class="seccion contenedor">
   <h2>Últimos publicados</h2>
   <div class="carrusel" data-carrusel>
@@ -48,6 +50,8 @@
   @if ($ultimos->isEmpty())<p class="texto-mutado" id="sinVehiculos">Todavía no hay vehículos publicados.</p>@endif
   @include('partials.vehiculos-en-vivo', ['modo' => 'insertar', 'grilla' => 'grillaUltimos', 'desde' => (int) \App\Models\Vehiculo::max('id'), 'maxTarjetas' => 12])
 </section>
+
+@include('partials.banners-laterales-movil', ['fila' => 2])
 
 @if ($destacados->isNotEmpty())
 <section class="seccion contenedor">
@@ -124,6 +128,8 @@
   </div>
 </section>
 @endif
+
+@include('partials.banners-laterales-movil', ['fila' => 3])
 
 <section class="seccion contenedor">
   <div class="promo">

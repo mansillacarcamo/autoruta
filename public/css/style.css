@@ -496,3 +496,12 @@ body { overflow-x: clip; }
 .vendedor-logo { background: #fff; border: 1px solid #e5e5e5; overflow: hidden; }
 .vendedor-logo img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
 .vendedor-comercial { display: block; font-size: 12px; font-weight: 700; color: var(--acento); text-transform: uppercase; letter-spacing: .4px; }
+
+/* Banners laterales en celular y tablet: de a pares dentro del contenido */
+.laterales-movil { padding: 20px 16px 4px; max-width: 760px; margin: 0 auto; }
+.laterales-movil-titulo { margin: 0 0 8px; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #a3a3a3; }
+.laterales-movil-par { display: grid; grid-template-columns: repeat(2, minmax(0, 200px)); justify-content: center; gap: 12px; }
+.laterales-movil-banner { display: block; aspect-ratio: 160 / 600; border-radius: 12px; overflow: hidden; border: 1px solid #e5e5e5; background: var(--gris-claro); }
+.laterales-movil-banner img, .laterales-movil-banner video { width: 100%; height: 100%; object-fit: cover; }
+.laterales-movil-vacio { flex-direction: row; flex-wrap: wrap; column-gap: 10px; min-height: 70px; max-width: 728px; margin: 0 auto; }
+@media (min-width: 1400px) { .laterales-movil { display: none; } }

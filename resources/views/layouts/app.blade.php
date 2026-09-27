@@ -85,6 +85,10 @@
       @endif
 
       @yield('contenido')
+
+      @unless (request()->routeIs('home'))
+        @include('partials.banners-laterales-movil', ['fila' => 1])
+      @endunless
     </main>
 
     @include('partials.banner-lateral', ['lado' => 'derecho'])

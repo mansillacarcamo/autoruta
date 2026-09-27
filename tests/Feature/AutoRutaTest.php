@@ -379,4 +379,22 @@ class AutoRutaTest extends TestCase
         $this->assertNull($usuario->fresh()->logo);
         Storage::disk('public')->assertMissing('logos/' . $archivo);
     }
+    public function test_banners_laterales_tambien_se_muestran_en_celular(): void
+    {
+        $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Lateral', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
+        $banner = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 'lat.jpg', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'lateral_derecho_2']);
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        // Versión celular: 3 filas en el inicio; la fila 2 trae el banner y las vacías muestran la franja "Disponible".
+        $this->assertSame(3, substr_count($html, 'class="laterales-movil"'));
+        $this->assertSame(1, substr_count($html, 'class="laterales-movil-banner"'));
+        $this->assertStringContainsString('Espacios publicitarios laterales 1', $html);
+        $this->assertStringContainsString('Espacios publicitarios laterales 3', $html);
+        // El mismo banner también está en el costado para pantallas grandes (2 enlaces en total).
+        $this->assertSame(2, substr_count($html, route('publicidad.clic', $banner)));
+
+        // En otras páginas se muestra la fila 1.
+        $this->assertSame(1, substr_count($this->get('/vehiculos')->getContent(), 'class="laterales-movil"'));
+    }
 }
