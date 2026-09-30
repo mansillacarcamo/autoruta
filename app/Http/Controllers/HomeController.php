@@ -13,12 +13,12 @@ class HomeController extends Controller
     {
         DB::table('visitas')->where('id', 1)->increment('total');
 
-        // Sin repetir avisos: Últimos = los 16 más recientes; Destacados = los más vistos del resto.
-        $ultimos = Vehiculo::activos()->with(['fotos', 'usuario'])->orderByDesc('publicado_en')->orderByDesc('id')->take(16)->get();
+        // Sin repetir avisos: Últimos = los 24 más recientes; Destacados = los más vistos del resto.
+        $ultimos = Vehiculo::activos()->with(['fotos', 'usuario'])->orderByDesc('publicado_en')->orderByDesc('id')->take(24)->get();
         $destacados = Vehiculo::activos()->with(['fotos', 'usuario'])
             ->whereNotIn('id', $ultimos->pluck('id'))
             ->orderByDesc('vistas')
-            ->take(8)
+            ->take(16)
             ->get();
 
         $bannersInicio = AnuncianteBanner::where('posicion', 'inicio')

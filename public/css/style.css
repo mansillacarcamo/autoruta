@@ -367,11 +367,21 @@ body { overflow-x: clip; }
 .aviso-nuevos[hidden] { display: none; }
 .aviso-nuevos .btn { padding: 7px 16px; border-radius: 999px; }
 
-/* Destacados y Últimos publicados del inicio: grilla hacia abajo, 4 por fila en computador */
-.grilla.grilla-4 { gap: 16px; }
-@media (min-width: 480px) { .grilla.grilla-4 { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 800px) { .grilla.grilla-4 { grid-template-columns: repeat(3, 1fr); } }
-@media (min-width: 1000px) { .grilla.grilla-4 { grid-template-columns: repeat(4, 1fr); } }
+/* Carruseles de Destacados y Últimos publicados */
+.carrusel { position: relative; }
+/* 2 filas de tarjetas que avanzan de a una columna */
+.carrusel-pista { display: grid; grid-auto-flow: column; grid-template-rows: repeat(2, auto); grid-auto-columns: 78%; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 4px 2px 12px; scrollbar-width: none; }
+.carrusel-pista::-webkit-scrollbar { display: none; }
+.carrusel-pista > .tarjeta { scroll-snap-align: start; }
+@media (min-width: 521px) { .carrusel-pista { grid-auto-columns: calc((100% - 16px) / 2); } }
+@media (min-width: 800px) { .carrusel-pista { grid-auto-columns: calc((100% - 32px) / 3); } }
+@media (min-width: 1000px) { .carrusel-pista { grid-auto-columns: calc((100% - 48px) / 4); } }
+.carrusel-flecha { position: absolute; top: 38%; z-index: 2; width: 40px; height: 40px; border-radius: 50%; border: 1px solid #e5e5e5; background: #fff; color: #171717; font-size: 26px; line-height: 1; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.12); display: flex; align-items: center; justify-content: center; transition: .15s; }
+.carrusel-flecha:hover { background: var(--acento); border-color: var(--acento); color: #fff; }
+.carrusel-flecha.anterior { left: -14px; }
+.carrusel-flecha.siguiente { right: -14px; }
+.carrusel.sin-desplazamiento .carrusel-flecha { display: none; }
+@media (max-width: 520px) { .carrusel-flecha { display: none; } }
 .banner-lateral-columna { display: flex; flex-direction: column; gap: 16px; }
 
 /* Fotos del aviso: actuales y nuevas */
