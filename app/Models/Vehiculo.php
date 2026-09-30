@@ -21,7 +21,7 @@ class Vehiculo extends Model
     ];
 
     public const ETIQUETA_TIPO = [
-        'auto' => 'Auto', 'citycar' => 'City car', 'camioneta' => 'Camioneta', 'suv' => 'SUV',
+        'auto' => 'Auto', 'citycar' => 'City car', 'hatchback' => 'Hatchback', 'camioneta' => 'Camioneta', 'suv' => 'SUV',
         'moto' => 'Moto', 'camion' => 'Camiones', 'bus' => 'Buses',
         'maquinaria' => 'Maquinaria agrícola', 'otro' => 'Otro',
     ];

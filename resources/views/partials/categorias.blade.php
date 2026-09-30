@@ -3,6 +3,7 @@
   $iconosTipo = [
     'auto' => '<path d="M3 15v-3l2.5-5h13L21 12v3"/><path d="M2 15h20v3H2z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/><path d="M5.5 12h13"/>',
     'citycar' => '<path d="M4 16v-4l3-5h8l3 5v4"/><path d="M3 16h18v2H3z"/><circle cx="8" cy="18" r="2"/><circle cx="16" cy="18" r="2"/><path d="M7 12h10"/>',
+    'hatchback' => '<path d="M3 16v-4l3-5h9l6 5v4"/><path d="M2 16h20v2H2z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/><path d="M5 12h15M13 7v5"/>',
     'camioneta' => '<path d="M2 16v-4h9V7h6l4 5v4"/><path d="M1 16h22v2H1z"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M13 12h7"/>',
     'suv' => '<path d="M3 16V8h14l4 4v4"/><path d="M2 16h20v2H2z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/><path d="M3 12h17M11 8v4"/>',
     'moto' => '<circle cx="5" cy="17" r="3"/><circle cx="19" cy="17" r="3"/><path d="M5 17l4-6h5l5 6M14 11l-2-4h3M9 11l3 6"/>',
