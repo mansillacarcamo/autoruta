@@ -89,6 +89,7 @@ img { max-width: 100%; display: block; }
 .tarjeta-cuerpo { padding: 12px; }
 .tarjeta-titulo { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tarjeta-precio { font-weight: 700; color: var(--acento); font-size: 18px; margin: 4px 0; }
+.precio-desde { font-size: .6em; font-weight: 600; opacity: .75; margin-right: 2px; }
 .tarjeta-meta { color: #737373; font-size: 13px; }
 
 /* Formularios */

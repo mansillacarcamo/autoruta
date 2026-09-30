@@ -127,34 +127,29 @@ class AutoRutaTest extends TestCase
             ->assertJsonPath('errors.servidor.0', fn ($m) => str_contains($m, 'no recibió los datos'));
     }
 
-    public function test_limite_de_publicaciones_activas(): void
+    public function test_sin_tope_de_publicaciones_activas(): void
     {
         $usuario = $this->vendedor();
-        foreach (range(1, config('autoruta.max_publicaciones_activas')) as $i) {
+        foreach (range(1, 10) as $i) {
             $this->aviso($usuario);
         }
 
-        $this->actingAs($usuario)->postJson('/panel/publicar', $this->datosAviso())->assertStatus(422);
+        $this->actingAs($usuario)->postJson('/panel/publicar', $this->datosAviso())->assertOk();
+        $this->assertSame(11, $usuario->vehiculos()->activos()->count());
     }
 
     public function test_avisos_vencidos_no_cuentan_ni_se_muestran_y_se_pueden_renovar(): void
     {
         $usuario = $this->vendedor();
         $vencido = $this->aviso($usuario, ['modelo' => 'Vencido', 'vence_en' => now()->subDay()]);
-        foreach (range(1, config('autoruta.max_publicaciones_activas') - 1) as $i) {
+        foreach (range(1, 5) as $i) {
             $this->aviso($usuario);
         }
 
         $this->get('/vehiculos')->assertDontSee('Kia Vencido');
         $this->get('/vehiculos/' . $vencido->id)->assertOk()->assertSee('ya no está vigente')->assertDontSee('Contactar por WhatsApp');
 
-        // El vencido no cuenta para el límite: todavía puede publicar uno más.
-        $this->actingAs($usuario)->postJson('/panel/publicar', $this->datosAviso())->assertOk();
-
-        // Con el límite lleno no puede renovar el vencido.
-        $this->actingAs($usuario)->post('/panel/vehiculos/' . $vencido->id . '/renovar')->assertSessionHas('error');
-
-        $usuario->vehiculos()->where('modelo', 'Hilux')->update(['estado' => 'vendida']);
+        // Sin tope de publicaciones: puede renovar aunque tenga varias activas.
         $this->actingAs($usuario)->post('/panel/vehiculos/' . $vencido->id . '/renovar')->assertSessionHas('ok');
         $this->assertTrue($vencido->fresh()->estaVisible());
         $this->get('/vehiculos')->assertSee('Kia Vencido');

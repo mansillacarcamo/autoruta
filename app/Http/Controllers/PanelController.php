@@ -37,15 +37,6 @@ class PanelController extends Controller
             return redirect()->route('panel');
         }
 
-        if ($usuario->vehiculos()->activos()->count() >= config('autoruta.max_publicaciones_activas')) {
-            $mensaje = 'Ya tienes ' . config('autoruta.max_publicaciones_activas') . ' publicaciones activas.';
-            if ($request->expectsJson()) {
-                return response()->json(['message' => $mensaje, 'errors' => ['limite' => [$mensaje]]], 422);
-            }
-
-            return back()->withInput()->with('error', $mensaje);
-        }
-
         if (! $request->has('tipo')) {
             return $this->formularioVacio($request);
         }
@@ -120,10 +111,6 @@ class PanelController extends Controller
     public function renovar(Request $request, Vehiculo $vehiculo)
     {
         abort_unless((int) $vehiculo->user_id === (int) $request->user()->id, 403);
-
-        if (! $vehiculo->estaVisible() && $request->user()->vehiculos()->activos()->count() >= config('autoruta.max_publicaciones_activas')) {
-            return back()->with('error', 'Ya tienes ' . config('autoruta.max_publicaciones_activas') . ' publicaciones activas. Marca una como vendida o elimínala para renovar esta.');
-        }
 
         $vehiculo->update(['estado' => 'activa', 'vence_en' => now()->addDays(config('autoruta.duracion_publicacion_dias'))]);
 

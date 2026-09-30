@@ -18,7 +18,7 @@
 
   <div class="admin-tarjeta">
     <h2>Datos de contacto</h2>
-    <p class="texto-mutado" style="font-size:14px;margin:0 0 16px">Se muestran en el pie de página y en el botón "Hablar con un ejecutivo".</p>
+    <p class="texto-mutado" style="font-size:14px;margin:0 0 16px">Se muestran en el pie de página. El botón "Asesor web" usa el +56 9 9339 3409.</p>
     <div class="admin-campos">
       <div class="form-grupo"><label>WhatsApp</label><input type="text" name="whatsapp" required value="{{ old('whatsapp', config('autoruta.contacto_whatsapp')) }}" placeholder="+56912345678"><p class="admin-ayuda">Con código de país, sin espacios.</p></div>
       <div class="form-grupo"><label>Teléfono visible</label><input type="text" name="telefono" required value="{{ old('telefono', config('autoruta.contacto_telefono')) }}"></div>

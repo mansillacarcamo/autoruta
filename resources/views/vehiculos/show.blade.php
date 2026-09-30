@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('titulo', "{$vehiculo->marca} {$vehiculo->modelo} {$vehiculo->anio} – {$vehiculo->precioFormateado()}")
+@section('titulo', "{$vehiculo->marca} {$vehiculo->modelo} {$vehiculo->anio} – desde {$vehiculo->precioFormateado()}")
 
 @section('contenido')
 <div class="contenedor" style="padding:32px 16px">
-  <a href="{{ route('vehiculos.index') }}" style="font-size:14px;font-weight:600;color:#525252">← Volver al listado</a>
+  <a href="{{ route('vehiculos.index') }}" class="btn btn-outline-oscuro">← Volver al listado</a>
 
   @if (! $vehiculo->estaVisible())
     <p class="aviso-no-disponible">
@@ -233,7 +233,7 @@
       @endif
 
       <h1 class="mt-3">{{ $vehiculo->marca }} {{ $vehiculo->modelo }} {{ $vehiculo->anio }}</h1>
-      <p class="tarjeta-precio" style="font-size:28px">{{ $vehiculo->precioFormateado() }}</p>
+      <p class="tarjeta-precio" style="font-size:28px"><span class="precio-desde">Desde</span> {{ $vehiculo->precioFormateado() }}</p>
       <p class="texto-mutado">
         {{ \App\Models\Vehiculo::ETIQUETA_TIPO[$vehiculo->tipo] ?? $vehiculo->tipo }} ·
         {{ number_format($vehiculo->kilometraje, 0, ',', '.') }} km ·
@@ -271,7 +271,7 @@
         <div class="vendedor-cabecera">
           <small>{{ \App\Models\Vehiculo::ETIQUETA_TIPO[$vehiculo->tipo] ?? 'Vehículo' }} · {{ $vehiculo->anio }}</small>
           <p class="vendedor-vehiculo">{{ $vehiculo->marca }} {{ $vehiculo->modelo }}</p>
-          <p class="vendedor-precio">{{ $vehiculo->precioFormateado() }}</p>
+          <p class="vendedor-precio"><span class="precio-desde">Desde</span> {{ $vehiculo->precioFormateado() }}</p>
         </div>
 
         <div class="vendedor-cuerpo">

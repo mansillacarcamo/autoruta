@@ -31,7 +31,7 @@
       <h2>Mis publicaciones</h2>
       <a href="{{ route('panel.publicar') }}" class="btn btn-acento">Publicar vehículo</a>
     </div>
-    <p class="texto-mutado" style="font-size:13px">{{ $activas }} de {{ config('autoruta.max_publicaciones_activas') }} publicaciones activas.</p>
+    <p class="texto-mutado" style="font-size:13px">{{ $activas }} {{ $activas === 1 ? 'publicación activa' : 'publicaciones activas' }}.</p>
     <p style="background:var(--gris-claro);border-radius:8px;padding:8px 12px;font-size:13px">
       Puedes editar tus avisos, marcarlos como vendidos o eliminarlos aquí abajo.
     </p>
@@ -45,7 +45,7 @@
             <img src="{{ $v->primeraFotoUrl() }}" alt="" data-fotos="{{ json_encode($v->fotosUrls()) }}" data-sin-foto="{{ asset('img/vehiculo-placeholder.svg') }}" onerror="siguienteFoto(this)">
             <div style="flex:1;min-width:0">
               <p style="font-weight:600;margin:0">{{ $v->marca }} {{ $v->modelo }} {{ $v->anio }}</p>
-              <p class="tarjeta-precio" style="margin:2px 0">{{ $v->precioFormateado() }}</p>
+              <p class="tarjeta-precio" style="margin:2px 0"><span class="precio-desde">Desde</span> {{ $v->precioFormateado() }}</p>
               <p style="font-size:12px;margin:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 @if ($v->estado === 'vendida')
                   <span class="estado-aviso gris">Vendido</span>

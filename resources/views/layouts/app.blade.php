@@ -171,8 +171,8 @@
   </footer>
 
   <a class="wa-flotante" target="_blank" rel="noopener"
-     href="https://wa.me/{{ preg_replace('/\D/', '', config('autoruta.contacto_whatsapp')) }}?text={{ urlencode('Hola, quiero hablar con un ejecutivo') }}">
-    Hablar con un ejecutivo
+     href="https://wa.me/{{ preg_replace('/\D/', '', config('autoruta.asesor_whatsapp')) }}?text={{ urlencode('Hola, quiero hablar con un asesor web') }}">
+    Asesor web
   </a>
 
   @include('partials.aviso-cookies')

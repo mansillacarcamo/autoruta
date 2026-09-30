@@ -3,7 +3,6 @@
 return [
     'nombre_sitio' => 'AutoRuta',
     'max_fotos_vehiculo' => 8,
-    'max_publicaciones_activas' => 3,
     'duracion_publicacion_dias' => 90,
     'precio_min_vehiculo' => 300000,
     'precio_max_vehiculo' => 500000000,
@@ -16,6 +15,9 @@ return [
     'disco_archivos' => env('ARCHIVOS_DISCO') ?: (env('FILESYSTEM_DISK', 'local') === 'local' ? 'public' : env('FILESYSTEM_DISK')),
     // Correo que recibe un aviso cada vez que alguien se registra.
     'correo_notificaciones' => env('NOTIFICACIONES_EMAIL', 'cesar.mansilla@bynari.cl'),
+
+    // WhatsApp del botón flotante "Asesor web".
+    'asesor_whatsapp' => '+56993393409',
 
     'contacto_ubicacion' => 'Puerto Montt, Región de Los Lagos',
 
