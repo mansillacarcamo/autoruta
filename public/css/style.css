@@ -80,7 +80,7 @@ img { max-width: 100%; display: block; }
 /* Grilla de vehiculos */
 .grilla { display: grid; gap: 20px; grid-template-columns: 1fr; }
 @media (min-width: 640px) { .grilla { grid-template-columns: 1fr 1fr; } }
-@media (min-width: 1100px) { .grilla { grid-template-columns: 1fr 1fr 1fr; } }
+@media (min-width: 900px) { .grilla { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; } }
 
 .tarjeta { display: block; border: 1px solid #e5e5e5; border-radius: 12px; overflow: hidden; background: #fff; transition: .15s; }
 .tarjeta:hover { border-color: var(--acento); box-shadow: 0 4px 14px rgba(0,0,0,.08); }
@@ -371,10 +371,12 @@ body { overflow-x: clip; }
 .carrusel { position: relative; }
 .carrusel-pista { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 4px 2px 12px; scrollbar-width: none; }
 .carrusel-pista::-webkit-scrollbar { display: none; }
-.carrusel-pista > .tarjeta { flex: 0 0 calc((100% - 48px) / 4); scroll-snap-align: start; }
-@media (max-width: 1099px) { .carrusel-pista > .tarjeta { flex-basis: calc((100% - 32px) / 3); } }
-@media (max-width: 799px) { .carrusel-pista > .tarjeta { flex-basis: calc((100% - 16px) / 2); } }
-@media (max-width: 520px) { .carrusel-pista > .tarjeta { flex-basis: 78%; } }
+.carrusel { container-type: inline-size; }
+.carrusel-pista > .tarjeta { flex: 0 0 78%; scroll-snap-align: start; }
+@container (min-width: 480px) { .carrusel-pista > .tarjeta { flex-basis: calc((100% - 16px) / 2); } }
+@container (min-width: 700px) { .carrusel-pista > .tarjeta { flex-basis: calc((100% - 32px) / 3); } }
+@container (min-width: 860px) { .carrusel-pista > .tarjeta { flex-basis: calc((100% - 48px) / 4); } }
+@container (min-width: 1000px) { .carrusel-pista > .tarjeta { flex-basis: calc((100% - 64px) / 5); } }
 .carrusel-flecha { position: absolute; top: 38%; z-index: 2; width: 40px; height: 40px; border-radius: 50%; border: 1px solid #e5e5e5; background: #fff; color: #171717; font-size: 26px; line-height: 1; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.12); display: flex; align-items: center; justify-content: center; transition: .15s; }
 .carrusel-flecha:hover { background: var(--acento); border-color: var(--acento); color: #fff; }
 .carrusel-flecha.anterior { left: -14px; }
