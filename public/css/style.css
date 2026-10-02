@@ -94,6 +94,14 @@ img { max-width: 100%; display: block; }
 .tarjeta-titulo { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tarjeta-precio { font-weight: 700; color: var(--acento); font-size: 18px; margin: 4px 0; }
 .precio-desde { font-size: .6em; font-weight: 600; opacity: .75; margin-right: 2px; }
+/* Precio de las tarjetas: zoom suave tipo latido (desfasado entre tarjetas) y más grande al pasar el mouse */
+.tarjeta .tarjeta-precio { width: fit-content; transform-origin: left center; animation: precio-zoom 2.8s ease-in-out infinite; transition: transform .2s; }
+.tarjeta:nth-child(4n+2) .tarjeta-precio { animation-delay: -.7s; }
+.tarjeta:nth-child(4n+3) .tarjeta-precio { animation-delay: -1.4s; }
+.tarjeta:nth-child(4n+4) .tarjeta-precio { animation-delay: -2.1s; }
+.tarjeta:hover .tarjeta-precio { animation: none; transform: scale(1.15); }
+@keyframes precio-zoom { 0%, 70%, 100% { transform: scale(1); } 35% { transform: scale(1.1); } }
+@media (prefers-reduced-motion: reduce) { .tarjeta .tarjeta-precio { animation: none; } }
 .tarjeta-meta { color: #737373; font-size: 13px; }
 
 /* Formularios */
