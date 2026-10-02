@@ -66,10 +66,7 @@ img { max-width: 100%; display: block; }
 /* Banner de portada completo + franja con el buscador debajo */
 .portada-banner { position: relative; overflow: hidden; background: var(--carbon); aspect-ratio: 2087 / 753; }
 .portada-banner picture, .portada-banner > picture img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.portada-buscador { background: var(--carbon); color: #fff; padding: 18px 0 26px; }
-.portada-buscador h1 { font-size: 22px; margin: 0; text-align: center; }
-.portada-buscador .buscador { margin: 14px auto 0; }
-@media (max-width: 700px) { .portada-buscador h1 { font-size: 18px; } }
+.solo-lectores { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .hero h1 { font-size: 40px; margin: 0; max-width: 640px; line-height: 1.15; }
 @media (max-width: 700px) { .hero { padding: 56px 0; background-size: cover, 90%; background-position: center, center bottom; } .hero h1 { font-size: 28px; } }
 .hero p { color: #d4d4d4; margin-top: 8px; }
@@ -221,28 +218,6 @@ img { max-width: 100%; display: block; }
 .espacio-publicitario .ep-medida { background: #fff; border: 1px solid #d4d4d4; border-radius: 999px; padding: 2px 10px; font-size: 12px; font-weight: 700; color: var(--acento); }
 .banner-ancho-slot .espacio-publicitario { flex-direction: row; flex-wrap: wrap; column-gap: 10px; aspect-ratio: auto !important; min-height: 90px; }
 .espacio-publicitario:hover { border-color: var(--acento); color: var(--acento); }
-
-/* Fondo animado de auto en movimiento: bloque promocional */
-.auto-movimiento { position: absolute; inset: 0; z-index: -1; overflow: hidden; border-radius: inherit; pointer-events: none; }
-.am-camino { position: absolute; left: 0; right: 0; bottom: 0; height: 16%; min-height: 14px; max-height: 46px; background: #1f2029; border-top: 2px solid #34353f; }
-.am-camino::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 3px; margin-top: -1px; background: repeating-linear-gradient(90deg, #f5c518 0 34px, transparent 34px 68px); animation: am-camino .45s linear infinite; }
-.am-estela { position: absolute; left: 0; width: 38%; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent); animation: am-estela 1.4s linear infinite; }
-.am-auto { position: absolute; bottom: 7%; width: clamp(90px, 26%, 230px); height: auto; animation: am-cruza 9s linear infinite, am-salto .35s ease-in-out infinite alternate; }
-.am-rueda { transform-box: fill-box; transform-origin: center; animation: am-rueda .45s linear infinite; }
-.am-haz { animation: am-haz 1.2s ease-in-out infinite alternate; }
-@keyframes am-camino { to { background-position: -68px 0; } }
-@keyframes am-estela { from { transform: translateX(270%); } to { transform: translateX(-110%); } }
-@keyframes am-cruza { from { left: -30%; } to { left: 105%; } }
-@keyframes am-salto { to { translate: 0 -1.5px; } }
-@keyframes am-rueda { to { transform: rotate(360deg); } }
-@keyframes am-haz { from { opacity: .5; } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .auto-movimiento * , .auto-movimiento *::after { animation: none !important; } .am-auto { left: 50%; transform: translateX(-50%); } }
-
-.promo { padding-bottom: 110px; }
-.promo::after { z-index: -2; }
-.promo::before { z-index: -3; }
-.promo .am-auto { width: clamp(120px, 18%, 200px); bottom: 14px; }
-.promo .am-camino { height: 30px; border-radius: 0 0 16px 16px; }
 
 /* Ajustes para celulares y tablets */
 body { overflow-x: clip; }

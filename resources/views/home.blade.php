@@ -23,15 +23,8 @@
   @endif
 </section>
 
-<section class="portada-buscador">
-  <div class="contenedor">
-    <h1>Compra y vende tu vehículo en {{ config('autoruta.nombre_sitio') }}</h1>
-    <form class="buscador" action="{{ route('vehiculos.index') }}" method="get">
-      <input type="text" name="q" placeholder="Marca o modelo (ej. Toyota Hilux)">
-      <button type="submit" class="btn btn-acento">Buscar</button>
-    </form>
-  </div>
-</section>
+{{-- Título solo para buscadores y lectores de pantalla: el banner ya lo dice visualmente. --}}
+<h1 class="solo-lectores">Compra y vende tu vehículo en {{ config('autoruta.nombre_sitio') }}</h1>
 
 <section class="seccion contenedor" style="padding-bottom:0">
   <h2>Explora por categoría</h2>
@@ -186,7 +179,6 @@
 
 <section class="seccion contenedor">
   <div class="promo">
-    @include('partials.auto-en-movimiento')
     <span class="promo-badge">100% GRATIS</span>
     <h2>¿Tienes un vehículo para vender?</h2>
     <p>Publica gratis en minutos, sin comisión por venta.</p>
