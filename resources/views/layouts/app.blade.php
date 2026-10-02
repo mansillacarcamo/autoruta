@@ -130,14 +130,6 @@
       </div>
     </div>
 
-    <div class="app-descarga" id="app-descarga" hidden>
-      <img src="{{ asset('img/app/icono-192.png') }}" alt="">
-      <div>
-        <strong>Instala la app AutoRuta</strong>
-        <span id="app-descarga-texto">Publica y revisa vehículos desde tu teléfono.</span>
-      </div>
-      <button type="button" class="btn btn-acento" id="app-descarga-boton">Instalar</button>
-    </div>
     <div class="app-pronto">
       <span class="app-pronto-titulo">Muy pronto nuestra app para iOS y Android</span>
       <div class="app-pronto-tiendas">
@@ -151,28 +143,6 @@
         </span>
       </div>
     </div>
-    <script>
-      (function () {
-        var caja = document.getElementById('app-descarga');
-        var boton = document.getElementById('app-descarga-boton');
-        var yaInstalada = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-        if (yaInstalada) return;
-        var esIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-        var aviso = null;
-        window.addEventListener('beforeinstallprompt', function (e) {
-          e.preventDefault(); aviso = e; caja.hidden = false;
-        });
-        if (esIOS) {
-          caja.hidden = false;
-          boton.textContent = 'Cómo instalar';
-        }
-        boton.addEventListener('click', function () {
-          if (aviso) { aviso.prompt(); aviso.userChoice.then(function () { caja.hidden = true; }); return; }
-          document.getElementById('app-descarga-texto').textContent = 'En Safari toca el botón Compartir y luego "Agregar a pantalla de inicio".';
-        });
-        window.addEventListener('appinstalled', function () { caja.hidden = true; });
-      })();
-    </script>
     <div class="contador-visitas">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
       <span><strong>{{ number_format(config('autoruta.visitas_inicio') + (int) \DB::table('visitas')->where('id', 1)->value('total'), 0, ',', '.') }}</strong> visitas</span>
