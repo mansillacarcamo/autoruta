@@ -35,17 +35,6 @@
           <svg viewBox="0 0 24 24" width="22" height="22"><path fill="#1877F2" d="M24 12.07C24 5.7 18.63.5 12 .5S0 5.7 0 12.07c0 5.75 4.39 10.52 10.13 11.36v-8.04H7.08v-3.32h3.05V9.41c0-2.99 1.83-4.63 4.6-4.63 1.33 0 2.72.23 2.72.23v2.92h-1.53c-1.51 0-1.98.92-1.98 1.87v2.27h3.37l-.54 3.32h-2.83v8.04C19.61 22.6 24 17.82 24 12.07Z"/></svg>
         </a>
         @endif
-        @if (config('autoruta.redes_sociales.instagram'))
-        <a class="red-social" href="{{ config('autoruta.redes_sociales.instagram') }}" target="_blank" rel="noopener" aria-label="Instagram">
-          <svg viewBox="0 0 24 24" width="22" height="22">
-            <defs><radialGradient id="ig" cx="30%" cy="107%" r="150%"><stop offset="0%" stop-color="#fdf497"/><stop offset="45%" stop-color="#fd5949"/><stop offset="60%" stop-color="#d6249f"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs>
-            <rect width="24" height="24" rx="6" fill="url(#ig)"/>
-            <rect x="6" y="6" width="12" height="12" rx="3.5" fill="none" stroke="#fff" stroke-width="1.4"/>
-            <circle cx="12" cy="12" r="3.2" fill="none" stroke="#fff" stroke-width="1.4"/>
-            <circle cx="15.8" cy="8.2" r="0.9" fill="#fff"/>
-          </svg>
-        </a>
-        @endif
         @if (config('autoruta.redes_sociales.tiktok'))
         <a class="red-social" href="{{ config('autoruta.redes_sociales.tiktok') }}" target="_blank" rel="noopener" aria-label="TikTok">
           <svg viewBox="0 0 24 24" width="22" height="22"><rect width="24" height="24" rx="6" fill="#000"/><path fill="#fff" d="M16.6 5.8a3.9 3.9 0 0 1-.9-2.3h-2.9v11.3a2.4 2.4 0 1 1-2.4-2.4c.2 0 .5 0 .7.1V9.6a5.4 5.4 0 1 0 4.7 5.3V9.3a6.7 6.7 0 0 0 3.9 1.2V7.6a3.9 3.9 0 0 1-3.1-1.8z"/></svg>
@@ -64,6 +53,17 @@
           <a href="{{ route('login') }}" class="btn btn-outline">Iniciar sesión</a>
           <a href="{{ route('register') }}" class="btn btn-acento btn-brillo btn-publicar">Publicar</a>
         @endauth
+        @if (config('autoruta.redes_sociales.instagram'))
+        <a class="red-social red-social-grande" href="{{ config('autoruta.redes_sociales.instagram') }}" target="_blank" rel="noopener" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" width="34" height="34">
+            <defs><radialGradient id="ig" cx="30%" cy="107%" r="150%"><stop offset="0%" stop-color="#fdf497"/><stop offset="45%" stop-color="#fd5949"/><stop offset="60%" stop-color="#d6249f"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs>
+            <rect width="24" height="24" rx="6" fill="url(#ig)"/>
+            <rect x="6" y="6" width="12" height="12" rx="3.5" fill="none" stroke="#fff" stroke-width="1.4"/>
+            <circle cx="12" cy="12" r="3.2" fill="none" stroke="#fff" stroke-width="1.4"/>
+            <circle cx="15.8" cy="8.2" r="0.9" fill="#fff"/>
+          </svg>
+        </a>
+        @endif
       </div>
     </div>
   </header>

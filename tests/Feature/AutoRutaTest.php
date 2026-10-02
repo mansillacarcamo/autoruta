@@ -384,8 +384,8 @@ class AutoRutaTest extends TestCase
         // Versión celular: 3 filas en el inicio; la fila 2 trae el banner y las vacías muestran la franja "Disponible".
         $this->assertSame(3, substr_count($html, 'class="laterales-movil"'));
         $this->assertSame(1, substr_count($html, 'class="laterales-movil-banner"'));
-        $this->assertStringContainsString('Espacios publicitarios laterales 1', $html);
-        $this->assertStringContainsString('Espacios publicitarios laterales 3', $html);
+        $this->assertStringContainsString('<span class="ep-posicion">Laterales 1</span>', $html);
+        $this->assertStringContainsString('<span class="ep-posicion">Laterales 3</span>', $html);
         // El mismo banner también está en el costado para pantallas grandes (2 enlaces en total).
         $this->assertSame(2, substr_count($html, route('publicidad.clic', $banner)));
 

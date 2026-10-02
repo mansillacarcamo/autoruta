@@ -18,12 +18,6 @@
     <p>Publica gratis en minutos. Miles de compradores en toda Chile.</p>
     <form class="buscador" action="{{ route('vehiculos.index') }}" method="get">
       <input type="text" name="q" placeholder="Marca o modelo (ej. Toyota Hilux)">
-      <select name="tipo">
-        <option value="">Tipo de vehículo</option>
-        @foreach (\App\Models\Vehiculo::ETIQUETA_TIPO as $valor => $etiqueta)
-          <option value="{{ $valor }}">{{ $etiqueta }}</option>
-        @endforeach
-      </select>
       <button type="submit" class="btn btn-acento">Buscar</button>
     </form>
   </div>
@@ -77,11 +71,10 @@
 
 
 <script>
-  // Carruseles de Destacados y Últimos publicados: avanzan solos cada 4 s y se pausan
-  // mientras la persona interactúa.
+  // Carruseles de Destacados y Últimos publicados: se mueven con las flechas o deslizando.
+  // Lo que cambia solo son las fotos de cada tarjeta (ver más abajo).
   document.querySelectorAll('[data-carrusel]').forEach(function (carrusel) {
     var pista = carrusel.querySelector('.carrusel-pista');
-    var pausaHasta = 0;
     function paso() {
       var tarjeta = pista.querySelector('.tarjeta');
       return tarjeta ? tarjeta.getBoundingClientRect().width + 16 : pista.clientWidth;
@@ -94,21 +87,60 @@
     function actualizarFlechas() {
       carrusel.classList.toggle('sin-desplazamiento', pista.scrollWidth <= pista.clientWidth + 4);
     }
-    carrusel.querySelector('.anterior').addEventListener('click', function () { pausaHasta = Date.now() + 8000; mover(-1); });
-    carrusel.querySelector('.siguiente').addEventListener('click', function () { pausaHasta = Date.now() + 8000; mover(1); });
-    ['pointerdown', 'wheel', 'touchstart'].forEach(function (ev) {
-      pista.addEventListener(ev, function () { pausaHasta = Date.now() + 8000; }, { passive: true });
-    });
-    carrusel.addEventListener('mouseenter', function () { pausaHasta = Infinity; });
-    carrusel.addEventListener('mouseleave', function () { pausaHasta = Date.now() + 2000; });
+    carrusel.querySelector('.anterior').addEventListener('click', function () { mover(-1); });
+    carrusel.querySelector('.siguiente').addEventListener('click', function () { mover(1); });
     new MutationObserver(actualizarFlechas).observe(pista, { childList: true });
     window.addEventListener('resize', actualizarFlechas);
     actualizarFlechas();
-    setInterval(function () {
-      if (document.hidden || Date.now() < pausaHasta || carrusel.classList.contains('sin-desplazamiento')) return;
-      mover(1);
-    }, 4000);
   });
+
+  // Cada tarjeta pasa sus propias fotos, a su propio ritmo, solo mientras está en pantalla.
+  // Se detiene mientras el mouse está encima para que la persona pueda mirarla tranquila.
+  (function () {
+    var visibles = new WeakSet();
+    var observador = 'IntersectionObserver' in window ? new IntersectionObserver(function (entradas) {
+      entradas.forEach(function (e) { if (e.isIntersecting) visibles.add(e.target); else visibles.delete(e.target); });
+    }) : null;
+
+    function iniciar(tarjeta) {
+      var img = tarjeta.querySelector('.tarjeta-foto > img[data-fotos]');
+      if (!img || tarjeta.dataset.fotosRotan) return;
+      var fotos = [];
+      try { fotos = JSON.parse(img.dataset.fotos || '[]'); } catch (e) {}
+      if (fotos.length < 2) return;
+      tarjeta.dataset.fotosRotan = '1';
+      if (observador) observador.observe(tarjeta); else visibles.add(tarjeta);
+      var actual = 0, encima = false;
+      tarjeta.addEventListener('mouseenter', function () { encima = true; });
+      tarjeta.addEventListener('mouseleave', function () { encima = false; });
+
+      function programar(espera) { setTimeout(cambiar, espera); }
+      function cambiar() {
+        if (!tarjeta.isConnected) return;
+        if (document.hidden || encima || !visibles.has(tarjeta) || fotos.length < 2) return programar(1500);
+        var siguiente = (actual + 1) % fotos.length;
+        var carga = new Image();
+        carga.onload = function () {
+          img.classList.add('foto-cambiando');
+          setTimeout(function () {
+            img.src = fotos[siguiente];
+            actual = siguiente;
+            img.classList.remove('foto-cambiando');
+            programar(3500 + Math.random() * 3000);
+          }, 350);
+        };
+        carga.onerror = function () { fotos.splice(siguiente, 1); programar(500); };
+        carga.src = fotos[siguiente];
+      }
+      programar(1500 + Math.random() * 4500);
+    }
+
+    function revisar() { document.querySelectorAll('[data-carrusel] .tarjeta').forEach(iniciar); }
+    revisar();
+    document.querySelectorAll('[data-carrusel] .carrusel-pista').forEach(function (pista) {
+      new MutationObserver(revisar).observe(pista, { childList: true });
+    });
+  })();
 </script>
 
 @if ($bannersInicio->isNotEmpty())
@@ -136,6 +168,7 @@
 
 <section class="seccion contenedor">
   <div class="promo">
+    @include('partials.auto-en-movimiento')
     <span class="promo-badge">100% GRATIS</span>
     <h2>¿Tienes un vehículo para vender?</h2>
     <p>Publica gratis en minutos, sin comisión por venta.</p>
