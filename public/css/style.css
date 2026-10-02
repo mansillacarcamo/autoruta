@@ -103,7 +103,12 @@ img { max-width: 100%; display: block; }
 .tarjeta:hover .tarjeta-precio { animation: none; transform: scale(1.15); }
 @keyframes precio-zoom { 0%, 70%, 100% { transform: scale(1); } 35% { transform: scale(1.1); } }
 @media (prefers-reduced-motion: reduce) { .tarjeta .tarjeta-precio { animation: none; } }
-.tarjeta-meta { color: #737373; font-size: 13px; }
+.tarjeta-meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; font-size: 12.5px; }
+.meta-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-weight: 700; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.meta-chip svg { flex-shrink: 0; }
+.meta-km { background: var(--carbon); color: #fff; }
+.meta-km svg { color: #f5c518; }
+.meta-lugar { background: #fde8ea; color: var(--acento); }
 
 /* Formularios */
 .form-grupo { margin-bottom: 14px; }
