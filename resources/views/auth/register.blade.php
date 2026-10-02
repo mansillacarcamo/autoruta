@@ -21,10 +21,38 @@
         </div>
 
         <div class="mt-4">
-            <x-input-label for="ciudad" value="Ciudad" />
-            <x-text-input id="ciudad" class="block mt-1 w-full" type="text" name="ciudad" :value="old('ciudad')" required autocomplete="address-level2" placeholder="Ej: Puerto Montt" />
+            <x-input-label for="region" value="Región" />
+            <select id="region" name="region" required class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" onchange="llenarComunas()">
+                <option value="">Selecciona tu región</option>
+                @foreach (array_keys(config('regiones')) as $r)
+                    <option value="{{ $r }}" @selected(old('region') === $r)>{{ $r }}</option>
+                @endforeach
+            </select>
+            <x-input-error :messages="$errors->get('region')" class="mt-2" />
+        </div>
+
+        <div class="mt-4">
+            <x-input-label for="ciudad" value="Ciudad / comuna" />
+            <select id="ciudad" name="ciudad" required data-seleccionada="{{ old('ciudad') }}" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                <option value="">Selecciona una región primero</option>
+            </select>
             <x-input-error :messages="$errors->get('ciudad')" class="mt-2" />
         </div>
+        <script>
+            // La lista de comunas cambia según la región elegida.
+            const comunasPorRegion = @json(config('regiones'));
+            function llenarComunas() {
+                const region = document.getElementById('region').value;
+                const select = document.getElementById('ciudad');
+                const elegida = select.value || select.dataset.seleccionada;
+                select.innerHTML = '';
+                const inicial = new Option(region ? 'Selecciona tu comuna' : 'Selecciona una región primero', '');
+                select.add(inicial);
+                (comunasPorRegion[region] || []).forEach(c => select.add(new Option(c, c, false, c === elegida)));
+                select.disabled = !region;
+            }
+            llenarComunas();
+        </script>
 
         <div class="mt-4">
             <x-input-label for="password" value="Crea tu contraseña" />

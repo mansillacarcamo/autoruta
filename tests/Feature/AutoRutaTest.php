@@ -375,7 +375,7 @@ class AutoRutaTest extends TestCase
 
         $this->post('/register', [
             'name' => 'Cliente Nuevo', 'email' => 'nuevo@cliente.cl', 'telefono' => '+56 9 5555 4444',
-            'ciudad' => 'Osorno', 'password' => 'clave12345', 'password_confirmation' => 'clave12345',
+            'region' => 'Los Lagos', 'ciudad' => 'Osorno', 'password' => 'clave12345', 'password_confirmation' => 'clave12345',
         ])->assertRedirect(route('panel', absolute: false));
 
         \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\NuevoUsuarioRegistrado::class, function ($correo) {
@@ -387,13 +387,31 @@ class AutoRutaTest extends TestCase
         $this->assertStringContainsString('+56955554444', $html);
     }
 
+    public function test_registro_pide_region_y_comuna_de_la_lista(): void
+    {
+        $this->get('/register')->assertOk()->assertSee('Selecciona tu región')->assertSee('Los Lagos');
+
+        // Comuna que no es de la región elegida: se rechaza.
+        $this->post('/register', [
+            'name' => 'Mal Lugar', 'email' => 'mal@cliente.cl', 'telefono' => '+56 9 5555 1111',
+            'region' => 'Los Lagos', 'ciudad' => 'Providencia', 'password' => 'clave12345', 'password_confirmation' => 'clave12345',
+        ])->assertSessionHasErrors('ciudad');
+        $this->assertGuest();
+
+        $this->post('/register', [
+            'name' => 'Buen Lugar', 'email' => 'bien@cliente.cl', 'telefono' => '+56 9 5555 2222',
+            'region' => 'Los Lagos', 'ciudad' => 'Puerto Varas', 'password' => 'clave12345', 'password_confirmation' => 'clave12345',
+        ])->assertRedirect(route('panel', absolute: false));
+        $this->assertDatabaseHas('users', ['email' => 'bien@cliente.cl', 'region' => 'Los Lagos', 'comuna' => 'Puerto Varas']);
+    }
+
     public function test_registro_funciona_aunque_falle_el_correo(): void
     {
         config(['mail.default' => 'smtp', 'mail.mailers.smtp.host' => '127.0.0.1', 'mail.mailers.smtp.port' => 1, 'mail.mailers.smtp.timeout' => 2]);
 
         $this->post('/register', [
             'name' => 'Sin Correo', 'email' => 'sincorreo@cliente.cl', 'telefono' => '+56 9 5555 3333',
-            'ciudad' => 'Osorno', 'password' => 'clave12345', 'password_confirmation' => 'clave12345',
+            'region' => 'Los Lagos', 'ciudad' => 'Osorno', 'password' => 'clave12345', 'password_confirmation' => 'clave12345',
         ])->assertRedirect(route('panel', absolute: false));
 
         $this->assertAuthenticated();
