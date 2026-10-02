@@ -129,6 +129,16 @@ class AutoRutaTest extends TestCase
             ->assertStatus(422)->assertJsonValidationErrors('pie');
     }
 
+    public function test_tarjeta_y_ficha_muestran_contador_de_visitas(): void
+    {
+        $vehiculo = $this->aviso($this->vendedor());
+        $vehiculo->update(['vistas' => 1233]);
+
+        // Abrir la ficha suma una visita y la muestra.
+        $this->get('/vehiculos/' . $vehiculo->id)->assertOk()->assertSee('1.234 visitas');
+        $this->get('/vehiculos')->assertSee('1.234 visitas');
+    }
+
     public function test_publicar_sin_fotos_o_con_formato_invalido_falla(): void
     {
         $usuario = $this->vendedor();
@@ -270,6 +280,40 @@ class AutoRutaTest extends TestCase
             'clave_actual' => 'clave12345', 'password' => 'nuevaClave123', 'password_confirmation' => 'nuevaClave123',
         ])->assertSessionHas('ok');
         $this->assertTrue(\Illuminate\Support\Facades\Hash::check('nuevaClave123', $usuario->fresh()->password));
+    }
+
+    public function test_popup_del_inicio_se_administra_desde_admin(): void
+    {
+        $this->actingAs($this->vendedor())->get('/admin/popup')->assertForbidden();
+        $this->get('/')->assertDontSee('id="popup-inicio"', false);
+
+        $admin = User::where('usuario', 'cesar')->firstOrFail();
+        $this->actingAs($admin)->get('/admin/popup')->assertOk()->assertSee('No hay pop-up');
+
+        // Subir un diseño con enlace: aparece en el inicio y su archivo se puede ver.
+        $this->actingAs($admin)->post('/admin/popup', [
+            'archivo' => UploadedFile::fake()->image('oferta.jpg', 1080, 1080),
+            'link_url' => 'https://autoruta.cl/vehiculos',
+        ])->assertSessionHas('ok');
+        $popup = \App\Models\Popup::firstOrFail();
+        $this->assertSame('imagen', $popup->tipo_medio);
+        $this->get('/')->assertSee('id="popup-inicio"', false)->assertSee($popup->url(), false)->assertSee('https://autoruta.cl/vehiculos', false);
+        $this->get('/media/popup/' . $popup->archivo)->assertOk();
+
+        // Pausarlo lo oculta del inicio.
+        $this->actingAs($admin)->put('/admin/popup/' . $popup->id, ['link_url' => ''])->assertSessionHas('ok');
+        $this->assertFalse($popup->fresh()->activo);
+        $this->get('/')->assertDontSee('id="popup-inicio"', false);
+
+        // Subir uno nuevo reemplaza al anterior (queda uno solo, activo).
+        $this->actingAs($admin)->post('/admin/popup', ['archivo' => UploadedFile::fake()->create('promo.mp4', 500, 'video/mp4')])->assertSessionHas('ok');
+        $this->assertSame(1, \App\Models\Popup::count());
+        $nuevo = \App\Models\Popup::firstOrFail();
+        $this->assertSame('video', $nuevo->tipo_medio);
+        $this->assertTrue($nuevo->activo);
+
+        $this->actingAs($admin)->delete('/admin/popup/' . $nuevo->id)->assertSessionHas('ok');
+        $this->assertSame(0, \App\Models\Popup::count());
     }
 
     public function test_admin_protegido_y_funcional(): void

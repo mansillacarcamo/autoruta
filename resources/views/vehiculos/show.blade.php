@@ -238,9 +238,9 @@
       <p class="texto-mutado">
         {{ \App\Models\Vehiculo::ETIQUETA_TIPO[$vehiculo->tipo] ?? $vehiculo->tipo }} ·
         {{ number_format($vehiculo->kilometraje, 0, ',', '.') }} km ·
-        {{ $vehiculo->comuna }}, {{ $vehiculo->region }} ·
-        {{ $vehiculo->vistas }} vistas
+        {{ $vehiculo->comuna }}, {{ $vehiculo->region }}
       </p>
+      <p class="tarjeta-meta"><span class="meta-chip meta-vistas" title="Visitas del aviso"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>{{ number_format($vehiculo->vistas, 0, ',', '.') }} {{ $vehiculo->vistas == 1 ? 'visita' : 'visitas' }}</span></p>
 
       <h2 class="mt-3">Descripción</h2>
       <p style="white-space:pre-line">{{ $vehiculo->descripcion }}</p>

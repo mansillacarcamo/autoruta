@@ -51,7 +51,7 @@
         @else
           <a href="{{ route('register') }}" class="btn btn-outline">Regístrate</a>
           <a href="{{ route('login') }}" class="btn btn-outline">Iniciar sesión</a>
-          <a href="{{ route('register') }}" class="btn btn-acento btn-brillo btn-publicar">Publicar</a>
+          <a href="{{ route('register') }}" class="btn btn-acento btn-brillo btn-publicar"><span class="pub-largo">Publica <strong>100% gratis</strong></span><span class="pub-corto">Publicar</span></a>
         @endauth
         @if (config('autoruta.redes_sociales.instagram'))
         <a class="red-social red-social-grande" href="{{ config('autoruta.redes_sociales.instagram') }}" target="_blank" rel="noopener" aria-label="Instagram">

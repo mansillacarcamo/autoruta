@@ -14,7 +14,7 @@ Route::get('/vehiculos/nuevos', [VehiculoController::class, 'nuevos'])->name('ve
 Route::get('/vehiculos/{vehiculo}', [VehiculoController::class, 'show'])->name('vehiculos.show');
 
 Route::get('/media/{carpeta}/{archivo}', [\App\Http\Controllers\MediaController::class, 'mostrar'])
-    ->where(['carpeta' => 'vehiculos|negocios|portada|logos', 'archivo' => '[A-Za-z0-9_.-]+'])
+    ->where(['carpeta' => 'vehiculos|negocios|portada|logos|popup', 'archivo' => '[A-Za-z0-9_.-]+'])
     ->name('media');
 
 Route::get('/publicidad/{banner}', [\App\Http\Controllers\PublicidadController::class, 'clic'])->name('publicidad.clic');
@@ -57,6 +57,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/portada', [\App\Http\Controllers\Admin\PortadaController::class, 'index'])->name('portada.index');
     Route::post('/portada', [\App\Http\Controllers\Admin\PortadaController::class, 'subir'])->name('portada.subir');
     Route::delete('/portada/{medio}', [\App\Http\Controllers\Admin\PortadaController::class, 'eliminar'])->name('portada.eliminar');
+    Route::get('/popup', [\App\Http\Controllers\Admin\PopupController::class, 'index'])->name('popup.index');
+    Route::post('/popup', [\App\Http\Controllers\Admin\PopupController::class, 'subir'])->name('popup.subir');
+    Route::put('/popup/{popup}', [\App\Http\Controllers\Admin\PopupController::class, 'actualizar'])->name('popup.actualizar');
+    Route::delete('/popup/{popup}', [\App\Http\Controllers\Admin\PopupController::class, 'eliminar'])->name('popup.eliminar');
     Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
     Route::post('/usuarios/{usuario}/clave', [UsuarioController::class, 'restablecerClave'])->name('usuarios.clave');
 });

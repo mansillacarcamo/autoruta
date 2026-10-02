@@ -203,4 +203,5 @@
     }, 5000);
   })();
 </script>
+@include('partials.popup-inicio')
 @endsection
