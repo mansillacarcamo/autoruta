@@ -48,7 +48,7 @@
     <button type="button" class="carrusel-flecha siguiente" aria-label="Siguiente">&#8250;</button>
   </div>
   @if ($ultimos->isEmpty())<p class="texto-mutado" id="sinVehiculos">Todavía no hay vehículos publicados.</p>@endif
-  @include('partials.vehiculos-en-vivo', ['modo' => 'insertar', 'grilla' => 'grillaUltimos', 'desde' => (int) \App\Models\Vehiculo::max('id'), 'maxTarjetas' => 24])
+  @include('partials.vehiculos-en-vivo', ['modo' => 'insertar', 'grilla' => 'grillaUltimos', 'desde' => (int) \App\Models\Vehiculo::max('id'), 'maxTarjetas' => 36])
 </section>
 
 @include('partials.banners-laterales-movil', ['fila' => 2])

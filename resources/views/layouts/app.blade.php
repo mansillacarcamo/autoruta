@@ -138,6 +138,19 @@
       </div>
       <button type="button" class="btn btn-acento" id="app-descarga-boton">Instalar</button>
     </div>
+    <div class="app-pronto">
+      <span class="app-pronto-titulo">Muy pronto nuestra app para iOS y Android</span>
+      <div class="app-pronto-tiendas">
+        <span class="tienda" aria-label="Próximamente en App Store">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M16.4 12.6c0-2.5 2-3.7 2.1-3.8-1.2-1.7-3-1.9-3.6-2-1.5-.2-3 .9-3.8.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.1 2.5-1.8 3.1-.5 7.6 1.2 10.1.8 1.2 1.8 2.6 3.1 2.5 1.3-.1 1.7-.8 3.2-.8s1.9.8 3.2.8c1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8-.1 0-2.3-.9-2.3-4.1zM14 5.2c.7-.8 1.1-2 1-3.2-1 0-2.2.7-2.9 1.5-.6.7-1.2 1.9-1 3.1 1.1.1 2.2-.6 2.9-1.4z"/></svg>
+          <span><small>Próximamente en</small>App Store</span>
+        </span>
+        <span class="tienda" aria-label="Próximamente en Google Play">
+          <svg viewBox="0 0 24 24" width="22" height="22"><path fill="#00d7fe" d="M3.6 1.8 13.3 12l-9.7 10.2c-.4-.2-.6-.6-.6-1.1V2.9c0-.5.2-.9.6-1.1z"/><path fill="#ffce00" d="m16.6 15.3-3.3-3.3 3.3-3.3 3.9 2.2c1.1.6 1.1 1.7 0 2.3z"/><path fill="#ff3a44" d="M16.6 15.3 13.3 12l-9.7 10.2c.4.2.9.2 1.4-.1z"/><path fill="#00f076" d="M16.6 8.7 5 1.9c-.5-.3-1-.3-1.4-.1L13.3 12z"/></svg>
+          <span><small>Próximamente en</small>Google Play</span>
+        </span>
+      </div>
+    </div>
     <script>
       (function () {
         var caja = document.getElementById('app-descarga');

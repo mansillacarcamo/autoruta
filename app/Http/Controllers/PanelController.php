@@ -141,6 +141,7 @@ class PanelController extends Controller
     {
         $request->merge([
             'precio' => preg_replace('/\D/', '', (string) $request->input('precio')),
+            'pie' => preg_replace('/\D/', '', (string) $request->input('pie')) ?: null,
             'kilometraje' => preg_replace('/\D/', '', (string) $request->input('kilometraje')),
         ]);
 
@@ -150,6 +151,7 @@ class PanelController extends Controller
             'modelo' => 'required|string|max:60',
             'anio' => 'required|integer|min:' . config('autoruta.anio_min_vehiculo') . '|max:' . (date('Y') + 1),
             'precio' => 'required|integer|min:' . config('autoruta.precio_min_vehiculo') . '|max:' . config('autoruta.precio_max_vehiculo'),
+            'pie' => 'nullable|integer|min:1|lt:precio',
             'kilometraje' => 'required|integer|min:0',
             'region' => 'required|string',
             'comuna' => 'required|string',
@@ -165,6 +167,7 @@ class PanelController extends Controller
             'fotos' => ($vehiculo ? 'nullable' : 'required') . '|array|max:' . config('autoruta.max_fotos_vehiculo'),
             'fotos.*' => 'image|mimes:jpg,jpeg,png,webp|max:10240',
         ], [
+            'pie.lt' => 'El pie debe ser menor que el precio del vehículo.',
             'fotos.required' => 'Agrega al menos una foto del vehículo.',
             'fotos.max' => 'Puedes subir como máximo ' . config('autoruta.max_fotos_vehiculo') . ' fotos.',
             'fotos.*.image' => 'Uno de los archivos no es una imagen válida.',
@@ -181,6 +184,7 @@ class PanelController extends Controller
             'modelo' => $datos['modelo'],
             'anio' => $datos['anio'],
             'precio' => $datos['precio'],
+            'pie' => $datos['pie'] ?? null,
             'kilometraje' => $datos['kilometraje'],
             'region' => $datos['region'],
             'comuna' => $datos['comuna'],

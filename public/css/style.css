@@ -94,6 +94,7 @@ img { max-width: 100%; display: block; }
 .tarjeta-titulo { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tarjeta-precio { font-weight: 700; color: var(--acento); font-size: 18px; margin: 4px 0; }
 .precio-desde { font-size: .6em; font-weight: 600; opacity: .75; margin-right: 2px; }
+.tarjeta-pie { display: inline-block; margin: 2px 0 6px; padding: 3px 10px; border-radius: 999px; background: #16a34a; color: #fff; font-size: 13px; font-weight: 700; }
 /* Precio de las tarjetas: zoom suave tipo latido (desfasado entre tarjetas) y más grande al pasar el mouse */
 .tarjeta .tarjeta-precio { width: fit-content; transform-origin: left center; animation: precio-zoom 2.8s ease-in-out infinite; transition: transform .2s; }
 .tarjeta:nth-child(4n+2) .tarjeta-precio { animation-delay: -.7s; }
@@ -323,6 +324,12 @@ body { overflow-x: clip; }
 .app-descarga strong { display: block; color: #fff; font-size: 15px; margin-bottom: 2px; }
 .app-descarga .btn { flex-shrink: 0; }
 @media (max-width: 1180px) { .app-descarga { margin-left: 16px; margin-right: 16px; } }
+/* Aviso "Muy pronto" de las apps para iOS y Android */
+.app-pronto { text-align: center; margin: 0 auto 24px; padding: 0 16px; }
+.app-pronto-titulo { display: block; color: #fff; font-weight: 700; font-size: 15px; margin-bottom: 10px; }
+.app-pronto-tiendas { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+.app-pronto .tienda { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; min-width: 150px; border: 1px solid #3a3b46; border-radius: 10px; background: #000; color: #fff; font-weight: 700; font-size: 15px; line-height: 1.1; text-align: left; }
+.app-pronto .tienda small { display: block; font-size: 10px; font-weight: 500; color: #a3a3a3; }
 
 /* Aviso de cookies */
 .cookies-fondo { position: fixed; inset: 0; z-index: 100; background: rgba(4,5,13,.45); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -382,8 +389,8 @@ body { overflow-x: clip; }
 
 /* Carruseles de Destacados y Últimos publicados */
 .carrusel { position: relative; }
-/* 2 filas de tarjetas que avanzan de a una columna */
-.carrusel-pista { display: grid; grid-auto-flow: column; grid-template-rows: repeat(2, auto); grid-auto-columns: 78%; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 4px 2px 12px; scrollbar-width: none; }
+/* 3 filas de tarjetas que avanzan de a una columna */
+.carrusel-pista { display: grid; grid-auto-flow: column; grid-template-rows: repeat(3, auto); grid-auto-columns: 78%; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 4px 2px 12px; scrollbar-width: none; }
 .carrusel-pista::-webkit-scrollbar { display: none; }
 .carrusel-pista > .tarjeta { scroll-snap-align: start; }
 .carrusel-pista .tarjeta-foto { background: var(--carbon); }
@@ -465,6 +472,15 @@ body { overflow-x: clip; }
 .vendedor-whatsapp, .vendedor-llamar { display: flex !important; align-items: center; justify-content: center; gap: 8px; padding: 13px 16px; font-size: 15px; border-radius: 10px; }
 .vendedor-whatsapp { background: #25D366; color: #fff; box-shadow: 0 6px 16px rgba(37,211,102,.3); }
 .vendedor-whatsapp:hover { background: #1ebe5a; }
+/* Botones de WhatsApp: efecto pulsante (onda verde + leve agrandado) */
+.wa-pulso, .vendedor-whatsapp, .wa-flotante { animation: wa-pulso 1.8s ease-out infinite; }
+.wa-pulso:hover, .vendedor-whatsapp:hover, .wa-flotante:hover { animation-play-state: paused; }
+@keyframes wa-pulso {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37,211,102,.65); }
+  50% { transform: scale(1.04); box-shadow: 0 0 0 12px rgba(37,211,102,0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37,211,102,0); }
+}
+@media (prefers-reduced-motion: reduce) { .wa-pulso, .vendedor-whatsapp, .wa-flotante { animation: none; } }
 .vendedor-llamar { margin-top: 10px; background: #fff; color: #171717; border: 1px solid #d4d4d4; }
 .vendedor-llamar:hover { border-color: var(--carbon); background: var(--gris-claro); }
 .vendedor-enlaces { display: flex; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid #f0f0f2; }

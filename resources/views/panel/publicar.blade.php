@@ -47,6 +47,7 @@
       <div class="form-grupo"><label>Año</label><input type="number" name="anio" required placeholder="Ej. 2020" value="{{ old('anio', $vehiculo?->anio) }}"></div>
       <div class="form-grupo"><label>Kilometraje</label><input type="text" inputmode="numeric" class="con-puntos" name="kilometraje" required placeholder="Ej. 45.000" value="{{ old('kilometraje', $vehiculo?->kilometraje) }}"></div>
       <div class="form-grupo"><label>Precio (CLP)</label><div class="campo-precio"><span>$</span><input type="text" inputmode="numeric" class="con-puntos" name="precio" required placeholder="Ej. 12.500.000" value="{{ old('precio', $vehiculo?->precio) }}"></div></div>
+      <div class="form-grupo"><label>Pie (opcional)</label><div class="campo-precio"><span>$</span><input type="text" inputmode="numeric" class="con-puntos" name="pie" placeholder="Ej. 3.000.000" value="{{ old('pie', $vehiculo?->pie) }}"></div><p class="admin-ayuda">Monto inicial con el que el comprador se puede llevar el vehículo. Déjalo vacío si no aplica.</p></div>
       <div class="form-grupo">
         <label>Transmisión</label>
         <select name="transmision">

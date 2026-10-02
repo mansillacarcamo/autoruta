@@ -234,6 +234,7 @@
 
       <h1 class="mt-3">{{ $vehiculo->marca }} {{ $vehiculo->modelo }} {{ $vehiculo->anio }}</h1>
       <p class="tarjeta-precio" style="font-size:28px"><span class="precio-desde">Desde</span> {{ $vehiculo->precioFormateado() }}</p>
+      @if ($vehiculo->pie)<p class="tarjeta-pie" style="font-size:15px">Pie {{ $vehiculo->pieFormateado() }}</p>@endif
       <p class="texto-mutado">
         {{ \App\Models\Vehiculo::ETIQUETA_TIPO[$vehiculo->tipo] ?? $vehiculo->tipo }} ·
         {{ number_format($vehiculo->kilometraje, 0, ',', '.') }} km ·
@@ -272,6 +273,7 @@
           <small>{{ \App\Models\Vehiculo::ETIQUETA_TIPO[$vehiculo->tipo] ?? 'Vehículo' }} · {{ $vehiculo->anio }}</small>
           <p class="vendedor-vehiculo">{{ $vehiculo->marca }} {{ $vehiculo->modelo }}</p>
           <p class="vendedor-precio"><span class="precio-desde">Desde</span> {{ $vehiculo->precioFormateado() }}</p>
+          @if ($vehiculo->pie)<p class="tarjeta-pie" style="margin-top:6px">Pie {{ $vehiculo->pieFormateado() }}</p>@endif
         </div>
 
         <div class="vendedor-cuerpo">

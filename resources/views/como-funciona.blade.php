@@ -23,7 +23,7 @@
     <p>Banner en el inicio y tarjeta de negocio destacado en el listado y ficha de vehículos, por 30 días.</p>
     <p style="font-weight:600">Es el único producto pagado del sitio: publicar vehículos siempre es gratis.</p>
     <a href="https://wa.me/{{ preg_replace('/\D/', '', config('autoruta.contacto_whatsapp')) }}?text={{ urlencode('Hola, quiero anunciar mi negocio en ' . config('autoruta.nombre_sitio')) }}"
-       target="_blank" rel="noopener" class="btn btn-block mt-2" style="background:#25D366;color:#fff">Contactar por WhatsApp</a>
+       target="_blank" rel="noopener" class="btn btn-block mt-2 wa-pulso" style="background:#25D366;color:#fff">Contactar por WhatsApp</a>
   </div>
 </div>
 @endsection

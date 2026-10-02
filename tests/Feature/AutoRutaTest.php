@@ -107,6 +107,28 @@ class AutoRutaTest extends TestCase
         $this->get('/vehiculos/' . $vehiculo->id)->assertOk()->assertSee('Hilux')->assertSee('wa.me/56911112222', false);
     }
 
+    public function test_pie_opcional_se_guarda_y_se_muestra(): void
+    {
+        $usuario = $this->vendedor();
+
+        // Sin pie: el aviso se publica igual y no muestra la etiqueta.
+        $this->actingAs($usuario)->postJson('/panel/publicar', $this->datosAviso())->assertOk();
+        $sinPie = Vehiculo::latest('id')->first();
+        $this->assertNull($sinPie->pie);
+        $this->get('/vehiculos/' . $sinPie->id)->assertDontSee('class="tarjeta-pie"', false);
+
+        // Con pie escrito con puntos.
+        $this->actingAs($usuario)->postJson('/panel/publicar', $this->datosAviso(['pie' => '3.000.000']))->assertOk();
+        $conPie = Vehiculo::latest('id')->first();
+        $this->assertSame(3000000, (int) $conPie->pie);
+        $this->get('/vehiculos/' . $conPie->id)->assertSee('Pie $3.000.000');
+        $this->get('/vehiculos')->assertSee('Pie $3.000.000');
+
+        // El pie no puede ser igual o mayor que el precio.
+        $this->actingAs($usuario)->postJson('/panel/publicar', $this->datosAviso(['pie' => '15.500.000']))
+            ->assertStatus(422)->assertJsonValidationErrors('pie');
+    }
+
     public function test_publicar_sin_fotos_o_con_formato_invalido_falla(): void
     {
         $usuario = $this->vendedor();

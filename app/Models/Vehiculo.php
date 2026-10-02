@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Vehiculo extends Model
 {
     protected $fillable = [
-        'user_id', 'estado', 'tipo', 'marca', 'modelo', 'anio', 'precio', 'kilometraje',
+        'user_id', 'estado', 'tipo', 'marca', 'modelo', 'anio', 'precio', 'pie', 'kilometraje',
         'region', 'comuna', 'descripcion', 'version', 'transmision', 'combustible',
         'cilindrada', 'color', 'puertas', 'traccion', 'duenos_anteriores', 'equipamiento',
         'vistas', 'publicado_en', 'vence_en',
@@ -78,5 +78,10 @@ class Vehiculo extends Model
     public function precioFormateado(): string
     {
         return '$' . number_format($this->precio, 0, ',', '.');
+    }
+
+    public function pieFormateado(): ?string
+    {
+        return $this->pie ? '$' . number_format($this->pie, 0, ',', '.') : null;
     }
 }
