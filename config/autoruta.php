@@ -21,8 +21,8 @@ return [
 
     'contacto_ubicacion' => 'Puerto Montt, Región de Los Lagos',
 
-    'contacto_whatsapp' => '+56962148407',
-    'contacto_telefono' => '+56 9 6214 8407',
+    'contacto_whatsapp' => '+56993393409',
+    'contacto_telefono' => '+56 9 9339 3409',
     'contacto_email' => 'info@autoruta.cl',
 
     // Reemplazar por las URLs reales cuando existan las cuentas del sitio.
