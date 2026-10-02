@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
 @section('contenido')
-<section class="hero {{ $portada->isNotEmpty() ? 'hero-con-medios' : '' }}">
+{{-- Banner de portada completo, sin texto encima (el banner ya trae su mensaje). Si en Admin se subieron
+     fotos o video de portada, se muestran esos en el mismo marco; si no, el banner fijo de AutoRuta. --}}
+<section class="portada-banner">
   @if ($portada->isNotEmpty())
     <div class="hero-medios">
       @if ($video = $portada->firstWhere('tipo_medio', 'video'))
@@ -12,10 +14,18 @@
         @endforeach
       @endif
     </div>
+  @else
+    <picture>
+      <source media="(max-width: 700px)" srcset="{{ asset('img/banner-portada-movil.jpg') }}">
+      <img src="{{ asset('img/banner-portada.jpg') }}" width="2087" height="753" fetchpriority="high"
+           alt="AutoRuta: ¿Buscas un auto o quieres vender? Esta es tu opción. www.autoruta.cl">
+    </picture>
   @endif
-  <div class="contenedor hero-contenido">
+</section>
+
+<section class="portada-buscador">
+  <div class="contenedor">
     <h1>Compra y vende tu vehículo en {{ config('autoruta.nombre_sitio') }}</h1>
-    <p>Publica gratis en minutos. Miles de compradores en toda Chile.</p>
     <form class="buscador" action="{{ route('vehiculos.index') }}" method="get">
       <input type="text" name="q" placeholder="Marca o modelo (ej. Toyota Hilux)">
       <button type="submit" class="btn btn-acento">Buscar</button>
@@ -121,13 +131,21 @@
         var siguiente = (actual + 1) % fotos.length;
         var carga = new Image();
         carga.onload = function () {
-          img.classList.add('foto-cambiando');
-          setTimeout(function () {
+          // Giro de carta: la foto se voltea hasta quedar de canto, cambia y termina de girar.
+          var sale = img.animate(
+            [{ transform: 'perspective(800px) rotateY(0deg)' }, { transform: 'perspective(800px) rotateY(90deg)' }],
+            { duration: 320, easing: 'ease-in', fill: 'forwards' }
+          );
+          sale.onfinish = function () {
             img.src = fotos[siguiente];
             actual = siguiente;
-            img.classList.remove('foto-cambiando');
+            sale.cancel();
+            img.animate(
+              [{ transform: 'perspective(800px) rotateY(-90deg)' }, { transform: 'perspective(800px) rotateY(0deg)' }],
+              { duration: 320, easing: 'ease-out' }
+            );
             programar(3500 + Math.random() * 3000);
-          }, 350);
+          };
         };
         carga.onerror = function () { fotos.splice(siguiente, 1); programar(500); };
         carga.src = fotos[siguiente];

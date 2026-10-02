@@ -33,10 +33,8 @@
   @else
     <a class="espacio-publicitario laterales-movil-vacio" target="_blank" rel="noopener"
        href="https://wa.me/{{ preg_replace('/\D/', '', config('autoruta.contacto_whatsapp')) }}?text={{ urlencode('Hola, quiero publicitar en AutoRuta (Laterales ' . $fila . ')') }}">
-      @include('partials.auto-en-movimiento')
       <span class="ep-disponible">Disponible</span>
-      <strong>Espacio disponible</strong>
-      <span class="ep-posicion">Laterales {{ $fila }}</span>
+      <strong>Espacios publicitarios laterales {{ $fila }}</strong>
       <span class="ep-medida">160 × 600 px</span>
       <span>Contáctanos</span>
     </a>

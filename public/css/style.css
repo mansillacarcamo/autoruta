@@ -63,6 +63,13 @@ img { max-width: 100%; display: block; }
   content: ""; position: absolute; inset: 0; z-index: 1;
   background: linear-gradient(90deg, rgba(4,5,13,.92) 0%, rgba(4,5,13,.6) 50%, rgba(4,5,13,.2) 100%);
 }
+/* Banner de portada completo + franja con el buscador debajo */
+.portada-banner { position: relative; overflow: hidden; background: var(--carbon); aspect-ratio: 2087 / 753; }
+.portada-banner picture, .portada-banner > picture img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.portada-buscador { background: var(--carbon); color: #fff; padding: 18px 0 26px; }
+.portada-buscador h1 { font-size: 22px; margin: 0; text-align: center; }
+.portada-buscador .buscador { margin: 14px auto 0; }
+@media (max-width: 700px) { .portada-buscador h1 { font-size: 18px; } }
 .hero h1 { font-size: 40px; margin: 0; max-width: 640px; line-height: 1.15; }
 @media (max-width: 700px) { .hero { padding: 56px 0; background-size: cover, 90%; background-position: center, center bottom; } .hero h1 { font-size: 28px; } }
 .hero p { color: #d4d4d4; margin-top: 8px; }
@@ -215,7 +222,7 @@ img { max-width: 100%; display: block; }
 .banner-ancho-slot .espacio-publicitario { flex-direction: row; flex-wrap: wrap; column-gap: 10px; aspect-ratio: auto !important; min-height: 90px; }
 .espacio-publicitario:hover { border-color: var(--acento); color: var(--acento); }
 
-/* Fondo animado de auto en movimiento: espacios publicitarios vacíos y bloque promocional */
+/* Fondo animado de auto en movimiento: bloque promocional */
 .auto-movimiento { position: absolute; inset: 0; z-index: -1; overflow: hidden; border-radius: inherit; pointer-events: none; }
 .am-camino { position: absolute; left: 0; right: 0; bottom: 0; height: 16%; min-height: 14px; max-height: 46px; background: #1f2029; border-top: 2px solid #34353f; }
 .am-camino::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 3px; margin-top: -1px; background: repeating-linear-gradient(90deg, #f5c518 0 34px, transparent 34px 68px); animation: am-camino .45s linear infinite; }
@@ -231,13 +238,6 @@ img { max-width: 100%; display: block; }
 @keyframes am-haz { from { opacity: .5; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .auto-movimiento * , .auto-movimiento *::after { animation: none !important; } .am-auto { left: 50%; transform: translateX(-50%); } }
 
-.espacio-publicitario { position: relative; isolation: isolate; overflow: hidden; border: 2px solid #2e2f3a; background: radial-gradient(circle at 50% 0%, rgba(217,7,24,.35), transparent 65%), linear-gradient(135deg, var(--carbon), var(--carbon-claro)); color: #e5e5e5; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
-.espacio-publicitario strong { color: #fff; font-size: 16px; letter-spacing: .5px; text-transform: uppercase; }
-.espacio-publicitario .ep-posicion { color: #d4d4d4; }
-.espacio-publicitario .ep-medida { text-shadow: none; }
-.espacio-publicitario:hover { border-color: var(--acento); color: #fff; }
-.banner-ancho-slot .espacio-publicitario .am-auto, .laterales-movil-vacio .am-auto { width: 110px; bottom: 4px; }
-.banner-ancho-slot .espacio-publicitario .am-camino, .laterales-movil-vacio .am-camino { height: 12px; min-height: 0; }
 .promo { padding-bottom: 110px; }
 .promo::after { z-index: -2; }
 .promo::before { z-index: -3; }
@@ -403,8 +403,8 @@ body { overflow-x: clip; }
 .carrusel-pista { display: grid; grid-auto-flow: column; grid-template-rows: repeat(2, auto); grid-auto-columns: 78%; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 4px 2px 12px; scrollbar-width: none; }
 .carrusel-pista::-webkit-scrollbar { display: none; }
 .carrusel-pista > .tarjeta { scroll-snap-align: start; }
-.carrusel-pista .tarjeta-foto > img { transition: opacity .35s ease; }
-.carrusel-pista .tarjeta-foto > img.foto-cambiando { opacity: 0; }
+.carrusel-pista .tarjeta-foto { background: var(--carbon); }
+.carrusel-pista .tarjeta-foto > img { backface-visibility: hidden; }
 @media (min-width: 521px) { .carrusel-pista { grid-auto-columns: calc((100% - 16px) / 2); } }
 @media (min-width: 800px) { .carrusel-pista { grid-auto-columns: calc((100% - 32px) / 3); } }
 @media (min-width: 1000px) { .carrusel-pista { grid-auto-columns: calc((100% - 48px) / 4); } }
