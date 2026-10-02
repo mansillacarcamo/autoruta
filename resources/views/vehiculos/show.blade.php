@@ -236,35 +236,63 @@
       <h1 class="mt-3">{{ $vehiculo->marca }} {{ $vehiculo->modelo }} {{ $vehiculo->anio }}</h1>
       <p class="tarjeta-precio" style="font-size:28px"><span class="precio-desde">Desde</span> {{ $vehiculo->precioFormateado() }}</p>
       @if ($vehiculo->pie)<p class="tarjeta-pie" style="font-size:15px">Pie {{ $vehiculo->pieFormateado() }}</p>@endif
-      <p class="texto-mutado">
-        {{ \App\Models\Vehiculo::ETIQUETA_TIPO[$vehiculo->tipo] ?? $vehiculo->tipo }} ·
-        {{ number_format($vehiculo->kilometraje, 0, ',', '.') }} km ·
-        {{ $vehiculo->comuna }}, {{ $vehiculo->region }}
-      </p>
+      <p class="texto-mutado">{{ $vehiculo->comuna }}, {{ $vehiculo->region }}</p>
       <p class="tarjeta-meta"><span class="meta-chip meta-vistas" title="Visitas del aviso"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>{{ number_format($vehiculo->vistas, 0, ',', '.') }} {{ $vehiculo->vistas == 1 ? 'visita' : 'visitas' }}</span></p>
 
-      <h2 class="mt-3">Descripción</h2>
-      <p style="white-space:pre-line">{{ $vehiculo->descripcion }}</p>
+      @php
+        $iconosFicha = [
+          'anio' => '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+          'km' => '<path d="M4 18a9 9 0 1 1 16 0"/><path d="m12 14 4-5"/><circle cx="12" cy="14" r="1.4"/>',
+          'tipo' => '<path d="M3 15v-3l2.5-5h13L21 12v3"/><path d="M2 15h20v3H2z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>',
+          'version' => '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="8" cy="8" r="1.5"/>',
+          'transmision' => '<circle cx="6" cy="5" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="18" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="12" cy="19" r="2"/><path d="M6 7v12M12 7v12M18 7v5H6"/>',
+          'combustible' => '<path d="M4 21V5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v16M3 21h13M7 8h5"/><path d="M15 9h2a2 2 0 0 1 2 2v6a1.5 1.5 0 0 0 3 0V8l-3-3"/>',
+          'cilindrada' => '<rect x="5" y="8" width="14" height="10" rx="2"/><path d="M9 8V5h6v3M12 2v3M2 12h3M19 12h3M9 13h6"/>',
+          'color' => '<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+          'puertas' => '<path d="M4 21V9l8-6h8v18H4z"/><path d="M4 12h16M15 15h2"/>',
+          'traccion' => '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/>',
+          'duenos' => '<circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/>',
+        ];
+      @endphp
 
       @if ($ficha)
         <h2 class="mt-3">Ficha técnica</h2>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">
-          @foreach ($ficha as $etiqueta => $valor)
-            <div class="caja">
-              <p style="font-size:12px;color:#737373;margin:0">{{ $etiqueta }}</p>
-              <p style="font-weight:600;margin:2px 0 0">{{ $valor }}</p>
+        <div class="ficha-tecnica">
+          @foreach ($ficha as [$etiqueta, $valor, $icono])
+            <div class="ficha-dato">
+              <span class="ficha-icono"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{!! $iconosFicha[$icono] !!}</svg></span>
+              <span><small>{{ $etiqueta }}</small><strong>{{ $valor }}</strong></span>
             </div>
           @endforeach
         </div>
       @endif
 
-      @if ($vehiculo->equipamiento)
-        <h2 class="mt-3">Equipamiento</h2>
-        <div style="display:flex;flex-wrap:wrap;gap:8px">
-          @foreach (explode(',', $vehiculo->equipamiento) as $item)
-            <span style="background:var(--gris-claro);border-radius:999px;padding:4px 12px;font-size:14px">{{ trim($item) }}</span>
-          @endforeach
+      <h2 class="mt-3">Descripción</h2>
+      @if ($descripcion['destacados'])
+        <div class="desc-destacados">
+          @foreach ($descripcion['destacados'] as $d)<span>✓ {{ $d }}</span>@endforeach
         </div>
+      @endif
+      <div class="desc-texto">
+        @forelse ($descripcion['parrafos'] as $parrafo)
+          <p>{{ $parrafo }}</p>
+        @empty
+          @unless ($descripcion['destacados'] || $descripcion['equipamiento'])<p class="texto-mutado">El vendedor no agregó una descripción.</p>@endunless
+        @endforelse
+      </div>
+
+      @if ($descripcion['equipamiento'])
+        <h2 class="mt-3">Equipamiento</h2>
+        <ul class="desc-equipamiento">
+          @foreach ($descripcion['equipamiento'] as $item)<li>{{ $item }}</li>@endforeach
+        </ul>
+      @endif
+
+      @if (trim((string) $vehiculo->descripcion) !== '')
+        <details class="desc-original">
+          <summary>Ver texto original del vendedor</summary>
+          <p>{{ $vehiculo->descripcion }}</p>
+        </details>
       @endif
     </div>
 

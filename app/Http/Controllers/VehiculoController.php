@@ -35,16 +35,25 @@ class VehiculoController extends Controller
             ->orderBy('orden')
             ->first();
 
-        $ficha = array_filter([
-            'Versión' => $vehiculo->version,
-            'Transmisión' => Vehiculo::ETIQUETA_TRANSMISION[$vehiculo->transmision] ?? null,
-            'Combustible' => Vehiculo::ETIQUETA_COMBUSTIBLE[$vehiculo->combustible] ?? null,
-            'Cilindrada' => $vehiculo->cilindrada,
-            'Color' => $vehiculo->color,
-            'Puertas' => $vehiculo->puertas,
-            'Tracción' => Vehiculo::ETIQUETA_TRACCION[$vehiculo->traccion] ?? null,
-            'Dueños anteriores' => $vehiculo->duenos_anteriores,
-        ]);
+        // [etiqueta, valor, ícono]: solo se muestran los datos que el vendedor completó.
+        $ficha = array_values(array_filter([
+            ['Año', $vehiculo->anio, 'anio'],
+            ['Kilometraje', number_format($vehiculo->kilometraje, 0, ',', '.') . ' km', 'km'],
+            ['Tipo', Vehiculo::ETIQUETA_TIPO[$vehiculo->tipo] ?? null, 'tipo'],
+            ['Versión', $vehiculo->version, 'version'],
+            ['Transmisión', Vehiculo::ETIQUETA_TRANSMISION[$vehiculo->transmision] ?? null, 'transmision'],
+            ['Combustible', Vehiculo::ETIQUETA_COMBUSTIBLE[$vehiculo->combustible] ?? null, 'combustible'],
+            ['Cilindrada', $vehiculo->cilindrada, 'cilindrada'],
+            ['Color', $vehiculo->color, 'color'],
+            ['Puertas', $vehiculo->puertas, 'puertas'],
+            ['Tracción', Vehiculo::ETIQUETA_TRACCION[$vehiculo->traccion] ?? null, 'traccion'],
+            ['Dueños anteriores', $vehiculo->duenos_anteriores, 'duenos'],
+        ], fn ($dato) => $dato[1] !== null && $dato[1] !== ''));
+
+        $descripcion = \App\Support\DescripcionProfesional::formatear(
+            $vehiculo->descripcion,
+            $vehiculo->equipamiento ? explode(',', $vehiculo->equipamiento) : []
+        );
 
         $numeroWa = preg_replace('/\D/', '', $vehiculo->usuario->telefono_whatsapp ?: config('autoruta.contacto_whatsapp'));
         // Celulares chilenos escritos sin código de país (9XXXXXXXX): wa.me exige el 56.
@@ -53,7 +62,7 @@ class VehiculoController extends Controller
         }
         $mensajeWa = urlencode("Hola, vi tu auto {$vehiculo->marca} {$vehiculo->modelo} {$vehiculo->anio} en " . config('autoruta.nombre_sitio') . ', me gustaría saber más información.');
 
-        return view('vehiculos.show', compact('vehiculo', 'negocioDestacado', 'ficha', 'numeroWa', 'mensajeWa'));
+        return view('vehiculos.show', compact('vehiculo', 'negocioDestacado', 'ficha', 'descripcion', 'numeroWa', 'mensajeWa'));
     }
 
     // Vehículos publicados después de $desde (id), con los mismos filtros del listado.
