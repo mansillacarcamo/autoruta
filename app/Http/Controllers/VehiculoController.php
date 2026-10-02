@@ -10,7 +10,7 @@ class VehiculoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = $this->filtrar(Vehiculo::activos()->with(['fotos', 'usuario']), $request);
+        $query = $this->filtrar(Vehiculo::activos()->with(['fotos', 'usuario']), $request)->premiumPrimero();
 
         match ($request->string('orden')->toString()) {
             'precio_asc' => $query->orderBy('precio'),

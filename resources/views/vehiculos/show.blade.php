@@ -232,6 +232,7 @@
         </script>
       @endif
 
+      @if ($vehiculo->premium)<p class="mt-3" style="margin-bottom:0"><span class="etiqueta-premium etiqueta-premium-ficha">★ Premium</span></p>@endif
       <h1 class="mt-3">{{ $vehiculo->marca }} {{ $vehiculo->modelo }} {{ $vehiculo->anio }}</h1>
       <p class="tarjeta-precio" style="font-size:28px"><span class="precio-desde">Desde</span> {{ $vehiculo->precioFormateado() }}</p>
       @if ($vehiculo->pie)<p class="tarjeta-pie" style="font-size:15px">Pie {{ $vehiculo->pieFormateado() }}</p>@endif

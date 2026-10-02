@@ -1,6 +1,7 @@
-<a href="{{ route('vehiculos.show', $v) }}" class="tarjeta{{ !empty($nuevo) ? ' tarjeta-nueva' : '' }}">
+<a href="{{ route('vehiculos.show', $v) }}" class="tarjeta{{ !empty($nuevo) ? ' tarjeta-nueva' : '' }}{{ $v->premium ? ' es-premium' : '' }}">
   <div class="tarjeta-foto">
     @if (!empty($nuevo))<span class="etiqueta-nuevo">Nuevo</span>@endif
+    @if ($v->premium)<span class="etiqueta-premium">★ Premium</span>@endif
     @if ($logoVendedor = $v->usuario?->logoVisibleUrl())
       <span class="tarjeta-logo"><img src="{{ $logoVendedor }}" alt="{{ $v->usuario->nombre_comercial ?: $v->usuario->name }}" loading="lazy" onerror="this.parentNode.remove()"></span>
     @endif

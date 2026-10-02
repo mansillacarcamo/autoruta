@@ -282,6 +282,34 @@ class AutoRutaTest extends TestCase
         $this->assertTrue(\Illuminate\Support\Facades\Hash::check('nuevaClave123', $usuario->fresh()->password));
     }
 
+    public function test_ticket_premium_pone_el_auto_primero_con_etiqueta(): void
+    {
+        $vendedor = $this->vendedor();
+        $antiguo = $this->aviso($vendedor, ['marca' => 'Lada', 'modelo' => 'Niva', 'publicado_en' => now()->subDays(10)]);
+        $this->aviso($vendedor, ['marca' => 'Kia', 'modelo' => 'Rio', 'publicado_en' => now()]);
+
+        // Un cliente no puede marcar Premium.
+        $this->actingAs($vendedor)->post('/admin/vehiculos/' . $antiguo->id . '/premium', ['premium' => 1])->assertForbidden();
+        $this->assertFalse((bool) $antiguo->fresh()->premium);
+
+        $admin = User::where('usuario', 'cesar')->firstOrFail();
+        $this->actingAs($admin)->get('/admin/vehiculos')->assertOk()->assertSee('Lada Niva')->assertSee('Kia Rio');
+
+        $this->actingAs($admin)->post('/admin/vehiculos/' . $antiguo->id . '/premium', ['premium' => 1])->assertSessionHas('ok');
+        $this->assertTrue($antiguo->fresh()->premium);
+
+        // El Premium (más antiguo) queda primero en el listado y en el inicio, con su etiqueta.
+        $this->get('/vehiculos')->assertSeeInOrder(['Lada Niva', 'Kia Rio'])->assertSee('★ Premium');
+        $this->get('/')->assertSeeInOrder(['Lada Niva', 'Kia Rio']);
+        $this->get('/vehiculos/' . $antiguo->id)->assertSee('★ Premium');
+        $this->actingAs($admin)->get('/admin/vehiculos?filtro=premium')->assertSee('Lada Niva')->assertDontSee('Kia Rio');
+
+        // Quitar el ticket lo devuelve a su lugar.
+        $this->actingAs($admin)->post('/admin/vehiculos/' . $antiguo->id . '/premium', ['premium' => 0])->assertSessionHas('ok');
+        $this->assertFalse($antiguo->fresh()->premium);
+        $this->get('/vehiculos')->assertSeeInOrder(['Kia Rio', 'Lada Niva'])->assertDontSee('★ Premium');
+    }
+
     public function test_popup_del_inicio_se_administra_desde_admin(): void
     {
         $this->actingAs($this->vendedor())->get('/admin/popup')->assertForbidden();
@@ -322,7 +350,7 @@ class AutoRutaTest extends TestCase
         $this->actingAs($cliente)->get('/admin')->assertForbidden();
 
         $admin = User::where('usuario', 'cesar')->firstOrFail();
-        foreach (['/admin', '/admin/negocios', '/admin/negocios/nuevo', '/admin/portada', '/admin/usuarios', '/admin/configuracion'] as $url) {
+        foreach (['/admin', '/admin/negocios', '/admin/negocios/nuevo', '/admin/portada', '/admin/popup', '/admin/vehiculos', '/admin/usuarios', '/admin/configuracion'] as $url) {
             $this->actingAs($admin)->get($url)->assertOk();
         }
 

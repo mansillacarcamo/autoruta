@@ -12,6 +12,7 @@
   @php
     $menuAdmin = [
       ['admin.inicio', 'admin.inicio', 'Resumen', '<path d="M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z"/>'],
+      ['admin.vehiculos.index', 'admin.vehiculos.*', 'Vehículos', '<path d="M3 15v-3l2.5-5h13L21 12v3"/><path d="M2 15h20v3H2z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>'],
       ['admin.negocios.index', 'admin.negocios.*', 'Publicidad', '<path d="M3 11l18-8v18L3 13z"/><path d="M7 13v5a2 2 0 0 0 4 0v-3"/>'],
       ['admin.portada.index', 'admin.portada.*', 'Portada', '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/>'],
       ['admin.popup.index', 'admin.popup.*', 'Pop-up', '<rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="10" height="8" rx="1"/><path d="M15 3l3 3"/>'],

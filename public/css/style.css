@@ -350,6 +350,28 @@ body { overflow-x: clip; }
 @media (max-width: 480px) { .cookies-fondo { align-items: flex-end; } .cookies-botones { grid-template-columns: 1fr; } }
 
 /* Categorías por tipo de vehículo */
+/* Premium: etiqueta dorada y borde en las tarjetas (se activa desde Admin > Vehículos) */
+.tarjeta.es-premium { border: 2px solid #d4a017; box-shadow: 0 6px 18px rgba(212,160,23,.25); }
+.tarjeta.es-premium:hover { border-color: #b8860b; }
+.etiqueta-premium { position: absolute; top: 10px; right: 10px; z-index: 2; display: inline-flex; align-items: center; gap: 4px; padding: 5px 11px; border-radius: 999px; background: linear-gradient(135deg, #f7d774, #d4a017 55%, #b8860b); color: #1f1600; font-size: 11px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 4px 12px rgba(0,0,0,.3); }
+.etiqueta-premium-ficha { position: static; margin: 0 0 8px; font-size: 12px; }
+/* Admin > Vehículos */
+.admin-vehiculos-filtros { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.admin-vehiculos-filtros input[type=search] { flex: 1; min-width: 220px; }
+.admin-vehiculos-filtros input, .admin-vehiculos-filtros select { padding: 9px 12px; border: 1px solid #d4d4d4; border-radius: 8px; font: inherit; font-size: 14px; }
+.admin-vehiculo { display: flex; align-items: center; gap: 10px; color: inherit; }
+.admin-vehiculo img { width: 64px; height: 48px; border-radius: 8px; object-fit: cover; background: var(--gris-claro); flex-shrink: 0; }
+.admin-vehiculo strong { display: block; }
+.admin-vehiculo small { color: #737373; }
+.admin-vehiculo:hover strong { color: var(--acento); }
+.fila-premium td { background: #fffbeb; }
+.ticket-premium { display: inline-flex; cursor: pointer; }
+.ticket-premium input { position: absolute; opacity: 0; pointer-events: none; }
+.ticket-premium span { padding: 6px 12px; border-radius: 999px; border: 1.5px dashed #c9c9cf; color: #737373; font-size: 12.5px; font-weight: 800; white-space: nowrap; transition: .15s; }
+.ticket-premium:hover span { border-color: #d4a017; color: #a16207; }
+.ticket-premium input:checked + span { border-style: solid; border-color: #d4a017; background: linear-gradient(135deg, #f7d774, #d4a017 55%, #b8860b); color: #1f1600; box-shadow: 0 3px 10px rgba(212,160,23,.35); }
+.ticket-premium input:focus-visible + span { outline: 2px solid var(--acento); outline-offset: 2px; }
+
 /* Pop-up del inicio (Admin > Pop-up) */
 .popup-fondo { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(4,5,13,.72); animation: popup-fondo .25s ease-out; }
 .popup-fondo[hidden] { display: none; }

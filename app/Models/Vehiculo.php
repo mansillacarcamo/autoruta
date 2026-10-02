@@ -15,9 +15,12 @@ class Vehiculo extends Model
         'vistas', 'publicado_en', 'vence_en',
     ];
 
+    // "premium" queda fuera de $fillable a propósito: solo el admin lo cambia (Admin > Vehículos).
     protected $casts = [
         'publicado_en' => 'datetime',
         'vence_en' => 'datetime',
+        'premium' => 'boolean',
+        'premium_desde' => 'datetime',
     ];
 
     public const ETIQUETA_TIPO = [
@@ -47,6 +50,12 @@ class Vehiculo extends Model
     {
         return $query->where('estado', 'activa')
             ->where(fn ($q) => $q->whereNull('vence_en')->orWhere('vence_en', '>', now()));
+    }
+
+    // Los Premium van primero (el último activado arriba); después, el orden que se pida.
+    public function scopePremiumPrimero($query)
+    {
+        return $query->orderByDesc('premium')->orderByDesc('premium_desde');
     }
 
     public function estaVencida(): bool
