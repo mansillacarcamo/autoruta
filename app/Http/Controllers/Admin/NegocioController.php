@@ -105,22 +105,27 @@ class NegocioController extends Controller
             'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
             'archivo' => 'required|file|mimes:jpg,jpeg,png,webp,mp4,webm|max:20480',
             'capa' => 'nullable|file|mimes:png,webp|max:5120',
+            'videoFondo' => 'nullable|file|mimes:mp4,webm|max:20480',
             'opacidadCapa' => 'nullable|integer|min:30|max:100',
         ]);
 
+        $tipo = $datos['tipoMedio'];
         $nombre = \App\Support\Archivos::guardar(
             $request->file('archivo'),
             'negocios',
             'neg' . $negocio->id . '_' . time() . '.' . $request->file('archivo')->extension()
         );
 
-        // La capa transparente solo aplica a banners de video.
-        $capa = $datos['tipoMedio'] === 'video' && $request->hasFile('capa')
-            ? $this->guardarCapa($request, $negocio)
-            : null;
+        // Video con imagen encima: subido como video + capa, o como imagen + video de fondo.
+        $capa = null;
+        if ($tipo === 'video' && $request->hasFile('capa')) {
+            $capa = $this->guardarCapa($request, $negocio);
+        } elseif ($tipo === 'imagen' && $request->hasFile('videoFondo')) {
+            [$tipo, $capa, $nombre] = ['video', $nombre, $this->guardarVideoFondo($request, $negocio)];
+        }
 
         $negocio->banners()->create([
-            'tipo_medio' => $datos['tipoMedio'],
+            'tipo_medio' => $tipo,
             'archivo' => $nombre,
             'archivo_capa' => $capa,
             'opacidad_capa' => (int) ($datos['opacidadCapa'] ?? 100),
@@ -139,17 +144,23 @@ class NegocioController extends Controller
             'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
             'posicion' => 'required|in:' . implode(',', array_keys(Anunciante::POSICIONES)),
             'capa' => 'nullable|file|mimes:png,webp|max:5120',
+            'videoFondo' => 'nullable|file|mimes:mp4,webm|max:20480',
             'opacidadCapa' => 'nullable|integer|min:30|max:100',
             'quitarCapa' => 'nullable|boolean',
         ]);
 
         $cambios = ['link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']), 'posicion' => $datos['posicion']];
 
-        // Reemplazar o quitar la capa del video (la anterior se borra del almacenamiento).
-        if ($banner->tipo_medio === 'video' && isset($datos['opacidadCapa'])) {
+        if (isset($datos['opacidadCapa'])) {
             $cambios['opacidad_capa'] = (int) $datos['opacidadCapa'];
         }
 
+        // Banner de imagen al que se le agrega video de fondo: la imagen pasa a ir encima del video.
+        if ($banner->tipo_medio === 'imagen' && $request->hasFile('videoFondo')) {
+            $cambios += ['tipo_medio' => 'video', 'archivo_capa' => $banner->archivo, 'archivo' => $this->guardarVideoFondo($request, $negocio)];
+        }
+
+        // Reemplazar o quitar la capa del video (la anterior se borra del almacenamiento).
         if ($banner->tipo_medio === 'video' && ($request->hasFile('capa') || $request->boolean('quitarCapa'))) {
             if ($banner->archivo_capa) {
                 \App\Support\Archivos::borrar('negocios/' . $banner->archivo_capa);
@@ -160,6 +171,15 @@ class NegocioController extends Controller
         $banner->update($cambios);
 
         return back()->with('ok', 'Banner actualizado.');
+    }
+
+    private function guardarVideoFondo(Request $request, Anunciante $negocio): string
+    {
+        return \App\Support\Archivos::guardar(
+            $request->file('videoFondo'),
+            'negocios',
+            'neg' . $negocio->id . '_' . time() . '_fondo.' . $request->file('videoFondo')->extension()
+        );
     }
 
     private function guardarCapa(Request $request, Anunciante $negocio): string

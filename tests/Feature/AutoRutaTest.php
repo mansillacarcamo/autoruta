@@ -576,6 +576,43 @@ class AutoRutaTest extends TestCase
         $this->assertNull($banner->fresh()->archivo_capa);
     }
 
+    public function test_banner_de_imagen_con_video_de_fondo(): void
+    {
+        $admin = User::where('usuario', 'cesar')->firstOrFail();
+        $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Fondo', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
+
+        // Banner de imagen ya subido: al agregarle video de fondo, la imagen pasa a ir encima.
+        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
+            'tipoMedio' => 'imagen', 'posicion' => 'lateral_izquierdo', 'linkUrl' => 'www.fondo.cl',
+            'archivo' => UploadedFile::fake()->image('diseno.png', 320, 1200),
+        ])->assertSessionHas('ok');
+        $banner = $negocio->banners()->firstOrFail();
+        $imagen = $banner->archivo;
+
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
+            'linkUrl' => 'www.fondo.cl', 'posicion' => 'lateral_izquierdo', 'opacidadCapa' => '80',
+            'videoFondo' => UploadedFile::fake()->create('fondo.mp4', 500, 'video/mp4'),
+        ])->assertSessionHas('ok');
+        $banner->refresh();
+        $this->assertSame('video', $banner->tipo_medio);
+        $this->assertSame($imagen, $banner->archivo_capa);
+        $this->assertSame(80, $banner->opacidad_capa);
+
+        // Banner nuevo de imagen subido directamente con video de fondo.
+        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
+            'tipoMedio' => 'imagen', 'posicion' => 'lateral_derecho', 'linkUrl' => 'www.fondo.cl', 'opacidadCapa' => '75',
+            'archivo' => UploadedFile::fake()->image('diseno2.png', 320, 1200),
+            'videoFondo' => UploadedFile::fake()->create('fondo2.mp4', 500, 'video/mp4'),
+        ])->assertSessionHas('ok');
+        $nuevo = $negocio->banners()->where('posicion', 'lateral_derecho')->firstOrFail();
+        $this->assertSame('video', $nuevo->tipo_medio);
+        $this->assertStringEndsWith('.png', $nuevo->archivo_capa);
+        $this->assertStringEndsWith('.mp4', $nuevo->archivo);
+
+        auth()->logout();
+        $this->get('/')->assertSee('opacity:0.8', false)->assertSee('opacity:0.75', false);
+    }
+
     public function test_banner_lateral_5_se_muestra_en_costado_y_en_fila_5_del_celular(): void
     {
         $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Lateral 5', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);

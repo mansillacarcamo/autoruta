@@ -72,6 +72,12 @@
               <input type="range" name="opacidadCapa" min="30" max="100" step="5" value="{{ $b->opacidad_capa }}"
                      data-opacidad data-previa="capaPrevia{{ $b->id }}">
               <p class="admin-ayuda">Bájala para que el video se vea a través del diseño. Entre 75% y 85% suele verse el movimiento sin perder los textos. Mueve la barra para verlo en la vista previa y luego Guardar.</p>
+            @else
+              <label>Video de fondo (opcional)</label>
+              <input type="file" name="videoFondo" accept="video/mp4,video/webm">
+              <label>Opacidad de la imagen: <strong data-valor-opacidad>{{ $b->opacidad_capa }}%</strong></label>
+              <input type="range" name="opacidadCapa" min="30" max="100" step="5" value="{{ $b->opacidad_capa }}" data-opacidad>
+              <p class="admin-ayuda">Sube un video (MP4 o WEBM, máx. 20 MB, mismo formato que la imagen) y esta imagen pasa a ir encima de él con la opacidad elegida. Entre 75% y 85% se ve el video sin perder los textos.</p>
             @endif
             <label>Link al hacer clic</label>
             <input type="text" name="linkUrl" required value="{{ $b->link_url }}" placeholder="https://www.minegocio.cl">
@@ -114,14 +120,22 @@
       <div class="form-grupo" id="campoCapa" hidden>
         <label>Imagen encima del video (opcional)</label>
         <input type="file" name="capa" accept="image/png,image/webp">
-        <p class="admin-ayuda">PNG o WEBP (logo, teléfono, texto) que queda fijo sobre el video. Hazla del mismo tamaño que el video para que calce. Máximo 5 MB. Si tiene fondo sólido, baja la opacidad para que se vea el video detrás.</p>
+        <p class="admin-ayuda">PNG o WEBP (logo, teléfono, texto) que queda fijo sobre el video. Hazla del mismo tamaño que el video para que calce. Máximo 5 MB.</p>
+      </div>
+      <div class="form-grupo" id="campoVideoFondo">
+        <label>Video de fondo (opcional)</label>
+        <input type="file" name="videoFondo" accept="video/mp4,video/webm">
+        <p class="admin-ayuda">MP4 o WEBM, máximo 20 MB, mismo formato que la imagen. La imagen queda encima del video.</p>
+      </div>
+      <div class="form-grupo">
         <label>Opacidad de la imagen: <strong data-valor-opacidad>100%</strong></label>
         <input type="range" name="opacidadCapa" min="30" max="100" step="5" value="100" data-opacidad>
+        <p class="admin-ayuda">Solo se usa cuando hay video e imagen juntos. Bájala para que el video se vea a través del diseño (75%–85% recomendado).</p>
       </div>
       <script>
         (function () {
-          var tipo = document.getElementById('tipoMedioNuevo'), campo = document.getElementById('campoCapa');
-          function mostrar() { campo.hidden = tipo.value !== 'video'; }
+          var tipo = document.getElementById('tipoMedioNuevo'), campo = document.getElementById('campoCapa'), fondo = document.getElementById('campoVideoFondo');
+          function mostrar() { campo.hidden = tipo.value !== 'video'; fondo.hidden = tipo.value !== 'imagen'; }
           tipo.addEventListener('change', mostrar);
           mostrar();
         })();
