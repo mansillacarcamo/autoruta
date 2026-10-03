@@ -1,5 +1,6 @@
 {{-- Versión celular/tablet de los banners laterales (en pantallas grandes van a los costados).
-     $fila 1, 2 o 3: muestra "Lateral izquierdo N" y "Lateral derecho N" uno al lado del otro. --}}
+     $fila 1 a 5: muestra "Lateral izquierdo N" y "Lateral derecho N" uno al lado del otro.
+     Las filas 4 y 5 no muestran el aviso de "espacio disponible" si están vacías. --}}
 @php
     $sufijo = $fila > 1 ? '_' . $fila : '';
     $posicionesFila = ['lateral_izquierdo' . $sufijo, 'lateral_derecho' . $sufijo];
@@ -12,6 +13,7 @@
         $bannersFila->firstWhere('posicion', $posicionesFila[1]),
     ];
 @endphp
+@if ($fila <= 3 || $parFila[0] || $parFila[1])
 <div class="laterales-movil">
   @if ($parFila[0] || $parFila[1])
     <p class="laterales-movil-titulo">Publicidad</p>
@@ -40,3 +42,4 @@
     </a>
   @endif
 </div>
+@endif

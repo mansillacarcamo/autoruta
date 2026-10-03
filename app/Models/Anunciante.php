@@ -26,9 +26,13 @@ class Anunciante extends Model
         'lateral_izquierdo' => ['Lateral izquierdo 1', '160 × 600 px'],
         'lateral_izquierdo_2' => ['Lateral izquierdo 2', '160 × 600 px'],
         'lateral_izquierdo_3' => ['Lateral izquierdo 3', '160 × 600 px'],
+        'lateral_izquierdo_4' => ['Lateral izquierdo 4', '160 × 600 px'],
+        'lateral_izquierdo_5' => ['Lateral izquierdo 5', '160 × 600 px'],
         'lateral_derecho' => ['Lateral derecho 1', '160 × 600 px'],
         'lateral_derecho_2' => ['Lateral derecho 2', '160 × 600 px'],
         'lateral_derecho_3' => ['Lateral derecho 3', '160 × 600 px'],
+        'lateral_derecho_4' => ['Lateral derecho 4', '160 × 600 px'],
+        'lateral_derecho_5' => ['Lateral derecho 5', '160 × 600 px'],
         'inicio' => ['Inicio · "Auspiciado por"', '1280 × 720 px'],
         'listado' => ['Ficha de vehículo · negocio destacado', '1280 × 720 px'],
     ];
@@ -36,9 +40,23 @@ class Anunciante extends Model
     public const ETIQUETA_POSICION = [
         'superior' => 'Superior', 'inferior' => 'Inferior',
         'lateral_izquierdo' => 'Lateral izquierdo 1', 'lateral_izquierdo_2' => 'Lateral izquierdo 2', 'lateral_izquierdo_3' => 'Lateral izquierdo 3',
+        'lateral_izquierdo_4' => 'Lateral izquierdo 4', 'lateral_izquierdo_5' => 'Lateral izquierdo 5',
         'lateral_derecho' => 'Lateral derecho 1', 'lateral_derecho_2' => 'Lateral derecho 2', 'lateral_derecho_3' => 'Lateral derecho 3',
+        'lateral_derecho_4' => 'Lateral derecho 4', 'lateral_derecho_5' => 'Lateral derecho 5',
         'inicio' => 'Inicio', 'listado' => 'Ficha de vehículo', 'lateral' => 'Lateral',
     ];
+
+    // Cantidad de avisos laterales por lado (lateral_izquierdo, lateral_izquierdo_2 … lateral_izquierdo_N).
+    public const LATERALES_POR_LADO = 5;
+
+    /** @return list<string> posiciones laterales de un lado ('izquierdo' o 'derecho'), en orden */
+    public static function posicionesLaterales(string $lado): array
+    {
+        return array_map(
+            fn ($n) => 'lateral_' . $lado . ($n > 1 ? '_' . $n : ''),
+            range(1, self::LATERALES_POR_LADO)
+        );
+    }
 
     public function banners(): HasMany
     {

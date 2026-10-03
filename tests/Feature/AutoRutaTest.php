@@ -537,4 +537,17 @@ class AutoRutaTest extends TestCase
         // En otras páginas se muestra la fila 1.
         $this->assertSame(1, substr_count($this->get('/vehiculos')->getContent(), 'class="laterales-movil"'));
     }
+
+    public function test_banner_lateral_5_se_muestra_en_costado_y_en_fila_5_del_celular(): void
+    {
+        $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Lateral 5', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
+        $banner = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 'lat5.jpg', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'lateral_izquierdo_5']);
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        // Costado (pantallas grandes) + fila 5 del celular; la fila 4 vacía no se muestra.
+        $this->assertSame(2, substr_count($html, route('publicidad.clic', $banner)));
+        $this->assertSame(4, substr_count($html, 'class="laterales-movil"'));
+        $this->assertSame(10, substr_count($html, 'class="banner-lateral-tramo"'));
+    }
 }

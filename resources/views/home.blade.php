@@ -71,6 +71,8 @@
 </section>
 @endif
 
+@include('partials.banners-laterales-movil', ['fila' => 4])
+
 
 
 <script>
@@ -190,6 +192,8 @@
     <a href="{{ route('register') }}" class="btn btn-acento promo-boton">Publicar mi vehículo →</a>
   </div>
 </section>
+
+@include('partials.banners-laterales-movil', ['fila' => 5])
 
 <script>
   (function () {

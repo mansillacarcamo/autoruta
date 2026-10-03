@@ -1,55 +1,102 @@
 @php
-    // Tres posiciones por lado: lateral_izquierdo, lateral_izquierdo_2, lateral_izquierdo_3 (ídem derecho).
-    // En escritorio se muestran en un solo espacio fijo (sticky) que rota entre los avisos contratados,
-    // así los tres anunciantes reciben la misma exposición.
-    $posicionesLado = ['lateral_' . $lado, 'lateral_' . $lado . '_2', 'lateral_' . $lado . '_3'];
+    // Cinco posiciones por lado: lateral_izquierdo, lateral_izquierdo_2 … lateral_izquierdo_5 (ídem derecho).
+    // La columna se divide en tramos a lo largo de la página: cada aviso queda fijo (sticky) mientras se
+    // recorre su tramo y luego lo reemplaza el siguiente. Si la página es corta y no caben todos los tramos,
+    // el script de abajo junta los avisos sobrantes en los tramos que sí caben y los hace rotar.
+    $posicionesLado = \App\Models\Anunciante::posicionesLaterales($lado);
     $bannersLado = \App\Models\AnuncianteBanner::whereIn('posicion', array_merge($posicionesLado, ['lateral']))
         ->whereHas('anunciante', fn ($q) => $q->activos())
         ->orderBy('orden')
         ->get();
-    $rotacion = collect($posicionesLado)
-        ->map(fn ($posicion, $i) => $bannersLado->firstWhere('posicion', $posicion)
-            ?? ($i === 0 ? $bannersLado->firstWhere('posicion', 'lateral') : null))
-        ->filter()
-        ->values();
 @endphp
 <div class="banner-lateral-slot">
-  <div class="banner-lateral-columna">
-    @if ($rotacion->isEmpty())
-      @include('partials.espacio-publicitario', ['estilo' => 'width:160px;aspect-ratio:160/600', 'posicion' => $posicionesLado[0]])
-    @else
-      <div class="banner-lateral-rotador banner-lateral-rotador--{{ $lado }}" data-rotador>
-        @foreach ($rotacion as $i => $bannerLateral)
-          <a href="{{ $bannerLateral->urlClic() }}" target="_blank" rel="sponsored noopener"
-             class="banner-lateral-item{{ $i === 0 ? ' activo' : '' }}" @if ($i > 0) tabindex="-1" aria-hidden="true" @endif>
-            @if ($bannerLateral->tipo_medio === 'video')
-              <video src="{{ $bannerLateral->url() }}" muted loop playsinline @if ($i === 0) autoplay @endif></video>
-            @else
-              <img src="{{ $bannerLateral->url() }}" alt="Publicidad" @if ($i > 0) loading="lazy" @endif>
-            @endif
-          </a>
-        @endforeach
+  <div class="banner-lateral-columna banner-lateral-columna--{{ $lado }}" data-columna-lateral>
+    @foreach ($posicionesLado as $i => $posicionLateral)
+      @php
+        $bannerLateral = $bannersLado->firstWhere('posicion', $posicionLateral)
+            ?? ($i === 0 ? $bannersLado->firstWhere('posicion', 'lateral') : null);
+      @endphp
+      <div class="banner-lateral-tramo">
+        <div class="banner-lateral-pegado">
+          @if ($bannerLateral)
+            <div class="banner-lateral-rotador" data-rotador>
+              <a href="{{ $bannerLateral->urlClic() }}" target="_blank" rel="sponsored noopener" class="banner-lateral-item activo">
+                @if ($bannerLateral->tipo_medio === 'video')
+                  <video src="{{ $bannerLateral->url() }}" muted loop playsinline autoplay></video>
+                @else
+                  <img src="{{ $bannerLateral->url() }}" alt="Publicidad" loading="lazy">
+                @endif
+              </a>
+            </div>
+            <p class="banner-lateral-titulo">Publicidad</p>
+          @else
+            @include('partials.espacio-publicitario', ['estilo' => 'width:160px;aspect-ratio:160/600', 'posicion' => $posicionLateral])
+          @endif
+        </div>
       </div>
-    @endif
-    <p class="banner-lateral-titulo">Publicidad</p>
+    @endforeach
   </div>
 </div>
 
 @once
 <script>
-  // Rota los avisos laterales cada 7 segundos; se pausa con el mouse encima o con la pestaña oculta.
-  document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('[data-rotador]').forEach(function (rotador) {
-      var items = rotador.querySelectorAll('.banner-lateral-item');
-      if (items.length < 2) return;
-      var actual = 0, pausado = false;
-      rotador.addEventListener('mouseenter', function () { pausado = true; });
-      rotador.addEventListener('mouseleave', function () { pausado = false; });
-      setInterval(function () {
-        if (pausado || document.hidden) return;
-        var anterior = items[actual];
-        actual = (actual + 1) % items.length;
-        var siguiente = items[actual];
+  (function () {
+    var ALTO_TRAMO = 660; // aviso 160×600 + rótulo + separación
+
+    function crear(tag, clase) { var el = document.createElement(tag); el.className = clase; return el; }
+
+    // Arma los tramos según cuántos caben en el alto de la columna: primero los avisos contratados
+    // (repartidos en ronda si sobran) y después, si queda espacio, los "Espacio disponible".
+    function distribuir(columna) {
+      if (!columna.offsetParent) return; // columna oculta (pantalla chica)
+      var caben = Math.max(1, Math.floor(columna.clientHeight / ALTO_TRAMO));
+      if (columna._caben === caben) return;
+      columna._caben = caben;
+
+      var reales = columna._reales, vacios = columna._vacios;
+      var nReales = Math.min(reales.length, caben);
+      var nVacios = Math.min(vacios.length, caben - nReales);
+      columna.innerHTML = '';
+
+      for (var t = 0; t < nReales; t++) {
+        var tramo = crear('div', 'banner-lateral-tramo');
+        var pegado = crear('div', 'banner-lateral-pegado');
+        var rotador = crear('div', 'banner-lateral-rotador');
+        rotador.setAttribute('data-rotador', '');
+        for (var i = t; i < reales.length; i += nReales) {
+          var item = reales[i], activo = i === t;
+          item.classList.remove('saliendo');
+          item.classList.toggle('activo', activo);
+          if (activo) { item.removeAttribute('tabindex'); item.removeAttribute('aria-hidden'); }
+          else { item.setAttribute('tabindex', '-1'); item.setAttribute('aria-hidden', 'true'); }
+          rotador.appendChild(item);
+          var video = item.querySelector('video');
+          if (video) { if (activo) video.play().catch(function () {}); else video.pause(); }
+        }
+        var titulo = crear('p', 'banner-lateral-titulo');
+        titulo.textContent = 'Publicidad';
+        pegado.appendChild(rotador);
+        pegado.appendChild(titulo);
+        tramo.appendChild(pegado);
+        columna.appendChild(tramo);
+      }
+      for (var v = 0; v < nVacios; v++) {
+        var tramoVacio = crear('div', 'banner-lateral-tramo');
+        var pegadoVacio = crear('div', 'banner-lateral-pegado');
+        pegadoVacio.appendChild(vacios[v]);
+        tramoVacio.appendChild(pegadoVacio);
+        columna.appendChild(tramoVacio);
+      }
+    }
+
+    // Avanza cada rotador con más de un aviso; se pausa con el mouse encima o con la pestaña oculta.
+    function rotar() {
+      if (document.hidden) return;
+      document.querySelectorAll('[data-rotador]').forEach(function (rotador) {
+        var items = rotador.querySelectorAll('.banner-lateral-item');
+        if (items.length < 2 || rotador.matches(':hover')) return;
+        var actual = Array.prototype.findIndex.call(items, function (el) { return el.classList.contains('activo'); });
+        var anterior = items[Math.max(actual, 0)], siguiente = items[(actual + 1) % items.length];
         anterior.classList.remove('activo');
         anterior.classList.add('saliendo');
         // Terminada la salida, vuelve a su posición de entrada sin animarse (ya está oculto).
@@ -68,8 +115,19 @@
         siguiente.removeAttribute('aria-hidden');
         var videoSiguiente = siguiente.querySelector('video');
         if (videoSiguiente) videoSiguiente.play().catch(function () {});
-      }, 7000);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('[data-columna-lateral]').forEach(function (columna) {
+        columna._reales = Array.prototype.slice.call(columna.querySelectorAll('.banner-lateral-item'));
+        columna._vacios = Array.prototype.slice.call(columna.querySelectorAll('.espacio-publicitario'));
+        distribuir(columna);
+        // La página crece al cargar fotos o llegar autos nuevos: se recalculan los tramos.
+        if (window.ResizeObserver) new ResizeObserver(function () { distribuir(columna); }).observe(columna);
+      });
+      setInterval(rotar, 7000);
     });
-  });
+  })();
 </script>
 @endonce
