@@ -8,6 +8,7 @@
       <h2>Vehículos publicados</h2>
       <p class="texto-mutado" style="font-size:14px">{{ $vehiculos->total() }} aviso(s) · <strong style="color:#a16207">{{ $totalPremium }} Premium</strong>. Activa el ticket <strong>Premium</strong> para que un auto salga en primer lugar en la web con la etiqueta dorada.</p>
     </div>
+    <a href="{{ route('admin.vehiculos.crear') }}" class="btn btn-acento" style="white-space:nowrap">+ Subir auto</a>
   </div>
 
   <form method="get" class="admin-vehiculos-filtros">
@@ -24,7 +25,7 @@
   @else
     <div class="admin-tabla-envoltura">
       <table class="admin-tabla">
-        <thead><tr><th>Vehículo</th><th>Vendedor</th><th>Precio</th><th>Estado</th><th>Visitas</th><th>Publicado</th><th style="text-align:center">Premium</th></tr></thead>
+        <thead><tr><th>Vehículo</th><th>Vendedor</th><th>Precio</th><th>Estado</th><th>Visitas</th><th>Publicado</th><th style="text-align:center">Premium</th><th>Acciones</th></tr></thead>
         <tbody>
           @foreach ($vehiculos as $v)
             <tr class="{{ $v->premium ? 'fila-premium' : '' }}">
@@ -53,6 +54,15 @@
                     <span>★ Premium</span>
                   </label>
                 </form>
+              </td>
+              <td>
+                <div class="admin-acciones">
+                  <a href="{{ route('admin.vehiculos.editar', $v) }}" class="btn btn-outline-oscuro btn-chico">Editar</a>
+                  <form method="post" action="{{ route('admin.vehiculos.eliminar', $v) }}" onsubmit="return confirm('¿Eliminar {{ $v->marca }} {{ $v->modelo }}? Esta acción no se puede deshacer.')">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="btn-peligro">Eliminar</button>
+                  </form>
+                </div>
               </td>
             </tr>
           @endforeach

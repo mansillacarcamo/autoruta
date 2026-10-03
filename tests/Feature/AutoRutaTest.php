@@ -282,6 +282,39 @@ class AutoRutaTest extends TestCase
         $this->assertTrue(\Illuminate\Support\Facades\Hash::check('nuevaClave123', $usuario->fresh()->password));
     }
 
+    public function test_admin_edita_sube_y_elimina_autos_de_cualquier_vendedor(): void
+    {
+        $vendedor = $this->vendedor(['telefono_whatsapp' => '+56933334444']);
+        $this->actingAs($vendedor)->get('/admin/vehiculos/nuevo')->assertForbidden();
+
+        $admin = User::where('usuario', 'cesar')->firstOrFail();
+        $telefonoAdmin = $admin->telefono_whatsapp;
+        $this->actingAs($admin)->get('/admin/vehiculos/nuevo')->assertOk()->assertSee('Publicar a nombre de')->assertSee('Vendedor Prueba');
+
+        // Sube un auto a nombre del vendedor.
+        $this->actingAs($admin)
+            ->postJson('/admin/vehiculos', $this->datosAviso(['publicarComo' => $vendedor->id, 'telefonoWhatsapp' => '+56955556666']))
+            ->assertOk()->assertJson(['redirect' => route('admin.vehiculos.index')]);
+        $vehiculo = Vehiculo::firstOrFail();
+        $this->assertSame($vendedor->id, (int) $vehiculo->user_id);
+        $this->assertSame('+56955556666', $vendedor->fresh()->telefono_whatsapp);
+
+        // Edita el aviso ajeno sin tocar los datos de contacto del admin.
+        $this->actingAs($admin)->get('/admin/vehiculos')->assertSee('Editar');
+        $this->actingAs($admin)->get("/admin/vehiculos/{$vehiculo->id}/editar")->assertOk()->assertSee('Guardar cambios')->assertSee('+56955556666');
+        $this->actingAs($admin)
+            ->putJson("/admin/vehiculos/{$vehiculo->id}", $this->datosAviso(['precio' => '9.990.000', 'fotos' => [], 'telefonoWhatsapp' => '+56955556666']))
+            ->assertOk();
+        $this->assertSame(9990000, (int) $vehiculo->fresh()->precio);
+        $this->assertSame($telefonoAdmin, $admin->fresh()->telefono_whatsapp);
+
+        $primera = $vehiculo->fotos()->first();
+        $this->actingAs($admin)->deleteJson("/panel/vehiculos/{$vehiculo->id}/fotos/{$primera->id}")->assertOk();
+
+        $this->actingAs($admin)->delete("/admin/vehiculos/{$vehiculo->id}")->assertSessionHas('ok');
+        $this->assertNull($vehiculo->fresh());
+    }
+
     public function test_ticket_premium_pone_el_auto_primero_con_etiqueta(): void
     {
         $vendedor = $this->vendedor();

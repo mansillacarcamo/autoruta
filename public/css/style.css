@@ -363,6 +363,9 @@ body { overflow-x: clip; }
 .admin-vehiculo img { width: 64px; height: 48px; border-radius: 8px; object-fit: cover; background: var(--gris-claro); flex-shrink: 0; }
 .admin-vehiculo strong { display: block; }
 .admin-vehiculo small { color: #737373; }
+.admin-acciones { display: flex; align-items: center; gap: 10px; }
+.admin-acciones .btn-chico { padding: 6px 12px; font-size: 13px; }
+.admin-acciones .btn-peligro { font-size: 13px; }
 .admin-vehiculo:hover strong { color: var(--acento); }
 .fila-premium td { background: #fffbeb; }
 .ticket-premium { display: inline-flex; cursor: pointer; }

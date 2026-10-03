@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Vehiculo;
 use App\Models\VehiculoFoto;
 use App\Support\Archivos;
@@ -26,7 +27,7 @@ class PanelController extends Controller
             return redirect()->route('panel')->with('error', 'Las cuentas de negocio no publican vehículos.');
         }
 
-        return view('panel.publicar', ['vehiculo' => null]);
+        return view('panel.publicar', ['vehiculo' => null] + $this->datosVista($request));
     }
 
     public function guardar(Request $request)
@@ -43,6 +44,11 @@ class PanelController extends Controller
 
         $datos = $this->validar($request, null);
 
+        // El administrador puede publicar a nombre de cualquier vendedor.
+        if ($usuario->esAdmin() && $request->filled('publicarComo')) {
+            $usuario = User::where('rol', '!=', 'negocio')->findOrFail($request->integer('publicarComo'));
+        }
+
         $vehiculo = Vehiculo::create($this->camposVehiculo($datos) + [
             'user_id' => $usuario->id,
             'estado' => 'activa',
@@ -51,22 +57,22 @@ class PanelController extends Controller
         ]);
 
         $this->guardarFotos($vehiculo, $request->file('fotos', []));
-        $this->actualizarContacto($request, $datos);
+        $this->actualizarContacto($usuario, $datos);
 
         return $this->responder($request, 'Vehículo publicado.');
     }
 
     public function editar(Request $request, Vehiculo $vehiculo)
     {
-        abort_unless((int) $vehiculo->user_id === (int) $request->user()->id, 403);
+        $this->autorizar($request, $vehiculo);
         $vehiculo->load('fotos');
 
-        return view('panel.publicar', compact('vehiculo'));
+        return view('panel.publicar', compact('vehiculo') + $this->datosVista($request));
     }
 
     public function actualizar(Request $request, Vehiculo $vehiculo)
     {
-        abort_unless((int) $vehiculo->user_id === (int) $request->user()->id, 403);
+        $this->autorizar($request, $vehiculo);
 
         if (! $request->has('tipo')) {
             return $this->formularioVacio($request);
@@ -88,14 +94,15 @@ class PanelController extends Controller
         $vehiculo->update($this->camposVehiculo($datos));
 
         $this->guardarFotos($vehiculo, $nuevas, $actuales);
-        $this->actualizarContacto($request, $datos);
+        $this->actualizarContacto($vehiculo->usuario, $datos);
 
         return $this->responder($request, 'Publicación actualizada.');
     }
 
     public function eliminarFoto(Request $request, Vehiculo $vehiculo, VehiculoFoto $foto)
     {
-        abort_unless((int) $vehiculo->user_id === (int) $request->user()->id && (int) $foto->vehiculo_id === (int) $vehiculo->id, 403);
+        $this->autorizar($request, $vehiculo);
+        abort_unless((int) $foto->vehiculo_id === (int) $vehiculo->id, 403);
 
         if ($vehiculo->fotos()->count() <= 1) {
             return response()->json(['message' => 'El aviso debe tener al menos una foto. Agrega otra y guarda los cambios antes de eliminar esta.'], 422);
@@ -110,7 +117,7 @@ class PanelController extends Controller
 
     public function renovar(Request $request, Vehiculo $vehiculo)
     {
-        abort_unless((int) $vehiculo->user_id === (int) $request->user()->id, 403);
+        $this->autorizar($request, $vehiculo);
 
         $vehiculo->update(['estado' => 'activa', 'vence_en' => now()->addDays(config('autoruta.duracion_publicacion_dias'))]);
 
@@ -119,7 +126,7 @@ class PanelController extends Controller
 
     public function marcarVendido(Request $request, Vehiculo $vehiculo)
     {
-        abort_unless((int) $vehiculo->user_id === (int) $request->user()->id, 403);
+        $this->autorizar($request, $vehiculo);
         $vehiculo->update(['estado' => 'vendida']);
 
         return back();
@@ -127,14 +134,31 @@ class PanelController extends Controller
 
     public function eliminar(Request $request, Vehiculo $vehiculo)
     {
-        abort_unless((int) $vehiculo->user_id === (int) $request->user()->id, 403);
+        $this->autorizar($request, $vehiculo);
 
         foreach ($vehiculo->fotos as $foto) {
             Archivos::borrar('vehiculos/' . $foto->archivo);
         }
         $vehiculo->delete();
 
-        return back();
+        return back()->with('ok', 'Publicación eliminada.');
+    }
+
+    // El dueño del aviso o un administrador pueden gestionarlo.
+    private function autorizar(Request $request, Vehiculo $vehiculo): void
+    {
+        $usuario = $request->user();
+        abort_unless((int) $vehiculo->user_id === (int) $usuario->id || $usuario->esAdmin(), 403);
+    }
+
+    private function datosVista(Request $request): array
+    {
+        $enAdmin = $request->routeIs('admin.*');
+
+        return [
+            'enAdmin' => $enAdmin,
+            'vendedores' => $enAdmin ? User::where('rol', '!=', 'negocio')->orderBy('name')->get(['id', 'name', 'nombre_comercial', 'telefono_whatsapp']) : collect(),
+        ];
     }
 
     private function validar(Request $request, ?Vehiculo $vehiculo): array
@@ -208,9 +232,9 @@ class PanelController extends Controller
         }
     }
 
-    private function actualizarContacto(Request $request, array $datos): void
+    private function actualizarContacto(?User $usuario, array $datos): void
     {
-        $request->user()->update([
+        $usuario?->update([
             'telefono_whatsapp' => $datos['telefonoWhatsapp'],
             'region' => $datos['region'],
             'comuna' => $datos['comuna'],
@@ -219,13 +243,15 @@ class PanelController extends Controller
 
     private function responder(Request $request, string $mensaje)
     {
+        $destino = $request->routeIs('admin.*') ? route('admin.vehiculos.index') : route('panel');
+
         if ($request->expectsJson()) {
             session()->flash('ok', $mensaje);
 
-            return response()->json(['redirect' => route('panel')]);
+            return response()->json(['redirect' => $destino]);
         }
 
-        return redirect()->route('panel')->with('ok', $mensaje);
+        return redirect($destino)->with('ok', $mensaje);
     }
 
     // Cuando el formulario llega sin datos se muestra un diagnóstico técnico en pantalla,

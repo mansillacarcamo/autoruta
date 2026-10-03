@@ -1,18 +1,23 @@
-@extends('layouts.app')
+@php($enAdmin = $enAdmin ?? false)
+@php($dueno = $vehiculo?->usuario ?? auth()->user())
+@extends($enAdmin ? 'layouts.admin' : 'layouts.app')
 @section('titulo', $vehiculo ? 'Editar publicación' : 'Publicar vehículo')
 
 @section('contenido')
-<div class="contenedor" style="max-width:760px;padding:32px 16px">
+<div class="{{ $enAdmin ? 'admin-tarjeta' : 'contenedor' }}" style="max-width:760px;{{ $enAdmin ? '' : 'padding:32px 16px' }}">
+  @if ($enAdmin)
+    <p style="margin:0 0 8px"><a href="{{ route('admin.vehiculos.index') }}" class="texto-mutado" style="font-size:14px">← Volver a Vehículos</a></p>
+  @endif
   @if ($vehiculo)
-    <p style="margin:0 0 8px"><a href="{{ route('panel') }}" class="texto-mutado" style="font-size:14px">← Volver a mi panel</a></p>
+    @unless ($enAdmin)<p style="margin:0 0 8px"><a href="{{ route('panel') }}" class="texto-mutado" style="font-size:14px">← Volver a mi panel</a></p>@endunless
     <h1>Editar publicación</h1>
-    <p class="texto-mutado">{{ $vehiculo->marca }} {{ $vehiculo->modelo }} {{ $vehiculo->anio }}</p>
+    <p class="texto-mutado">{{ $vehiculo->marca }} {{ $vehiculo->modelo }} {{ $vehiculo->anio }}@if ($enAdmin) · Vendedor: <strong>{{ $dueno?->nombre_comercial ?: $dueno?->name }}</strong>@endif</p>
   @else
     <h1>Publicar vehículo</h1>
     <p class="texto-mutado">Publicar siempre es gratis, sin límites.</p>
   @endif
 
-  @if ($errors->any())
+  @if ($errors->any() && ! $enAdmin)
     <div class="alerta-error mt-2">
       <strong>No se pudo guardar. Revisa lo siguiente:</strong>
       <ul style="margin:6px 0 0;padding-left:18px">
@@ -24,9 +29,20 @@
 
   <div class="alerta-error mt-2" id="erroresEnvio" hidden></div>
 
-  <form method="post" action="{{ $vehiculo ? route('panel.actualizar', $vehiculo) : route('panel.publicar.guardar') }}" enctype="multipart/form-data" class="mt-3" id="formPublicar">
+  <form method="post" action="{{ $enAdmin ? ($vehiculo ? route('admin.vehiculos.actualizar', $vehiculo) : route('admin.vehiculos.guardar')) : ($vehiculo ? route('panel.actualizar', $vehiculo) : route('panel.publicar.guardar')) }}" enctype="multipart/form-data" class="mt-3" id="formPublicar">
     @csrf
     @if ($vehiculo) @method('PUT') @endif
+    @if ($enAdmin && ! $vehiculo)
+      <div class="form-grupo">
+        <label>Publicar a nombre de</label>
+        <select name="publicarComo" id="selectVendedor">
+          @foreach ($vendedores as $u)
+            <option value="{{ $u->id }}" data-telefono="{{ $u->telefono_whatsapp }}" @selected((int) old('publicarComo', auth()->id()) === $u->id)>{{ $u->nombre_comercial ?: $u->name }}{{ $u->id === auth()->id() ? ' (yo)' : '' }}</option>
+          @endforeach
+        </select>
+        <p class="admin-ayuda">El aviso aparecerá en el panel de ese vendedor y con su WhatsApp.</p>
+      </div>
+    @endif
     <h2>1. Datos básicos</h2>
     <div class="grid-2">
       <div class="form-grupo">
@@ -67,17 +83,17 @@
         <select name="region" id="selectRegion" required onchange="actualizarComunas()">
           <option value="">Selecciona tu región</option>
           @foreach (array_keys(config('regiones')) as $r)
-            <option value="{{ $r }}" @selected(old('region', $vehiculo?->region ?? auth()->user()->region) === $r)>{{ $r }}</option>
+            <option value="{{ $r }}" @selected(old('region', $vehiculo?->region ?? $dueno->region) === $r)>{{ $r }}</option>
           @endforeach
         </select>
       </div>
       <div class="form-grupo">
         <label>Comuna</label>
-        <select name="comuna" id="selectComuna" required data-seleccionada="{{ old('comuna', $vehiculo?->comuna ?? auth()->user()->comuna) }}"><option value="">Selecciona una región primero</option></select>
+        <select name="comuna" id="selectComuna" required data-seleccionada="{{ old('comuna', $vehiculo?->comuna ?? $dueno->comuna) }}"><option value="">Selecciona una región primero</option></select>
       </div>
       <div class="form-grupo">
         <label>WhatsApp de contacto</label>
-        <input type="text" name="telefonoWhatsapp" required placeholder="+56912345678" value="{{ old('telefonoWhatsapp', auth()->user()->telefono_whatsapp) }}">
+        <input type="text" name="telefonoWhatsapp" required placeholder="+56912345678" value="{{ old('telefonoWhatsapp', $dueno->telefono_whatsapp) }}">
         <p class="texto-mutado" style="font-size:12px;margin:4px 0 0">Los compradores te escribirán a este número desde el botón de WhatsApp de tu aviso.</p>
       </div>
     </div>
@@ -132,6 +148,10 @@
 </div>
 
 <script>
+document.getElementById('selectVendedor')?.addEventListener('change', e => {
+  const tel = e.target.selectedOptions[0]?.dataset.telefono;
+  if (tel) document.querySelector('[name=telefonoWhatsapp]').value = tel;
+});
 const comunasPorRegion = @json(config('regiones'));
 function actualizarComunas() {
   const region = document.getElementById('selectRegion').value;

@@ -58,6 +58,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/portada', [\App\Http\Controllers\Admin\PortadaController::class, 'subir'])->name('portada.subir');
     Route::delete('/portada/{medio}', [\App\Http\Controllers\Admin\PortadaController::class, 'eliminar'])->name('portada.eliminar');
     Route::get('/vehiculos', [\App\Http\Controllers\Admin\VehiculoController::class, 'index'])->name('vehiculos.index');
+    Route::get('/vehiculos/nuevo', [PanelController::class, 'crear'])->name('vehiculos.crear');
+    Route::post('/vehiculos', [PanelController::class, 'guardar'])->name('vehiculos.guardar');
+    Route::get('/vehiculos/{vehiculo}/editar', [PanelController::class, 'editar'])->name('vehiculos.editar');
+    Route::put('/vehiculos/{vehiculo}', [PanelController::class, 'actualizar'])->name('vehiculos.actualizar');
+    Route::delete('/vehiculos/{vehiculo}', [PanelController::class, 'eliminar'])->name('vehiculos.eliminar');
     Route::post('/vehiculos/{vehiculo}/premium', [\App\Http\Controllers\Admin\VehiculoController::class, 'premium'])->name('vehiculos.premium');
     Route::get('/popup', [\App\Http\Controllers\Admin\PopupController::class, 'index'])->name('popup.index');
     Route::post('/popup', [\App\Http\Controllers\Admin\PopupController::class, 'subir'])->name('popup.subir');
