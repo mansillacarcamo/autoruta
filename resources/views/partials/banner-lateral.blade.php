@@ -6,6 +6,7 @@
     $posicionesLado = \App\Models\Anunciante::posicionesLaterales($lado);
     $bannersLado = \App\Models\AnuncianteBanner::whereIn('posicion', array_merge($posicionesLado, ['lateral']))
         ->whereHas('anunciante', fn ($q) => $q->activos())
+        ->with('anunciante')
         ->orderBy('orden')
         ->get();
 @endphp
@@ -20,9 +21,12 @@
         <div class="banner-lateral-pegado">
           @if ($bannerLateral)
             <div class="banner-lateral-rotador" data-rotador>
-              <a href="{{ $bannerLateral->urlClic() }}" target="_blank" rel="sponsored noopener" class="banner-lateral-item activo">
-                @include('partials.banner-medio', ['banner' => $bannerLateral])
-              </a>
+              <div class="banner-lateral-item activo">
+                <a href="{{ $bannerLateral->urlClic() }}" target="_blank" rel="sponsored noopener" class="banner-lateral-media">
+                  @include('partials.banner-medio', ['banner' => $bannerLateral])
+                </a>
+                @include('partials.banner-botones', ['banner' => $bannerLateral])
+              </div>
             </div>
             <p class="banner-lateral-titulo">Publicidad</p>
           @else
@@ -37,7 +41,7 @@
 @once
 <script>
   (function () {
-    var ALTO_TRAMO = 660; // aviso 160×600 + rótulo + separación
+    var ALTO_TRAMO = 740; // aviso 160×600 + botones + rótulo + separación
 
     function crear(tag, clase) { var el = document.createElement(tag); el.className = clase; return el; }
 
@@ -63,8 +67,7 @@
           var item = reales[i], activo = i === t;
           item.classList.remove('saliendo');
           item.classList.toggle('activo', activo);
-          if (activo) { item.removeAttribute('tabindex'); item.removeAttribute('aria-hidden'); }
-          else { item.setAttribute('tabindex', '-1'); item.setAttribute('aria-hidden', 'true'); }
+          item.inert = !activo;
           rotador.appendChild(item);
           var video = item.querySelector('video');
           if (video) { if (activo) video.play().catch(function () {}); else video.pause(); }
@@ -102,13 +105,11 @@
           void anterior.offsetWidth;
           anterior.style.transition = '';
         }, 800);
-        anterior.setAttribute('tabindex', '-1');
-        anterior.setAttribute('aria-hidden', 'true');
+        anterior.inert = true;
         var videoAnterior = anterior.querySelector('video');
         if (videoAnterior) videoAnterior.pause();
         siguiente.classList.add('activo');
-        siguiente.removeAttribute('tabindex');
-        siguiente.removeAttribute('aria-hidden');
+        siguiente.inert = false;
         var videoSiguiente = siguiente.querySelector('video');
         if (videoSiguiente) videoSiguiente.play().catch(function () {});
       });

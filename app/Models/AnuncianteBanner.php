@@ -7,33 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AnuncianteBanner extends Model
 {
-    protected $fillable = ['anunciante_id', 'tipo_medio', 'archivo', 'archivo_capa', 'opacidad_capa', 'zona_video', 'link_url', 'posicion', 'orden', 'clics'];
-
-    protected $casts = [
-        'zona_video' => 'array',
-    ];
-
-    // Zona [x, y, ancho, alto] (%) donde se ve el video sobre la imagen; null = video de fondo completo.
-    public function zonaVideo(): ?array
-    {
-        return $this->tipo_medio === 'video' && $this->archivo_capa && is_array($this->zona_video) && count($this->zona_video) === 4
-            ? $this->zona_video
-            : null;
-    }
-
-    // Convierte "x,y,ancho,alto" (lo que envía el editor del admin) en la zona guardada; vacío = sin zona.
-    public static function normalizarZona(?string $texto): ?array
-    {
-        $partes = array_map('floatval', array_filter(explode(',', (string) $texto), 'is_numeric'));
-        if (count($partes) !== 4) {
-            return null;
-        }
-        [$x, $y, $ancho, $alto] = array_map(fn ($v) => round(min(max($v, 0), 100), 2), $partes);
-        $ancho = min($ancho, 100 - $x);
-        $alto = min($alto, 100 - $y);
-
-        return $ancho >= 3 && $alto >= 3 ? [$x, $y, $ancho, $alto] : null;
-    }
+    protected $fillable = ['anunciante_id', 'tipo_medio', 'archivo', 'link_url', 'posicion', 'orden', 'clics'];
 
     public function anunciante(): BelongsTo
     {
@@ -45,15 +19,15 @@ class AnuncianteBanner extends Model
         return \App\Support\Archivos::url('negocios/' . $this->archivo);
     }
 
-    // Imagen transparente que va encima del video (solo banners de video; opcional).
-    public function urlCapa(): ?string
-    {
-        return $this->archivo_capa ? \App\Support\Archivos::url('negocios/' . $this->archivo_capa) : null;
-    }
-
     public function urlClic(): string
     {
         return route('publicidad.clic', $this);
+    }
+
+    // Botones "WhatsApp" y "Sitio web" bajo el banner (con los datos del negocio); también cuentan el clic.
+    public function urlBoton(string $destino): string
+    {
+        return route('publicidad.boton', [$this, $destino]);
     }
 
     // Completa "www.taller.cl" como "https://www.taller.cl". Solo acepta http(s) para no

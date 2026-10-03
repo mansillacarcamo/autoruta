@@ -19,4 +19,18 @@ class PublicidadController extends Controller
 
         return redirect()->away($destino);
     }
+
+    // Botones "WhatsApp" / "Sitio web" bajo el banner: suman al mismo contador de clics del banner.
+    public function boton(AnuncianteBanner $banner, string $destino)
+    {
+        $negocio = $banner->anunciante;
+        $url = $destino === 'whatsapp' ? $negocio?->urlWhatsapp() : $negocio?->urlSitioWeb();
+        abort_unless($url, 404);
+
+        if (! auth()->user()?->esAdmin()) {
+            $banner->increment('clics');
+        }
+
+        return redirect()->away($url);
+    }
 }

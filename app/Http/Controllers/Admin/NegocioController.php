@@ -97,7 +97,7 @@ class NegocioController extends Controller
         return redirect()->route('admin.negocios.editar', $negocio)->with('ok', 'Cambios guardados.');
     }
 
-    // Los videos se suben en trozos de 1 MB porque el servidor rechaza archivos grandes en una sola
+    // Los archivos grandes se suben en trozos de 1 MB porque el servidor rechaza archivos grandes en una sola
     // petición (upload_max_filesize). Los trozos se guardan en la base de datos para que funcione
     // aunque haya varias instancias del servidor, y al guardar el formulario se vuelven a unir.
     public function subirTrozo(Request $request)
@@ -156,16 +156,13 @@ class NegocioController extends Controller
             return back()->with('error', 'Máximo ' . config('autoruta.max_banners_negocio') . ' banners por negocio.');
         }
 
-        $this->unirTrozos($request, ['archivo', 'videoFondo']);
+        $this->unirTrozos($request, ['archivo']);
 
         $datos = $request->validate([
             'tipoMedio' => 'required|in:imagen,video',
             'posicion' => 'required|in:' . implode(',', array_keys(Anunciante::POSICIONES)),
             'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
             'archivo' => 'required|file|mimes:jpg,jpeg,png,webp,' . self::FORMATOS_VIDEO . '|max:20480',
-            'capa' => 'nullable|file|mimes:png,webp|max:5120',
-            'videoFondo' => 'nullable|file|mimes:' . self::FORMATOS_VIDEO . '|max:20480',
-            'opacidadCapa' => 'nullable|integer|min:30|max:100',
         ], $this->mensajesArchivos());
 
         // El tipo se deduce del archivo, por si se sube un video dejando "Imagen" seleccionado.
@@ -176,19 +173,9 @@ class NegocioController extends Controller
             'neg' . $negocio->id . '_' . time() . '.' . $request->file('archivo')->extension()
         );
 
-        // Video con imagen encima: subido como video + capa, o como imagen + video de fondo.
-        $capa = null;
-        if ($tipo === 'video' && $request->hasFile('capa')) {
-            $capa = $this->guardarCapa($request, $negocio);
-        } elseif ($tipo === 'imagen' && $request->hasFile('videoFondo')) {
-            [$tipo, $capa, $nombre] = ['video', $nombre, $this->guardarVideoFondo($request, $negocio)];
-        }
-
         $negocio->banners()->create([
             'tipo_medio' => $tipo,
             'archivo' => $nombre,
-            'archivo_capa' => $capa,
-            'opacidad_capa' => (int) ($datos['opacidadCapa'] ?? 100),
             'link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']),
             'posicion' => $datos['posicion'],
         ]);
@@ -200,79 +187,23 @@ class NegocioController extends Controller
     {
         abort_unless((int) $banner->anunciante_id === (int) $negocio->id, 404);
 
-        $this->unirTrozos($request, ['videoFondo']);
-
         $datos = $request->validate([
             'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
             'posicion' => 'required|in:' . implode(',', array_keys(Anunciante::POSICIONES)),
-            'capa' => 'nullable|file|mimes:png,webp|max:5120',
-            'videoFondo' => 'nullable|file|mimes:' . self::FORMATOS_VIDEO . '|max:20480',
-            'opacidadCapa' => 'nullable|integer|min:30|max:100',
-            'quitarCapa' => 'nullable|boolean',
-            'zonaVideo' => 'nullable|string|max:60',
-        ], $this->mensajesArchivos());
+        ]);
 
-        $cambios = ['link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']), 'posicion' => $datos['posicion']];
-
-        if (isset($datos['opacidadCapa'])) {
-            $cambios['opacidad_capa'] = (int) $datos['opacidadCapa'];
-        }
-
-        // Zona marcada en el editor del admin (vacía = video de fondo completo).
-        if ($request->has('zonaVideo')) {
-            $cambios['zona_video'] = AnuncianteBanner::normalizarZona($datos['zonaVideo'] ?? null);
-        }
-
-        // Banner de imagen al que se le agrega video de fondo: la imagen pasa a ir encima del video.
-        if ($banner->tipo_medio === 'imagen' && $request->hasFile('videoFondo')) {
-            $cambios += ['tipo_medio' => 'video', 'archivo_capa' => $banner->archivo, 'archivo' => $this->guardarVideoFondo($request, $negocio)];
-        }
-
-        // Reemplazar o quitar la capa del video (la anterior se borra del almacenamiento).
-        if ($banner->tipo_medio === 'video' && ($request->hasFile('capa') || $request->boolean('quitarCapa'))) {
-            if ($banner->archivo_capa) {
-                \App\Support\Archivos::borrar('negocios/' . $banner->archivo_capa);
-            }
-            $cambios['archivo_capa'] = $request->hasFile('capa') ? $this->guardarCapa($request, $negocio) : null;
-        }
-
-        $banner->update($cambios);
+        $banner->update(['link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']), 'posicion' => $datos['posicion']]);
 
         return back()->with('ok', 'Banner actualizado.');
     }
 
     private function mensajesArchivos(): array
     {
-        $formatoVideo = 'Ese formato de video no se puede mostrar en la web. Usa MP4, MOV, M4V, WEBM u OGG (si es AVI, WMV o MKV, conviértelo a MP4).';
-        $muyPesado = 'El archivo no se pudo subir: pesa más de lo que permite el servidor. Prueba con uno más liviano (idealmente menos de 10 MB).';
-
         return [
-            'videoFondo.mimes' => $formatoVideo,
-            'archivo.mimes' => 'Formato no permitido. Imágenes: JPG, PNG o WEBP. Videos: MP4, MOV, M4V, WEBM u OGG.',
-            'videoFondo.max' => 'El video de fondo no puede pesar más de 20 MB.',
+            'archivo.mimes' => 'Formato no permitido. Imágenes: JPG, PNG o WEBP. Videos: MP4, MOV, M4V, WEBM u OGG (si es AVI, WMV o MKV, conviértelo a MP4).',
             'archivo.max' => 'El archivo no puede pesar más de 20 MB.',
-            'videoFondo.uploaded' => $muyPesado,
-            'archivo.uploaded' => $muyPesado,
-            'capa.uploaded' => $muyPesado,
+            'archivo.uploaded' => 'El archivo no se pudo subir: pesa más de lo que permite el servidor. Prueba con uno más liviano.',
         ];
-    }
-
-    private function guardarVideoFondo(Request $request, Anunciante $negocio): string
-    {
-        return \App\Support\Archivos::guardar(
-            $request->file('videoFondo'),
-            'negocios',
-            'neg' . $negocio->id . '_' . time() . '_fondo.' . $request->file('videoFondo')->extension()
-        );
-    }
-
-    private function guardarCapa(Request $request, Anunciante $negocio): string
-    {
-        return \App\Support\Archivos::guardar(
-            $request->file('capa'),
-            'negocios',
-            'neg' . $negocio->id . '_' . time() . '_capa.' . $request->file('capa')->extension()
-        );
     }
 
     private function reglaLink(): \Closure
@@ -288,9 +219,6 @@ class NegocioController extends Controller
     {
         abort_unless($banner->anunciante_id === $negocio->id, 404);
         \App\Support\Archivos::borrar('negocios/' . $banner->archivo);
-        if ($banner->archivo_capa) {
-            \App\Support\Archivos::borrar('negocios/' . $banner->archivo_capa);
-        }
         $banner->delete();
 
         return back()->with('ok', 'Banner eliminado.');

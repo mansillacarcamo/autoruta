@@ -6,6 +6,7 @@
     $posicionesFila = ['lateral_izquierdo' . $sufijo, 'lateral_derecho' . $sufijo];
     $bannersFila = \App\Models\AnuncianteBanner::whereIn('posicion', array_merge($posicionesFila, $fila === 1 ? ['lateral'] : []))
         ->whereHas('anunciante', fn ($q) => $q->activos())
+        ->with('anunciante')
         ->orderBy('orden')
         ->get();
     $parFila = [
@@ -20,9 +21,12 @@
     <div class="laterales-movil-par">
       @foreach ($posicionesFila as $i => $posicionFila)
         @if ($bannerFila = $parFila[$i])
-          <a href="{{ $bannerFila->urlClic() }}" target="_blank" rel="sponsored noopener" class="laterales-movil-banner">
-            @include('partials.banner-medio', ['banner' => $bannerFila])
-          </a>
+          <div>
+            <a href="{{ $bannerFila->urlClic() }}" target="_blank" rel="sponsored noopener" class="laterales-movil-banner">
+              @include('partials.banner-medio', ['banner' => $bannerFila])
+            </a>
+            @include('partials.banner-botones', ['banner' => $bannerFila])
+          </div>
         @else
           @include('partials.espacio-publicitario', ['estilo' => 'width:100%;aspect-ratio:160/600', 'posicion' => $posicionFila])
         @endif

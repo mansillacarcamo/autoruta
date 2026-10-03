@@ -543,151 +543,72 @@ class AutoRutaTest extends TestCase
         $this->assertSame(1, substr_count($this->get('/vehiculos')->getContent(), 'class="laterales-movil"'));
     }
 
-    public function test_banner_de_video_con_imagen_encima(): void
+    public function test_banner_con_botones_de_whatsapp_y_sitio_web(): void
     {
         $admin = User::where('usuario', 'cesar')->firstOrFail();
-        $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Video Capa', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
+        $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'La Colonia', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
+        $banner = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 'lat.png', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'lateral_izquierdo']);
 
-        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
-            'tipoMedio' => 'video', 'posicion' => 'lateral_derecho', 'linkUrl' => 'www.videocapa.cl',
-            'archivo' => UploadedFile::fake()->create('promo.mp4', 500, 'video/mp4'),
-            'capa' => UploadedFile::fake()->image('logo.png', 320, 1200),
-            'opacidadCapa' => '80',
-        ])->assertSessionHas('ok');
-        $banner = $negocio->banners()->firstOrFail();
-        $this->assertNotNull($banner->archivo_capa);
+        // Sin WhatsApp ni sitio web no hay botones.
+        $this->get('/')->assertDontSee('banner-boton-wa', false)->assertDontSee('banner-boton-web', false);
 
-        // La capa se muestra sobre el video en la web.
-        auth()->logout();
-        $this->get('/')->assertSee('class="banner-capa"', false)->assertSee($banner->urlCapa(), false);
-        $this->assertSame(80, $banner->opacidad_capa);
-        $this->get('/')->assertSee('opacity:0.8', false);
+        // Con los datos del negocio aparecen los dos botones bajo el banner.
+        $negocio->update(['telefono_whatsapp' => '9 9746 1985', 'sitio_web' => 'desarmaderialacolonia.cl']);
+        $this->get('/')->assertSee('banner-boton-wa', false)->assertSee('banner-boton-web', false)
+            ->assertSee($banner->urlBoton('whatsapp'), false)->assertSee($banner->urlBoton('web'), false);
 
-        // Opacidad fuera de rango se rechaza.
-        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
-            'linkUrl' => 'www.videocapa.cl', 'posicion' => 'lateral_derecho', 'opacidadCapa' => '10',
-        ])->assertSessionHasErrors('opacidadCapa');
-        $this->actingAs($admin)->get("/admin/negocios/{$negocio->id}")->assertOk()->assertSee('Opacidad de la imagen');
+        // Los botones redirigen (celular chileno con 56) y suman clics al banner.
+        $this->get($banner->urlBoton('whatsapp'))->assertRedirectContains('https://wa.me/56997461985?text=');
+        $this->get($banner->urlBoton('web'))->assertRedirect('https://desarmaderialacolonia.cl');
+        $this->assertSame(2, $banner->fresh()->clics);
 
-        // El admin puede quitarla.
-        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
-            'linkUrl' => 'www.videocapa.cl', 'posicion' => 'lateral_derecho', 'quitarCapa' => '1',
-        ])->assertSessionHas('ok');
-        $this->assertNull($banner->fresh()->archivo_capa);
+        // Solo WhatsApp: el botón de sitio web desaparece y su link da 404.
+        $negocio->update(['sitio_web' => null]);
+        $this->get('/')->assertSee('banner-boton-wa', false)->assertDontSee('banner-boton-web', false);
+        $this->get($banner->urlBoton('web'))->assertNotFound();
+        $this->get('/publicidad/' . $banner->id . '/otro')->assertNotFound();
+
+        $this->actingAs($admin)->get("/admin/negocios/{$negocio->id}")->assertOk()->assertSee('aparece el botón verde');
     }
 
-    public function test_banner_de_imagen_con_video_de_fondo(): void
-    {
-        $admin = User::where('usuario', 'cesar')->firstOrFail();
-        $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Fondo', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
-
-        // Banner de imagen ya subido: al agregarle video de fondo, la imagen pasa a ir encima.
-        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
-            'tipoMedio' => 'imagen', 'posicion' => 'lateral_izquierdo', 'linkUrl' => 'www.fondo.cl',
-            'archivo' => UploadedFile::fake()->image('diseno.png', 320, 1200),
-        ])->assertSessionHas('ok');
-        $banner = $negocio->banners()->firstOrFail();
-        $imagen = $banner->archivo;
-
-        // Sin video, la opacidad se aplica a la imagen sola.
-        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
-            'linkUrl' => 'www.fondo.cl', 'posicion' => 'lateral_izquierdo', 'opacidadCapa' => '70',
-        ])->assertSessionHas('ok');
-        $this->assertSame('imagen', $banner->fresh()->tipo_medio);
-        $this->get('/')->assertSee('style="opacity:0.7"', false);
-
-        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
-            'linkUrl' => 'www.fondo.cl', 'posicion' => 'lateral_izquierdo', 'opacidadCapa' => '80',
-            'videoFondo' => UploadedFile::fake()->create('fondo.mp4', 500, 'video/mp4'),
-        ])->assertSessionHas('ok');
-        $banner->refresh();
-        $this->assertSame('video', $banner->tipo_medio);
-        $this->assertSame($imagen, $banner->archivo_capa);
-        $this->assertSame(80, $banner->opacidad_capa);
-
-        // Banner nuevo de imagen subido directamente con video de fondo.
-        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
-            'tipoMedio' => 'imagen', 'posicion' => 'lateral_derecho', 'linkUrl' => 'www.fondo.cl', 'opacidadCapa' => '75',
-            'archivo' => UploadedFile::fake()->image('diseno2.png', 320, 1200),
-            'videoFondo' => UploadedFile::fake()->create('fondo2.mp4', 500, 'video/mp4'),
-        ])->assertSessionHas('ok');
-        $nuevo = $negocio->banners()->where('posicion', 'lateral_derecho')->firstOrFail();
-        $this->assertSame('video', $nuevo->tipo_medio);
-        $this->assertStringEndsWith('.png', $nuevo->archivo_capa);
-        $this->assertStringEndsWith('.mp4', $nuevo->archivo);
-
-        auth()->logout();
-        $this->get('/')->assertSee('opacity:0.8', false)->assertSee('opacity:0.75', false);
-
-        // Videos de iPhone (MOV) se aceptan; formatos que el navegador no reproduce (AVI) se rechazan con un mensaje claro.
-        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
-            'linkUrl' => 'www.fondo.cl', 'posicion' => 'lateral_izquierdo',
-            'videoFondo' => UploadedFile::fake()->create('clip.avi', 500, 'video/x-msvideo'),
-        ])->assertSessionHasErrors(['videoFondo' => 'Ese formato de video no se puede mostrar en la web. Usa MP4, MOV, M4V, WEBM u OGG (si es AVI, WMV o MKV, conviértelo a MP4).']);
-        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
-            'tipoMedio' => 'imagen', 'posicion' => 'superior', 'linkUrl' => 'www.fondo.cl',
-            'archivo' => UploadedFile::fake()->create('iphone.mov', 500, 'video/quicktime'),
-        ])->assertSessionHas('ok');
-        // Aunque quedó "Imagen" seleccionado, se guarda como video.
-        $this->assertSame('video', $negocio->banners()->where('posicion', 'superior')->firstOrFail()->tipo_medio);
-
-        // Zona del video: la imagen se ve completa y el video solo dentro del rectángulo marcado.
-        $this->actingAs($admin)->get("/admin/negocios/{$negocio->id}")->assertOk()->assertSee('Zona del video dentro de la imagen');
-        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
-            'linkUrl' => 'www.fondo.cl', 'posicion' => 'lateral_izquierdo', 'zonaVideo' => '5,40.5,90,32',
-        ])->assertSessionHas('ok');
-        $this->assertEquals([5, 40.5, 90, 32], $banner->fresh()->zonaVideo());
-        auth()->logout();
-        $this->get('/')->assertSee('class="banner-zona"', false)->assertSee('left:5%;top:40.5%;width:90%;height:32%', false);
-
-        // Zona vacía o inválida vuelve al video de fondo completo.
-        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
-            'linkUrl' => 'www.fondo.cl', 'posicion' => 'lateral_izquierdo', 'zonaVideo' => '',
-        ])->assertSessionHas('ok');
-        $this->assertNull($banner->fresh()->zonaVideo());
-        $this->assertNull(\App\Models\AnuncianteBanner::normalizarZona('1,2,0,5'));
-        $this->assertEquals([90, 90, 10, 10], \App\Models\AnuncianteBanner::normalizarZona('90,90,50,50'));
-    }
-
-    public function test_video_de_fondo_subido_en_trozos(): void
+    public function test_archivo_de_banner_en_trozos_y_formatos_de_video(): void
     {
         $admin = User::where('usuario', 'cesar')->firstOrFail();
         $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Trozos', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
-        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
-            'tipoMedio' => 'imagen', 'posicion' => 'lateral_izquierdo', 'linkUrl' => 'www.trozos.cl',
-            'archivo' => UploadedFile::fake()->image('diseno.png', 320, 1200),
-        ])->assertSessionHas('ok');
-        $banner = $negocio->banners()->firstOrFail();
 
-        // Un MP4 de ~2,5 MB (cabecera real + relleno) enviado en 3 trozos de 1 MB, como lo hace el navegador.
+        // AVI no se puede mostrar en la web: se rechaza con un mensaje claro.
+        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
+            'tipoMedio' => 'video', 'posicion' => 'superior', 'linkUrl' => 'www.trozos.cl',
+            'archivo' => UploadedFile::fake()->create('clip.avi', 500, 'video/x-msvideo'),
+        ])->assertSessionHasErrors('archivo');
+
+        // MOV de iPhone se acepta y, aunque quede "Imagen" seleccionado, se guarda como video.
+        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
+            'tipoMedio' => 'imagen', 'posicion' => 'superior', 'linkUrl' => 'www.trozos.cl',
+            'archivo' => UploadedFile::fake()->create('iphone.mov', 500, 'video/quicktime'),
+        ])->assertSessionHas('ok');
+        $this->assertSame('video', $negocio->banners()->where('posicion', 'superior')->firstOrFail()->tipo_medio);
+
+        // Un MP4 de ~2,5 MB enviado en 3 trozos de 1 MB, como lo hace el navegador.
         $video = "\x00\x00\x00\x18ftypmp42\x00\x00\x00\x00mp42isom" . str_repeat("\x00", 2_500_000);
         $subida = (string) \Illuminate\Support\Str::uuid();
         foreach (str_split($video, 1024 * 1024) as $i => $parte) {
-            $trozo = UploadedFile::fake()->createWithContent('trozo', $parte);
-            $this->actingAs($admin)->post('/admin/banners/trozo', ['subida' => $subida, 'indice' => $i, 'trozo' => $trozo])
+            $this->actingAs($admin)->post('/admin/banners/trozo', ['subida' => $subida, 'indice' => $i, 'trozo' => UploadedFile::fake()->createWithContent('trozo', $parte)])
                 ->assertOk()->assertJson(['ok' => true]);
         }
 
         // Si falta un trozo, se avisa en vez de guardar un video roto.
-        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
-            'linkUrl' => 'www.trozos.cl', 'posicion' => 'lateral_izquierdo',
-            'videoFondo_subida' => $subida, 'videoFondo_total' => 4, 'videoFondo_nombre' => 'clip.mp4',
-        ])->assertSessionHasErrors('videoFondo');
+        $datos = ['tipoMedio' => 'video', 'posicion' => 'inferior', 'linkUrl' => 'www.trozos.cl', 'archivo_subida' => $subida, 'archivo_nombre' => 'clip.mp4'];
+        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", $datos + ['archivo_total' => 4])->assertSessionHasErrors('archivo');
+        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", $datos + ['archivo_total' => 3])->assertSessionHasNoErrors()->assertSessionHas('ok');
 
-        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
-            'linkUrl' => 'www.trozos.cl', 'posicion' => 'lateral_izquierdo', 'zonaVideo' => '5,40,90,32',
-            'videoFondo_subida' => $subida, 'videoFondo_total' => 3, 'videoFondo_nombre' => 'clip.mp4',
-        ])->assertSessionHasNoErrors()->assertSessionHas('ok');
-
-        $banner->refresh();
+        $banner = $negocio->banners()->where('posicion', 'inferior')->firstOrFail();
         $this->assertSame('video', $banner->tipo_medio);
-        $this->assertStringEndsWith('.mp4', $banner->archivo);
         $this->assertSame(strlen($video), Storage::disk('public')->size('negocios/' . $banner->archivo));
         $this->assertSame(0, ArchivoGuardado::where('ruta', 'like', 'trozos/%')->count());
 
-        auth()->logout();
-        $this->get('/')->assertSee('class="banner-zona"', false);
         // Sin sesión de admin no se pueden subir trozos.
+        auth()->logout();
         $this->post('/admin/banners/trozo', ['subida' => $subida, 'indice' => 0, 'trozo' => UploadedFile::fake()->create('t', 10)])->assertRedirect();
     }
 

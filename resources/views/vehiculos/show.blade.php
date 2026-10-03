@@ -372,6 +372,7 @@
             @include('partials.banner-medio', ['banner' => $negocioDestacado])
           </div>
         </a>
+        @include('partials.banner-botones', ['banner' => $negocioDestacado, 'fila' => true])
       @endif
     </aside>
   </div>

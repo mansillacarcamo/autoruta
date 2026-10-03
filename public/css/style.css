@@ -474,22 +474,17 @@ body { overflow-x: clip; }
 .banner-lateral-tramo { flex: 1 1 0; min-height: 0; padding-bottom: 24px; }
 .banner-lateral-pegado { position: sticky; top: 104px; display: flex; flex-direction: column; gap: 6px; }
 .banner-lateral-titulo { margin: 0; text-align: center; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #a3a3a3; }
-.banner-lateral-rotador { position: relative; width: 160px; aspect-ratio: 160 / 600; border-radius: 12px; overflow: hidden; border: 1px solid #e5e5e5; background: var(--gris-claro); box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+/* Los avisos se apilan en la misma celda: el rotador toma el alto del más alto (imagen + botones) */
+.banner-lateral-rotador { display: grid; width: 160px; overflow: hidden; }
+.banner-lateral-media { display: block; position: relative; aspect-ratio: 160 / 600; border-radius: 12px; overflow: hidden; border: 1px solid #e5e5e5; background: var(--gris-claro); box-shadow: 0 2px 10px rgba(0,0,0,.06); }
 /* Cada aviso entra deslizándose desde el borde exterior de su columna y sale por el lado contrario */
-.banner-lateral-item { position: absolute; inset: 0; display: block; opacity: 0; visibility: hidden; transform: translateX(var(--entrada)) scale(.96); transition: transform .75s cubic-bezier(.65,0,.35,1), opacity .75s ease, visibility .75s; }
+.banner-lateral-item { grid-area: 1 / 1; display: block; opacity: 0; visibility: hidden; transform: translateX(var(--entrada)) scale(.96); transition: transform .75s cubic-bezier(.65,0,.35,1), opacity .75s ease, visibility .75s; }
 .banner-lateral-columna--izquierdo { --entrada: -100%; --salida: 100%; }
 .banner-lateral-columna--derecho { --entrada: 100%; --salida: -100%; }
 .banner-lateral-item.activo { opacity: 1; visibility: visible; transform: translateX(0) scale(1); }
 .banner-lateral-item.saliendo { transform: translateX(var(--salida)) scale(.96); }
-/* Banner: imagen o video llenando su caja; la capa transparente (si hay) va encima del video */
+/* Banner: imagen o video llenando su caja */
 .banner-medio { display: block; width: 100%; height: 100%; object-fit: cover; }
-.banner-capa { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-.banner-zona { position: absolute; object-fit: cover; border-radius: 6px; pointer-events: none; }
-/* Admin: editor para marcar con el mouse la zona del video sobre la imagen del banner */
-.zona-editor { position: relative; width: 140px; margin: 4px 0 6px; cursor: crosshair; user-select: none; touch-action: none; border: 1px solid #e5e5e5; border-radius: 6px; overflow: hidden; }
-.admin-medio .zona-editor img { width: 100%; height: auto; aspect-ratio: auto; object-fit: fill; pointer-events: none; }
-.zona-rect { position: absolute; border: 2px solid #ef4444; background: rgba(239,68,68,.25); pointer-events: none; }
-.zona-rect::after { content: "VIDEO"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 800; letter-spacing: 1px; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
 @media (prefers-reduced-motion: reduce) { .banner-lateral-item, .banner-lateral-item.saliendo { transform: none; transition: opacity .6s ease, visibility .6s; } }
 
 /* Fotos del aviso: actuales y nuevas */
@@ -621,3 +616,12 @@ body { overflow-x: clip; }
 .laterales-movil-banner { display: block; position: relative; aspect-ratio: 160 / 600; border-radius: 12px; overflow: hidden; border: 1px solid #e5e5e5; background: var(--gris-claro); }
 .laterales-movil-vacio { flex-direction: row; flex-wrap: wrap; column-gap: 10px; min-height: 70px; max-width: 728px; margin: 0 auto; }
 @media (min-width: 1400px) { .laterales-movil { display: none; } }
+
+/* Botones "WhatsApp" / "Sitio web" bajo los banners (datos del negocio en Admin > Negocios) */
+.banner-botones { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.banner-botones-fila { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+.banner-boton { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; line-height: 1.2; text-decoration: none; transition: .15s; }
+.banner-boton-wa { background: #25d366; color: #fff; }
+.banner-boton-wa:hover { background: #1ebe5b; color: #fff; }
+.banner-boton-web { background: #fff; color: #171717; border: 1px solid #d4d4d4; }
+.banner-boton-web:hover { border-color: var(--acento); color: var(--acento); }

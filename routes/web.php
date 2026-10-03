@@ -18,6 +18,9 @@ Route::get('/media/{carpeta}/{archivo}', [\App\Http\Controllers\MediaController:
     ->name('media');
 
 Route::get('/publicidad/{banner}', [\App\Http\Controllers\PublicidadController::class, 'clic'])->name('publicidad.clic');
+Route::get('/publicidad/{banner}/{destino}', [\App\Http\Controllers\PublicidadController::class, 'boton'])
+    ->whereIn('destino', ['whatsapp', 'web'])
+    ->name('publicidad.boton');
 
 Route::view('/como-funciona', 'como-funciona')->name('como-funciona');
 Route::view('/terminos', 'legal.terminos')->name('terminos');
