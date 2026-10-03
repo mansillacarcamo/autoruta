@@ -21,11 +21,7 @@
           @if ($bannerLateral)
             <div class="banner-lateral-rotador" data-rotador>
               <a href="{{ $bannerLateral->urlClic() }}" target="_blank" rel="sponsored noopener" class="banner-lateral-item activo">
-                @if ($bannerLateral->tipo_medio === 'video')
-                  <video src="{{ $bannerLateral->url() }}" muted loop playsinline autoplay></video>
-                @else
-                  <img src="{{ $bannerLateral->url() }}" alt="Publicidad" loading="lazy">
-                @endif
+                @include('partials.banner-medio', ['banner' => $bannerLateral])
               </a>
             </div>
             <p class="banner-lateral-titulo">Publicidad</p>

@@ -237,7 +237,6 @@
       <p class="tarjeta-precio" style="font-size:28px"><span class="precio-desde">Desde</span> {{ $vehiculo->precioFormateado() }}</p>
       @if ($vehiculo->pie)<p class="tarjeta-pie" style="font-size:15px">Pie {{ $vehiculo->pieFormateado() }}</p>@endif
       <p class="texto-mutado">{{ $vehiculo->comuna }}, {{ $vehiculo->region }}</p>
-      <p class="tarjeta-meta"><span class="meta-chip meta-vistas" title="Visitas del aviso"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>{{ number_format($vehiculo->vistas, 0, ',', '.') }} {{ $vehiculo->vistas == 1 ? 'visita' : 'visitas' }}</span></p>
 
       @php
         $iconosFicha = [
@@ -369,12 +368,8 @@
 
       @if ($negocioDestacado)
         <a href="{{ $negocioDestacado->urlClic() }}" target="_blank" rel="sponsored noopener" class="caja mt-2" style="display:block;padding:0;overflow:hidden">
-          <div style="aspect-ratio:16/9;background:var(--gris-claro)">
-            @if ($negocioDestacado->tipo_medio === 'video')
-              <video src="{{ $negocioDestacado->url() }}" style="width:100%;height:100%;object-fit:cover" autoplay muted loop playsinline></video>
-            @else
-              <img src="{{ $negocioDestacado->url() }}" style="width:100%;height:100%;object-fit:cover">
-            @endif
+          <div style="position:relative;aspect-ratio:16/9;background:var(--gris-claro)">
+            @include('partials.banner-medio', ['banner' => $negocioDestacado])
           </div>
         </a>
       @endif

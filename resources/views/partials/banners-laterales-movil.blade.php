@@ -21,11 +21,7 @@
       @foreach ($posicionesFila as $i => $posicionFila)
         @if ($bannerFila = $parFila[$i])
           <a href="{{ $bannerFila->urlClic() }}" target="_blank" rel="sponsored noopener" class="laterales-movil-banner">
-            @if ($bannerFila->tipo_medio === 'video')
-              <video src="{{ $bannerFila->url() }}" autoplay muted loop playsinline></video>
-            @else
-              <img src="{{ $bannerFila->url() }}" alt="Publicidad" loading="lazy">
-            @endif
+            @include('partials.banner-medio', ['banner' => $bannerFila])
           </a>
         @else
           @include('partials.espacio-publicitario', ['estilo' => 'width:100%;aspect-ratio:160/600', 'posicion' => $posicionFila])

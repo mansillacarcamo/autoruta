@@ -129,14 +129,19 @@ class AutoRutaTest extends TestCase
             ->assertStatus(422)->assertJsonValidationErrors('pie');
     }
 
-    public function test_tarjeta_y_ficha_muestran_contador_de_visitas(): void
+    public function test_visitas_del_auto_se_cuentan_pero_no_se_muestran_al_publico(): void
     {
-        $vehiculo = $this->aviso($this->vendedor());
+        $usuario = $this->vendedor();
+        $vehiculo = $this->aviso($usuario);
         $vehiculo->update(['vistas' => 1233]);
 
-        // Abrir la ficha suma una visita y la muestra.
-        $this->get('/vehiculos/' . $vehiculo->id)->assertOk()->assertSee('1.234 visitas');
-        $this->get('/vehiculos')->assertSee('1.234 visitas');
+        // Abrir la ficha suma una visita, pero ni la ficha ni el listado la muestran.
+        $this->get('/vehiculos/' . $vehiculo->id)->assertOk()->assertDontSee('1.234 visitas');
+        $this->get('/vehiculos')->assertDontSee('1.234 visitas');
+        $this->assertSame(1234, $vehiculo->fresh()->vistas);
+
+        // El vendedor sí la ve en su panel.
+        $this->actingAs($usuario)->get('/panel')->assertSee('1234 vistas');
     }
 
     public function test_publicar_sin_fotos_o_con_formato_invalido_falla(): void
@@ -536,6 +541,30 @@ class AutoRutaTest extends TestCase
 
         // En otras páginas se muestra la fila 1.
         $this->assertSame(1, substr_count($this->get('/vehiculos')->getContent(), 'class="laterales-movil"'));
+    }
+
+    public function test_banner_de_video_con_imagen_encima(): void
+    {
+        $admin = User::where('usuario', 'cesar')->firstOrFail();
+        $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Video Capa', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
+
+        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
+            'tipoMedio' => 'video', 'posicion' => 'lateral_derecho', 'linkUrl' => 'www.videocapa.cl',
+            'archivo' => UploadedFile::fake()->create('promo.mp4', 500, 'video/mp4'),
+            'capa' => UploadedFile::fake()->image('logo.png', 320, 1200),
+        ])->assertSessionHas('ok');
+        $banner = $negocio->banners()->firstOrFail();
+        $this->assertNotNull($banner->archivo_capa);
+
+        // La capa se muestra sobre el video en la web.
+        auth()->logout();
+        $this->get('/')->assertSee('class="banner-capa"', false)->assertSee($banner->urlCapa(), false);
+
+        // El admin puede quitarla.
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
+            'linkUrl' => 'www.videocapa.cl', 'posicion' => 'lateral_derecho', 'quitarCapa' => '1',
+        ])->assertSessionHas('ok');
+        $this->assertNull($banner->fresh()->archivo_capa);
     }
 
     public function test_banner_lateral_5_se_muestra_en_costado_y_en_fila_5_del_celular(): void

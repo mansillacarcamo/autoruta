@@ -50,8 +50,18 @@
               <button type="submit" class="btn-peligro">Eliminar</button>
             </form>
           </div>
-          <form method="post" action="{{ route('admin.negocios.banners.actualizar', [$negocio, $b]) }}" class="banner-edicion">
+          <form method="post" action="{{ route('admin.negocios.banners.actualizar', [$negocio, $b]) }}" class="banner-edicion" enctype="multipart/form-data">
             @csrf @method('PUT')
+            @if ($b->tipo_medio === 'video')
+              <label>Imagen encima del video</label>
+              @if ($b->archivo_capa)
+                <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
+                  <img src="{{ $b->urlCapa() }}" alt="" style="height:48px;width:auto;border-radius:6px;background:repeating-conic-gradient(#e5e5e5 0 25%,#fff 0 50%) 0 0/12px 12px">
+                  <label style="font-size:12px;display:flex;gap:4px;align-items:center;margin:0"><input type="checkbox" name="quitarCapa" value="1"> Quitar</label>
+                </div>
+              @endif
+              <input type="file" name="capa" accept="image/png,image/webp">
+            @endif
             <label>Link al hacer clic</label>
             <input type="text" name="linkUrl" required value="{{ $b->link_url }}" placeholder="https://www.minegocio.cl">
             <label>Ubicación</label>
@@ -85,11 +95,24 @@
         </div>
         <div class="form-grupo">
           <label>Tipo</label>
-          <select name="tipoMedio"><option value="imagen">Imagen</option><option value="video">Video</option></select>
+          <select name="tipoMedio" id="tipoMedioNuevo"><option value="imagen">Imagen</option><option value="video">Video</option></select>
         </div>
       </div>
       <div class="form-grupo"><label>Link al hacer clic</label><input type="text" name="linkUrl" required placeholder="www.minegocio.cl o https://wa.me/56912345678" value="{{ old('linkUrl') }}"><p class="admin-ayuda">Puede ser la web del negocio, su Instagram o su WhatsApp (https://wa.me/569XXXXXXXX). Si no escribes https:// se agrega solo.</p></div>
       <div class="form-grupo"><label>Archivo</label><input type="file" name="archivo" accept="image/*,video/*" required><p class="admin-ayuda">JPG, PNG, WEBP, MP4 o WEBM. Máximo 20 MB.</p></div>
+      <div class="form-grupo" id="campoCapa" hidden>
+        <label>Imagen encima del video (opcional)</label>
+        <input type="file" name="capa" accept="image/png,image/webp">
+        <p class="admin-ayuda">PNG o WEBP con fondo transparente (logo, teléfono, texto) que queda fijo sobre el video. Hazla del mismo tamaño que el video para que calce. Máximo 5 MB.</p>
+      </div>
+      <script>
+        (function () {
+          var tipo = document.getElementById('tipoMedioNuevo'), campo = document.getElementById('campoCapa');
+          function mostrar() { campo.hidden = tipo.value !== 'video'; }
+          tipo.addEventListener('change', mostrar);
+          mostrar();
+        })();
+      </script>
       <button type="submit" class="btn btn-acento">Subir banner</button>
     </form>
   @endif

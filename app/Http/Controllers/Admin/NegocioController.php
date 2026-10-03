@@ -104,6 +104,7 @@ class NegocioController extends Controller
             'posicion' => 'required|in:' . implode(',', array_keys(Anunciante::POSICIONES)),
             'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
             'archivo' => 'required|file|mimes:jpg,jpeg,png,webp,mp4,webm|max:20480',
+            'capa' => 'nullable|file|mimes:png,webp|max:5120',
         ]);
 
         $nombre = \App\Support\Archivos::guardar(
@@ -112,9 +113,15 @@ class NegocioController extends Controller
             'neg' . $negocio->id . '_' . time() . '.' . $request->file('archivo')->extension()
         );
 
+        // La capa transparente solo aplica a banners de video.
+        $capa = $datos['tipoMedio'] === 'video' && $request->hasFile('capa')
+            ? $this->guardarCapa($request, $negocio)
+            : null;
+
         $negocio->banners()->create([
             'tipo_medio' => $datos['tipoMedio'],
             'archivo' => $nombre,
+            'archivo_capa' => $capa,
             'link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']),
             'posicion' => $datos['posicion'],
         ]);
@@ -129,11 +136,32 @@ class NegocioController extends Controller
         $datos = $request->validate([
             'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
             'posicion' => 'required|in:' . implode(',', array_keys(Anunciante::POSICIONES)),
+            'capa' => 'nullable|file|mimes:png,webp|max:5120',
+            'quitarCapa' => 'nullable|boolean',
         ]);
 
-        $banner->update(['link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']), 'posicion' => $datos['posicion']]);
+        $cambios = ['link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']), 'posicion' => $datos['posicion']];
+
+        // Reemplazar o quitar la capa del video (la anterior se borra del almacenamiento).
+        if ($banner->tipo_medio === 'video' && ($request->hasFile('capa') || $request->boolean('quitarCapa'))) {
+            if ($banner->archivo_capa) {
+                \App\Support\Archivos::borrar('negocios/' . $banner->archivo_capa);
+            }
+            $cambios['archivo_capa'] = $request->hasFile('capa') ? $this->guardarCapa($request, $negocio) : null;
+        }
+
+        $banner->update($cambios);
 
         return back()->with('ok', 'Banner actualizado.');
+    }
+
+    private function guardarCapa(Request $request, Anunciante $negocio): string
+    {
+        return \App\Support\Archivos::guardar(
+            $request->file('capa'),
+            'negocios',
+            'neg' . $negocio->id . '_' . time() . '_capa.' . $request->file('capa')->extension()
+        );
     }
 
     private function reglaLink(): \Closure
@@ -149,6 +177,9 @@ class NegocioController extends Controller
     {
         abort_unless($banner->anunciante_id === $negocio->id, 404);
         \App\Support\Archivos::borrar('negocios/' . $banner->archivo);
+        if ($banner->archivo_capa) {
+            \App\Support\Archivos::borrar('negocios/' . $banner->archivo_capa);
+        }
         $banner->delete();
 
         return back()->with('ok', 'Banner eliminado.');

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AnuncianteBanner extends Model
 {
-    protected $fillable = ['anunciante_id', 'tipo_medio', 'archivo', 'link_url', 'posicion', 'orden', 'clics'];
+    protected $fillable = ['anunciante_id', 'tipo_medio', 'archivo', 'archivo_capa', 'link_url', 'posicion', 'orden', 'clics'];
 
     public function anunciante(): BelongsTo
     {
@@ -17,6 +17,12 @@ class AnuncianteBanner extends Model
     public function url(): string
     {
         return \App\Support\Archivos::url('negocios/' . $this->archivo);
+    }
+
+    // Imagen transparente que va encima del video (solo banners de video; opcional).
+    public function urlCapa(): ?string
+    {
+        return $this->archivo_capa ? \App\Support\Archivos::url('negocios/' . $this->archivo_capa) : null;
     }
 
     public function urlClic(): string
