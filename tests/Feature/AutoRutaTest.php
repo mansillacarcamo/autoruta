@@ -618,6 +618,23 @@ class AutoRutaTest extends TestCase
 
         auth()->logout();
         $this->get('/')->assertSee('opacity:0.8', false)->assertSee('opacity:0.75', false);
+
+        // Zona del video: la imagen se ve completa y el video solo dentro del rectángulo marcado.
+        $this->actingAs($admin)->get("/admin/negocios/{$negocio->id}")->assertOk()->assertSee('Zona del video dentro de la imagen');
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
+            'linkUrl' => 'www.fondo.cl', 'posicion' => 'lateral_izquierdo', 'zonaVideo' => '5,40.5,90,32',
+        ])->assertSessionHas('ok');
+        $this->assertEquals([5, 40.5, 90, 32], $banner->fresh()->zonaVideo());
+        auth()->logout();
+        $this->get('/')->assertSee('class="banner-zona"', false)->assertSee('left:5%;top:40.5%;width:90%;height:32%', false);
+
+        // Zona vacía o inválida vuelve al video de fondo completo.
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
+            'linkUrl' => 'www.fondo.cl', 'posicion' => 'lateral_izquierdo', 'zonaVideo' => '',
+        ])->assertSessionHas('ok');
+        $this->assertNull($banner->fresh()->zonaVideo());
+        $this->assertNull(\App\Models\AnuncianteBanner::normalizarZona('1,2,0,5'));
+        $this->assertEquals([90, 90, 10, 10], \App\Models\AnuncianteBanner::normalizarZona('90,90,50,50'));
     }
 
     public function test_banner_lateral_5_se_muestra_en_costado_y_en_fila_5_del_celular(): void

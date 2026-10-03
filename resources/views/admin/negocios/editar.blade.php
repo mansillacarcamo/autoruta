@@ -37,7 +37,10 @@
     <div class="admin-medios">
       @foreach ($negocio->banners as $b)
         <div class="admin-medio">
-          @if ($b->tipo_medio === 'video')
+          @if ($b->zonaVideo())
+            {{-- Con zona: la vista previa en vivo es el editor de zona de más abajo --}}
+            <img src="{{ $b->urlCapa() }}" alt="">
+          @elseif ($b->tipo_medio === 'video')
             {{-- Vista previa: video con su imagen encima, tal como se ve en la web --}}
             <div style="position:relative">
               <video src="{{ $b->url() }}" muted loop autoplay playsinline></video>
@@ -79,6 +82,23 @@
               <input type="range" name="opacidadCapa" min="30" max="100" step="5" value="{{ $b->opacidad_capa }}"
                      data-opacidad data-previa="capaPrevia{{ $b->id }}">
               <p class="admin-ayuda">La opacidad se aplica a la imagen (mueve la barra para verlo en la vista previa y luego Guardar). Si además subes un video (MP4 o WEBM, máx. 20 MB, mismo formato que la imagen), la imagen pasa a ir encima de él; entre 75% y 85% se ve el video sin perder los textos.</p>
+            @endif
+            @php($imagenZona = $b->tipo_medio === 'imagen' ? $b->url() : $b->urlCapa())
+            @if ($imagenZona)
+              @php($zona = is_array($b->zona_video) && count($b->zona_video) === 4 ? $b->zona_video : null)
+              <label>Zona del video dentro de la imagen</label>
+              <div class="zona-editor" data-zona-editor>
+                <img src="{{ $imagenZona }}" alt="" draggable="false">
+                @if ($b->tipo_medio === 'video')
+                  <video src="{{ $b->url() }}" class="banner-zona" muted loop autoplay playsinline data-zona-video
+                         @if ($zona) style="left:{{ $zona[0] }}%;top:{{ $zona[1] }}%;width:{{ $zona[2] }}%;height:{{ $zona[3] }}%" @else hidden @endif></video>
+                @endif
+                <div class="zona-rect" data-zona-rect
+                     @if ($zona) style="left:{{ $zona[0] }}%;top:{{ $zona[1] }}%;width:{{ $zona[2] }}%;height:{{ $zona[3] }}%" @else hidden @endif></div>
+              </div>
+              <input type="hidden" name="zonaVideo" value="{{ $zona ? implode(',', $zona) : '' }}" data-zona-valor>
+              <button type="button" data-zona-limpiar style="font-size:12px;background:none;border:none;color:#525252;text-decoration:underline;cursor:pointer;padding:0">Quitar zona (video de fondo completo)</button>
+              <p class="admin-ayuda">Arrastra el mouse sobre la imagen para marcar dónde se ve el video (por ejemplo, sobre la lista). Con zona, la imagen se ve completa y el video solo dentro del rectángulo. Luego Guardar.</p>
             @endif
             <label>Link al hacer clic</label>
             <input type="text" name="linkUrl" required value="{{ $b->link_url }}" placeholder="https://www.minegocio.cl">
@@ -154,6 +174,46 @@
       if (etiqueta) etiqueta.textContent = barra.value + '%';
       if (previa) previa.style.opacity = barra.value / 100;
     });
+  });
+
+  // Editor de zona del video: arrastrar sobre la imagen marca el rectángulo (en % de la imagen).
+  document.querySelectorAll('[data-zona-editor]').forEach(function (editor) {
+    var form = editor.closest('form');
+    var rect = editor.querySelector('[data-zona-rect]'), video = editor.querySelector('[data-zona-video]');
+    var valor = form.querySelector('[data-zona-valor]'), inicio = null;
+
+    function pintar(z) {
+      [rect, video].forEach(function (el) {
+        if (!el) return;
+        el.hidden = !z;
+        if (z) { el.style.left = z[0] + '%'; el.style.top = z[1] + '%'; el.style.width = z[2] + '%'; el.style.height = z[3] + '%'; }
+      });
+    }
+    function punto(e) {
+      var r = editor.getBoundingClientRect();
+      return [Math.min(Math.max((e.clientX - r.left) / r.width * 100, 0), 100), Math.min(Math.max((e.clientY - r.top) / r.height * 100, 0), 100)];
+    }
+    function zonaHasta(e) {
+      var p = punto(e);
+      return [Math.min(inicio[0], p[0]), Math.min(inicio[1], p[1]), Math.abs(p[0] - inicio[0]), Math.abs(p[1] - inicio[1])]
+        .map(function (n) { return Math.round(n * 10) / 10; });
+    }
+
+    editor.addEventListener('pointerdown', function (e) { inicio = punto(e); editor.setPointerCapture(e.pointerId); e.preventDefault(); });
+    editor.addEventListener('pointermove', function (e) { if (inicio) pintar(zonaHasta(e)); });
+    editor.addEventListener('pointerup', function (e) {
+      if (!inicio) return;
+      var z = zonaHasta(e);
+      inicio = null;
+      if (z[2] < 3 || z[3] < 3) { // un clic sin arrastrar no cambia la zona
+        var guardada = valor.value ? valor.value.split(',').map(Number) : null;
+        pintar(guardada && guardada.length === 4 ? guardada : null);
+        return;
+      }
+      valor.value = z.join(',');
+      pintar(z);
+    });
+    form.querySelector('[data-zona-limpiar]').addEventListener('click', function () { valor.value = ''; pintar(null); });
   });
 </script>
 @endsection

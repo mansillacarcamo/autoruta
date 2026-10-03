@@ -147,12 +147,18 @@ class NegocioController extends Controller
             'videoFondo' => 'nullable|file|mimes:mp4,webm|max:20480',
             'opacidadCapa' => 'nullable|integer|min:30|max:100',
             'quitarCapa' => 'nullable|boolean',
+            'zonaVideo' => 'nullable|string|max:60',
         ]);
 
         $cambios = ['link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']), 'posicion' => $datos['posicion']];
 
         if (isset($datos['opacidadCapa'])) {
             $cambios['opacidad_capa'] = (int) $datos['opacidadCapa'];
+        }
+
+        // Zona marcada en el editor del admin (vacía = video de fondo completo).
+        if ($request->has('zonaVideo')) {
+            $cambios['zona_video'] = AnuncianteBanner::normalizarZona($datos['zonaVideo'] ?? null);
         }
 
         // Banner de imagen al que se le agrega video de fondo: la imagen pasa a ir encima del video.
