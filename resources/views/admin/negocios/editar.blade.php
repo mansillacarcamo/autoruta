@@ -47,7 +47,7 @@
               @endif
             </div>
           @else
-            <img src="{{ $b->url() }}" alt="">
+            <img src="{{ $b->url() }}" alt="" id="capaPrevia{{ $b->id }}" style="opacity:{{ $b->opacidad_capa / 100 }}">
           @endif
           <div class="admin-medio-pie">
             <span>{{ \App\Models\Anunciante::POSICIONES[$b->posicion][0] ?? (\App\Models\Anunciante::ETIQUETA_POSICION[$b->posicion] ?? $b->posicion) }}</span>
@@ -76,8 +76,9 @@
               <label>Video de fondo (opcional)</label>
               <input type="file" name="videoFondo" accept="video/mp4,video/webm">
               <label>Opacidad de la imagen: <strong data-valor-opacidad>{{ $b->opacidad_capa }}%</strong></label>
-              <input type="range" name="opacidadCapa" min="30" max="100" step="5" value="{{ $b->opacidad_capa }}" data-opacidad>
-              <p class="admin-ayuda">Sube un video (MP4 o WEBM, máx. 20 MB, mismo formato que la imagen) y esta imagen pasa a ir encima de él con la opacidad elegida. Entre 75% y 85% se ve el video sin perder los textos.</p>
+              <input type="range" name="opacidadCapa" min="30" max="100" step="5" value="{{ $b->opacidad_capa }}"
+                     data-opacidad data-previa="capaPrevia{{ $b->id }}">
+              <p class="admin-ayuda">La opacidad se aplica a la imagen (mueve la barra para verlo en la vista previa y luego Guardar). Si además subes un video (MP4 o WEBM, máx. 20 MB, mismo formato que la imagen), la imagen pasa a ir encima de él; entre 75% y 85% se ve el video sin perder los textos.</p>
             @endif
             <label>Link al hacer clic</label>
             <input type="text" name="linkUrl" required value="{{ $b->link_url }}" placeholder="https://www.minegocio.cl">
@@ -130,7 +131,7 @@
       <div class="form-grupo">
         <label>Opacidad de la imagen: <strong data-valor-opacidad>100%</strong></label>
         <input type="range" name="opacidadCapa" min="30" max="100" step="5" value="100" data-opacidad>
-        <p class="admin-ayuda">Solo se usa cuando hay video e imagen juntos. Bájala para que el video se vea a través del diseño (75%–85% recomendado).</p>
+        <p class="admin-ayuda">Se aplica a la imagen. Si hay video, bájala para que se vea a través del diseño (75%–85% recomendado).</p>
       </div>
       <script>
         (function () {

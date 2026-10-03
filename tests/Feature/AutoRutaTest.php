@@ -589,6 +589,13 @@ class AutoRutaTest extends TestCase
         $banner = $negocio->banners()->firstOrFail();
         $imagen = $banner->archivo;
 
+        // Sin video, la opacidad se aplica a la imagen sola.
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
+            'linkUrl' => 'www.fondo.cl', 'posicion' => 'lateral_izquierdo', 'opacidadCapa' => '70',
+        ])->assertSessionHas('ok');
+        $this->assertSame('imagen', $banner->fresh()->tipo_medio);
+        $this->get('/')->assertSee('style="opacity:0.7"', false);
+
         $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
             'linkUrl' => 'www.fondo.cl', 'posicion' => 'lateral_izquierdo', 'opacidadCapa' => '80',
             'videoFondo' => UploadedFile::fake()->create('fondo.mp4', 500, 'video/mp4'),
