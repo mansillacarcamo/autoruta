@@ -649,6 +649,48 @@ class AutoRutaTest extends TestCase
         $this->assertEquals([90, 90, 10, 10], \App\Models\AnuncianteBanner::normalizarZona('90,90,50,50'));
     }
 
+    public function test_video_de_fondo_subido_en_trozos(): void
+    {
+        $admin = User::where('usuario', 'cesar')->firstOrFail();
+        $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Trozos', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
+        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
+            'tipoMedio' => 'imagen', 'posicion' => 'lateral_izquierdo', 'linkUrl' => 'www.trozos.cl',
+            'archivo' => UploadedFile::fake()->image('diseno.png', 320, 1200),
+        ])->assertSessionHas('ok');
+        $banner = $negocio->banners()->firstOrFail();
+
+        // Un MP4 de ~2,5 MB (cabecera real + relleno) enviado en 3 trozos de 1 MB, como lo hace el navegador.
+        $video = "\x00\x00\x00\x18ftypmp42\x00\x00\x00\x00mp42isom" . str_repeat("\x00", 2_500_000);
+        $subida = (string) \Illuminate\Support\Str::uuid();
+        foreach (str_split($video, 1024 * 1024) as $i => $parte) {
+            $trozo = UploadedFile::fake()->createWithContent('trozo', $parte);
+            $this->actingAs($admin)->post('/admin/banners/trozo', ['subida' => $subida, 'indice' => $i, 'trozo' => $trozo])
+                ->assertOk()->assertJson(['ok' => true]);
+        }
+
+        // Si falta un trozo, se avisa en vez de guardar un video roto.
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
+            'linkUrl' => 'www.trozos.cl', 'posicion' => 'lateral_izquierdo',
+            'videoFondo_subida' => $subida, 'videoFondo_total' => 4, 'videoFondo_nombre' => 'clip.mp4',
+        ])->assertSessionHasErrors('videoFondo');
+
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
+            'linkUrl' => 'www.trozos.cl', 'posicion' => 'lateral_izquierdo', 'zonaVideo' => '5,40,90,32',
+            'videoFondo_subida' => $subida, 'videoFondo_total' => 3, 'videoFondo_nombre' => 'clip.mp4',
+        ])->assertSessionHasNoErrors()->assertSessionHas('ok');
+
+        $banner->refresh();
+        $this->assertSame('video', $banner->tipo_medio);
+        $this->assertStringEndsWith('.mp4', $banner->archivo);
+        $this->assertSame(strlen($video), Storage::disk('public')->size('negocios/' . $banner->archivo));
+        $this->assertSame(0, ArchivoGuardado::where('ruta', 'like', 'trozos/%')->count());
+
+        auth()->logout();
+        $this->get('/')->assertSee('class="banner-zona"', false);
+        // Sin sesión de admin no se pueden subir trozos.
+        $this->post('/admin/banners/trozo', ['subida' => $subida, 'indice' => 0, 'trozo' => UploadedFile::fake()->create('t', 10)])->assertRedirect();
+    }
+
     public function test_banner_lateral_5_se_muestra_en_costado_y_en_fila_5_del_celular(): void
     {
         $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Lateral 5', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);

@@ -97,11 +97,66 @@ class NegocioController extends Controller
         return redirect()->route('admin.negocios.editar', $negocio)->with('ok', 'Cambios guardados.');
     }
 
+    // Los videos se suben en trozos de 1 MB porque el servidor rechaza archivos grandes en una sola
+    // petición (upload_max_filesize). Los trozos se guardan en la base de datos para que funcione
+    // aunque haya varias instancias del servidor, y al guardar el formulario se vuelven a unir.
+    public function subirTrozo(Request $request)
+    {
+        $datos = $request->validate([
+            'subida' => 'required|uuid',
+            'indice' => 'required|integer|min:0|max:' . (self::MAX_TROZOS - 1),
+            'trozo' => 'required|file|max:1100',
+        ]);
+
+        \App\Models\ArchivoGuardado::updateOrCreate(
+            ['ruta' => 'trozos/' . $datos['subida'] . '/' . $datos['indice']],
+            ['mime' => 'application/octet-stream', 'contenido' => file_get_contents($request->file('trozo')->getRealPath())]
+        );
+
+        return response()->json(['ok' => true]);
+    }
+
+    private const MAX_TROZOS = 40;
+
+    // Si el formulario trae un archivo subido por trozos ({campo}_subida, {campo}_total, {campo}_nombre),
+    // lo une y lo deja en la petición como si se hubiera subido normal, para validarlo y guardarlo igual.
+    private function unirTrozos(Request $request, array $campos): void
+    {
+        foreach ($campos as $campo) {
+            $subida = (string) $request->input($campo . '_subida');
+            $total = (int) $request->input($campo . '_total');
+            if (! \Illuminate\Support\Str::isUuid($subida) || $total < 1 || $total > self::MAX_TROZOS) {
+                continue;
+            }
+
+            $rutas = array_map(fn ($i) => 'trozos/' . $subida . '/' . $i, range(0, $total - 1));
+            $trozos = \App\Models\ArchivoGuardado::whereIn('ruta', $rutas)->get()->keyBy('ruta');
+            if ($trozos->count() !== $total) {
+                throw \Illuminate\Validation\ValidationException::withMessages([$campo => 'El video no terminó de subirse. Inténtalo de nuevo.']);
+            }
+
+            $temporal = tempnam(sys_get_temp_dir(), 'trozos');
+            $destino = fopen($temporal, 'wb');
+            foreach ($rutas as $ruta) {
+                fwrite($destino, $trozos[$ruta]->contenido);
+            }
+            fclose($destino);
+            \App\Models\ArchivoGuardado::whereIn('ruta', $rutas)->delete();
+            // Limpia trozos de subidas abandonadas.
+            \App\Models\ArchivoGuardado::where('ruta', 'like', 'trozos/%')->where('created_at', '<', now()->subDay())->delete();
+
+            $nombre = basename((string) $request->input($campo . '_nombre')) ?: 'video.mp4';
+            $request->files->set($campo, new \Illuminate\Http\UploadedFile($temporal, $nombre, null, UPLOAD_ERR_OK, true));
+        }
+    }
+
     public function subirBanner(Request $request, Anunciante $negocio)
     {
         if ($negocio->banners()->count() >= config('autoruta.max_banners_negocio')) {
             return back()->with('error', 'Máximo ' . config('autoruta.max_banners_negocio') . ' banners por negocio.');
         }
+
+        $this->unirTrozos($request, ['archivo', 'videoFondo']);
 
         $datos = $request->validate([
             'tipoMedio' => 'required|in:imagen,video',
@@ -144,6 +199,8 @@ class NegocioController extends Controller
     public function actualizarBanner(Request $request, Anunciante $negocio, AnuncianteBanner $banner)
     {
         abort_unless((int) $banner->anunciante_id === (int) $negocio->id, 404);
+
+        $this->unirTrozos($request, ['videoFondo']);
 
         $datos = $request->validate([
             'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],

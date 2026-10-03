@@ -77,7 +77,7 @@
               <p class="admin-ayuda">Bájala para que el video se vea a través del diseño. Entre 75% y 85% suele verse el movimiento sin perder los textos. Mueve la barra para verlo en la vista previa y luego Guardar.</p>
             @else
               <label>Video de fondo (opcional)</label>
-              <input type="file" name="videoFondo" accept="video/*,.mov,.m4v">
+              <input type="file" name="videoFondo" accept="video/*,.mov,.m4v" data-por-trozos>
               <label>Opacidad de la imagen: <strong data-valor-opacidad>{{ $b->opacidad_capa }}%</strong></label>
               <input type="range" name="opacidadCapa" min="30" max="100" step="5" value="{{ $b->opacidad_capa }}"
                      data-opacidad data-previa="capaPrevia{{ $b->id }}">
@@ -137,7 +137,7 @@
         </div>
       </div>
       <div class="form-grupo"><label>Link al hacer clic</label><input type="text" name="linkUrl" required placeholder="www.minegocio.cl o https://wa.me/56912345678" value="{{ old('linkUrl') }}"><p class="admin-ayuda">Puede ser la web del negocio, su Instagram o su WhatsApp (https://wa.me/569XXXXXXXX). Si no escribes https:// se agrega solo.</p></div>
-      <div class="form-grupo"><label>Archivo</label><input type="file" name="archivo" accept="image/*,video/*" required><p class="admin-ayuda">Imagen: JPG, PNG o WEBP. Video: MP4, MOV (iPhone), M4V, WEBM u OGG. Máximo 20 MB.</p></div>
+      <div class="form-grupo"><label>Archivo</label><input type="file" name="archivo" accept="image/*,video/*" required data-por-trozos><p class="admin-ayuda">Imagen: JPG, PNG o WEBP. Video: MP4, MOV (iPhone), M4V, WEBM u OGG. Máximo 20 MB.</p></div>
       <div class="form-grupo" id="campoCapa" hidden>
         <label>Imagen encima del video (opcional)</label>
         <input type="file" name="capa" accept="image/png,image/webp">
@@ -145,7 +145,7 @@
       </div>
       <div class="form-grupo" id="campoVideoFondo">
         <label>Video de fondo (opcional)</label>
-        <input type="file" name="videoFondo" accept="video/*,.mov,.m4v">
+        <input type="file" name="videoFondo" accept="video/*,.mov,.m4v" data-por-trozos>
         <p class="admin-ayuda">MP4, MOV (iPhone), M4V, WEBM u OGG, máximo 20 MB, mismo formato que la imagen. La imagen queda encima del video.</p>
       </div>
       <div class="form-grupo">
@@ -215,5 +215,64 @@
     });
     form.querySelector('[data-zona-limpiar]').addEventListener('click', function () { valor.value = ''; pintar(null); });
   });
+
+  // Archivos grandes (videos) se envían en trozos de 1 MB antes de guardar el formulario, porque el
+  // servidor rechaza archivos de más de unos pocos MB en una sola petición.
+  (function () {
+    var TROZO = 1024 * 1024, URL_TROZO = @json(route('admin.banners.trozo'));
+    function uuid() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16);
+      });
+    }
+    function oculto(form, nombre, valor) {
+      var el = document.createElement('input');
+      el.type = 'hidden'; el.name = nombre; el.value = valor;
+      form.appendChild(el);
+    }
+
+    document.querySelectorAll('form').forEach(function (form) {
+      var campos = form.querySelectorAll('input[type=file][data-por-trozos]');
+      if (!campos.length) return;
+
+      form.addEventListener('submit', async function (e) {
+        var grandes = Array.prototype.filter.call(campos, function (c) { return c.files.length && c.files[0].size > 900 * 1024; });
+        if (!grandes.length) return;
+        e.preventDefault();
+
+        var boton = form.querySelector('button[type=submit]'), textoBoton = boton.textContent;
+        boton.disabled = true;
+        var token = form.querySelector('input[name=_token]').value;
+        try {
+          for (var c = 0; c < grandes.length; c++) {
+            var campo = grandes[c], archivo = campo.files[0], subida = uuid();
+            var total = Math.ceil(archivo.size / TROZO);
+            if (total > 40) throw new Error('El archivo pesa más de 40 MB. Usa uno más liviano.');
+            for (var i = 0; i < total; i++) {
+              boton.textContent = 'Subiendo video… ' + Math.round(i / total * 100) + '%';
+              var datos = new FormData();
+              datos.append('_token', token);
+              datos.append('subida', subida);
+              datos.append('indice', i);
+              datos.append('trozo', archivo.slice(i * TROZO, (i + 1) * TROZO), 'trozo');
+              var resp = await fetch(URL_TROZO, { method: 'POST', body: datos, headers: { 'Accept': 'application/json' }, credentials: 'same-origin' });
+              if (!resp.ok) throw new Error('No se pudo subir el video (error ' + resp.status + '). Inténtalo de nuevo.');
+            }
+            oculto(form, campo.name + '_subida', subida);
+            oculto(form, campo.name + '_total', total);
+            oculto(form, campo.name + '_nombre', archivo.name);
+            campo.removeAttribute('name'); // el archivo ya está en el servidor; no se vuelve a enviar
+          }
+          boton.textContent = 'Guardando…';
+          form.submit();
+        } catch (error) {
+          alert(error.message);
+          boton.disabled = false;
+          boton.textContent = textoBoton;
+        }
+      });
+    });
+  })();
 </script>
 @endsection
