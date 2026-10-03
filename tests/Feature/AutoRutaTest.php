@@ -543,32 +543,38 @@ class AutoRutaTest extends TestCase
         $this->assertSame(1, substr_count($this->get('/vehiculos')->getContent(), 'class="laterales-movil"'));
     }
 
-    public function test_banner_con_botones_de_whatsapp_y_sitio_web(): void
+    public function test_banner_de_video_con_logo_encima(): void
     {
         $admin = User::where('usuario', 'cesar')->firstOrFail();
         $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'La Colonia', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
-        $banner = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 'lat.png', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'lateral_izquierdo']);
 
-        // Sin WhatsApp ni sitio web no hay botones.
-        $this->get('/')->assertDontSee('banner-boton-wa', false)->assertDontSee('banner-boton-web', false);
+        // Video + logo: el logo se muestra encima del video.
+        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
+            'tipoMedio' => 'video', 'posicion' => 'lateral_izquierdo', 'linkUrl' => 'www.lacolonia.cl',
+            'archivo' => UploadedFile::fake()->create('promo.mp4', 500, 'video/mp4'),
+            'logo' => UploadedFile::fake()->image('logo.png', 300, 120),
+        ])->assertSessionHas('ok');
+        $video = $negocio->banners()->where('posicion', 'lateral_izquierdo')->firstOrFail();
+        $this->assertNotNull($video->logo);
+        Storage::disk('public')->assertExists('negocios/' . $video->logo);
+        $this->get('/')->assertSee('class="banner-logo"', false)->assertSee($video->urlLogo(), false);
 
-        // Con los datos del negocio aparecen los dos botones bajo el banner.
-        $negocio->update(['telefono_whatsapp' => '9 9746 1985', 'sitio_web' => 'desarmaderialacolonia.cl']);
-        $this->get('/')->assertSee('banner-boton-wa', false)->assertSee('banner-boton-web', false)
-            ->assertSee($banner->urlBoton('whatsapp'), false)->assertSee($banner->urlBoton('web'), false);
+        // Imagen: el logo se ignora, va solo la imagen.
+        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
+            'tipoMedio' => 'imagen', 'posicion' => 'lateral_derecho', 'linkUrl' => 'www.lacolonia.cl',
+            'archivo' => UploadedFile::fake()->image('diseno.png', 320, 1200),
+            'logo' => UploadedFile::fake()->image('logo.png', 300, 120),
+        ])->assertSessionHas('ok');
+        $this->assertNull($negocio->banners()->where('posicion', 'lateral_derecho')->firstOrFail()->logo);
 
-        // Los botones redirigen (celular chileno con 56) y suman clics al banner.
-        $this->get($banner->urlBoton('whatsapp'))->assertRedirectContains('https://wa.me/56997461985?text=');
-        $this->get($banner->urlBoton('web'))->assertRedirect('https://desarmaderialacolonia.cl');
-        $this->assertSame(2, $banner->fresh()->clics);
-
-        // Solo WhatsApp: el botón de sitio web desaparece y su link da 404.
-        $negocio->update(['sitio_web' => null]);
-        $this->get('/')->assertSee('banner-boton-wa', false)->assertDontSee('banner-boton-web', false);
-        $this->get($banner->urlBoton('web'))->assertNotFound();
-        $this->get('/publicidad/' . $banner->id . '/otro')->assertNotFound();
-
-        $this->actingAs($admin)->get("/admin/negocios/{$negocio->id}")->assertOk()->assertSee('aparece el botón verde');
+        // El admin puede quitar el logo del video; el archivo se borra.
+        $archivoLogo = $video->logo;
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$video->id}", [
+            'linkUrl' => 'www.lacolonia.cl', 'posicion' => 'lateral_izquierdo', 'quitarLogo' => '1',
+        ])->assertSessionHas('ok');
+        $this->assertNull($video->fresh()->logo);
+        Storage::disk('public')->assertMissing('negocios/' . $archivoLogo);
+        $this->get('/')->assertDontSee('class="banner-logo"', false);
     }
 
     public function test_archivo_de_banner_en_trozos_y_formatos_de_video(): void

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AnuncianteBanner extends Model
 {
-    protected $fillable = ['anunciante_id', 'tipo_medio', 'archivo', 'link_url', 'posicion', 'orden', 'clics'];
+    protected $fillable = ['anunciante_id', 'tipo_medio', 'archivo', 'logo', 'link_url', 'posicion', 'orden', 'clics'];
 
     public function anunciante(): BelongsTo
     {
@@ -19,15 +19,15 @@ class AnuncianteBanner extends Model
         return \App\Support\Archivos::url('negocios/' . $this->archivo);
     }
 
+    // Logo que va encima del video (solo banners de video; opcional).
+    public function urlLogo(): ?string
+    {
+        return $this->tipo_medio === 'video' && $this->logo ? \App\Support\Archivos::url('negocios/' . $this->logo) : null;
+    }
+
     public function urlClic(): string
     {
         return route('publicidad.clic', $this);
-    }
-
-    // Botones "WhatsApp" y "Sitio web" bajo el banner (con los datos del negocio); también cuentan el clic.
-    public function urlBoton(string $destino): string
-    {
-        return route('publicidad.boton', [$this, $destino]);
     }
 
     // Completa "www.taller.cl" como "https://www.taller.cl". Solo acepta http(s) para no

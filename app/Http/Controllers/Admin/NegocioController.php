@@ -163,6 +163,7 @@ class NegocioController extends Controller
             'posicion' => 'required|in:' . implode(',', array_keys(Anunciante::POSICIONES)),
             'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
             'archivo' => 'required|file|mimes:jpg,jpeg,png,webp,' . self::FORMATOS_VIDEO . '|max:20480',
+            'logo' => 'nullable|file|mimes:png,jpg,jpeg,webp|max:5120',
         ], $this->mensajesArchivos());
 
         // El tipo se deduce del archivo, por si se sube un video dejando "Imagen" seleccionado.
@@ -173,9 +174,13 @@ class NegocioController extends Controller
             'neg' . $negocio->id . '_' . time() . '.' . $request->file('archivo')->extension()
         );
 
+        // El logo solo se usa en banners de video (va encima del video).
+        $logo = $tipo === 'video' && $request->hasFile('logo') ? $this->guardarLogo($request, $negocio) : null;
+
         $negocio->banners()->create([
             'tipo_medio' => $tipo,
             'archivo' => $nombre,
+            'logo' => $logo,
             'link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']),
             'posicion' => $datos['posicion'],
         ]);
@@ -190,9 +195,21 @@ class NegocioController extends Controller
         $datos = $request->validate([
             'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
             'posicion' => 'required|in:' . implode(',', array_keys(Anunciante::POSICIONES)),
-        ]);
+            'logo' => 'nullable|file|mimes:png,jpg,jpeg,webp|max:5120',
+            'quitarLogo' => 'nullable|boolean',
+        ], $this->mensajesArchivos());
 
-        $banner->update(['link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']), 'posicion' => $datos['posicion']]);
+        $cambios = ['link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']), 'posicion' => $datos['posicion']];
+
+        // Cambiar o quitar el logo del video (el anterior se borra del almacenamiento).
+        if ($banner->tipo_medio === 'video' && ($request->hasFile('logo') || $request->boolean('quitarLogo'))) {
+            if ($banner->logo) {
+                \App\Support\Archivos::borrar('negocios/' . $banner->logo);
+            }
+            $cambios['logo'] = $request->hasFile('logo') ? $this->guardarLogo($request, $negocio) : null;
+        }
+
+        $banner->update($cambios);
 
         return back()->with('ok', 'Banner actualizado.');
     }
@@ -203,7 +220,19 @@ class NegocioController extends Controller
             'archivo.mimes' => 'Formato no permitido. Imágenes: JPG, PNG o WEBP. Videos: MP4, MOV, M4V, WEBM u OGG (si es AVI, WMV o MKV, conviértelo a MP4).',
             'archivo.max' => 'El archivo no puede pesar más de 20 MB.',
             'archivo.uploaded' => 'El archivo no se pudo subir: pesa más de lo que permite el servidor. Prueba con uno más liviano.',
+            'logo.mimes' => 'El logo debe ser PNG, JPG o WEBP (ideal PNG con fondo transparente).',
+            'logo.max' => 'El logo no puede pesar más de 5 MB.',
+            'logo.uploaded' => 'El logo no se pudo subir: pesa más de lo que permite el servidor. Prueba con uno más liviano.',
         ];
+    }
+
+    private function guardarLogo(Request $request, Anunciante $negocio): string
+    {
+        return \App\Support\Archivos::guardar(
+            $request->file('logo'),
+            'negocios',
+            'neg' . $negocio->id . '_' . time() . '_logo.' . $request->file('logo')->extension()
+        );
     }
 
     private function reglaLink(): \Closure
@@ -219,6 +248,9 @@ class NegocioController extends Controller
     {
         abort_unless($banner->anunciante_id === $negocio->id, 404);
         \App\Support\Archivos::borrar('negocios/' . $banner->archivo);
+        if ($banner->logo) {
+            \App\Support\Archivos::borrar('negocios/' . $banner->logo);
+        }
         $banner->delete();
 
         return back()->with('ok', 'Banner eliminado.');

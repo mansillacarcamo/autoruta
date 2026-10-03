@@ -474,7 +474,7 @@ body { overflow-x: clip; }
 .banner-lateral-tramo { flex: 1 1 0; min-height: 0; padding-bottom: 24px; }
 .banner-lateral-pegado { position: sticky; top: 104px; display: flex; flex-direction: column; gap: 6px; }
 .banner-lateral-titulo { margin: 0; text-align: center; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #a3a3a3; }
-/* Los avisos se apilan en la misma celda: el rotador toma el alto del más alto (imagen + botones) */
+/* Los avisos se apilan en la misma celda del rotador (grid) para deslizarse uno sobre otro */
 .banner-lateral-rotador { display: grid; width: 160px; overflow: hidden; }
 .banner-lateral-media { display: block; position: relative; aspect-ratio: 160 / 600; border-radius: 12px; overflow: hidden; border: 1px solid #e5e5e5; background: var(--gris-claro); box-shadow: 0 2px 10px rgba(0,0,0,.06); }
 /* Cada aviso entra deslizándose desde el borde exterior de su columna y sale por el lado contrario */
@@ -485,6 +485,9 @@ body { overflow-x: clip; }
 .banner-lateral-item.saliendo { transform: translateX(var(--salida)) scale(.96); }
 /* Banner: imagen o video llenando su caja */
 .banner-medio { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* Logo sobre el video: centrado arriba; en el banner ancho (728×90) va a la izquierda */
+.banner-logo { position: absolute; top: 5%; left: 50%; transform: translateX(-50%); max-width: 80%; max-height: 22%; object-fit: contain; pointer-events: none; filter: drop-shadow(0 2px 6px rgba(0,0,0,.45)); }
+.banner-ancho-slot .banner-logo { top: 50%; left: 12px; transform: translateY(-50%); max-width: 30%; max-height: 75%; }
 @media (prefers-reduced-motion: reduce) { .banner-lateral-item, .banner-lateral-item.saliendo { transform: none; transition: opacity .6s ease, visibility .6s; } }
 
 /* Fotos del aviso: actuales y nuevas */
@@ -616,12 +619,3 @@ body { overflow-x: clip; }
 .laterales-movil-banner { display: block; position: relative; aspect-ratio: 160 / 600; border-radius: 12px; overflow: hidden; border: 1px solid #e5e5e5; background: var(--gris-claro); }
 .laterales-movil-vacio { flex-direction: row; flex-wrap: wrap; column-gap: 10px; min-height: 70px; max-width: 728px; margin: 0 auto; }
 @media (min-width: 1400px) { .laterales-movil { display: none; } }
-
-/* Botones "WhatsApp" / "Sitio web" bajo los banners (datos del negocio en Admin > Negocios) */
-.banner-botones { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
-.banner-botones-fila { flex-direction: row; flex-wrap: wrap; justify-content: center; }
-.banner-boton { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; line-height: 1.2; text-decoration: none; transition: .15s; }
-.banner-boton-wa { background: #25d366; color: #fff; }
-.banner-boton-wa:hover { background: #1ebe5b; color: #fff; }
-.banner-boton-web { background: #fff; color: #171717; border: 1px solid #d4d4d4; }
-.banner-boton-web:hover { border-color: var(--acento); color: var(--acento); }

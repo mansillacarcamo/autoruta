@@ -25,7 +25,6 @@
                 <a href="{{ $bannerLateral->urlClic() }}" target="_blank" rel="sponsored noopener" class="banner-lateral-media">
                   @include('partials.banner-medio', ['banner' => $bannerLateral])
                 </a>
-                @include('partials.banner-botones', ['banner' => $bannerLateral])
               </div>
             </div>
             <p class="banner-lateral-titulo">Publicidad</p>
@@ -41,7 +40,7 @@
 @once
 <script>
   (function () {
-    var ALTO_TRAMO = 740; // aviso 160×600 + botones + rótulo + separación
+    var ALTO_TRAMO = 660; // aviso 160×600 + rótulo + separación
 
     function crear(tag, clase) { var el = document.createElement(tag); el.className = clase; return el; }
 

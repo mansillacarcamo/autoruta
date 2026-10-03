@@ -169,7 +169,6 @@
            style="display:block;position:relative;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;aspect-ratio:16/9;background:var(--gris-claro)">
           @include('partials.banner-medio', ['banner' => $b, 'alt' => $b->anunciante->nombre_negocio])
         </a>
-        @include('partials.banner-botones', ['banner' => $b, 'fila' => true])
       </div>
     @endforeach
   </div>

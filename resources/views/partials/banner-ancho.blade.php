@@ -11,7 +11,6 @@
        style="display:block;position:relative;width:100%;max-width:728px;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;aspect-ratio:728/90;background:var(--gris-claro)">
       @include('partials.banner-medio', ['banner' => $bannerAncho])
     </a>
-    @include('partials.banner-botones', ['banner' => $bannerAncho, 'fila' => true])
   @else
     @include('partials.espacio-publicitario', ['estilo' => 'width:100%;max-width:728px;aspect-ratio:728/90', 'posicion' => $posicion])
   @endif

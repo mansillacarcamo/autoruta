@@ -58,25 +58,6 @@ class Anunciante extends Model
         );
     }
 
-    // Link de WhatsApp del negocio (celulares chilenos sin código de país se completan con 56).
-    public function urlWhatsapp(): ?string
-    {
-        $numero = preg_replace('/\D/', '', (string) $this->telefono_whatsapp);
-        if (strlen($numero) === 9 && str_starts_with($numero, '9')) {
-            $numero = '56' . $numero;
-        }
-        if (strlen($numero) < 8) {
-            return null;
-        }
-
-        return 'https://wa.me/' . $numero . '?text=' . rawurlencode('Hola, vi su aviso en ' . config('autoruta.nombre_sitio') . ' y me gustaría más información.');
-    }
-
-    public function urlSitioWeb(): ?string
-    {
-        return AnuncianteBanner::normalizarLink($this->sitio_web);
-    }
-
     public function banners(): HasMany
     {
         return $this->hasMany(AnuncianteBanner::class);

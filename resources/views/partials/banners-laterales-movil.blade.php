@@ -25,7 +25,6 @@
             <a href="{{ $bannerFila->urlClic() }}" target="_blank" rel="sponsored noopener" class="laterales-movil-banner">
               @include('partials.banner-medio', ['banner' => $bannerFila])
             </a>
-            @include('partials.banner-botones', ['banner' => $bannerFila])
           </div>
         @else
           @include('partials.espacio-publicitario', ['estilo' => 'width:100%;aspect-ratio:160/600', 'posicion' => $posicionFila])
