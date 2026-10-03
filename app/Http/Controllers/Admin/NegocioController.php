@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Storage;
 
 class NegocioController extends Controller
 {
+    // Formatos de video que los navegadores reproducen (MOV/M4V son los de iPhone). AVI, WMV o MKV no se
+    // pueden mostrar en una página web, por eso se piden convertidos a MP4.
+    private const FORMATOS_VIDEO = 'mp4,m4v,mov,qt,webm,ogv,ogg';
+
     public function index()
     {
         $negocios = Anunciante::withCount('banners')->withSum('banners', 'clics')->orderByDesc('created_at')->get();
@@ -103,13 +107,14 @@ class NegocioController extends Controller
             'tipoMedio' => 'required|in:imagen,video',
             'posicion' => 'required|in:' . implode(',', array_keys(Anunciante::POSICIONES)),
             'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
-            'archivo' => 'required|file|mimes:jpg,jpeg,png,webp,mp4,webm|max:20480',
+            'archivo' => 'required|file|mimes:jpg,jpeg,png,webp,' . self::FORMATOS_VIDEO . '|max:20480',
             'capa' => 'nullable|file|mimes:png,webp|max:5120',
-            'videoFondo' => 'nullable|file|mimes:mp4,webm|max:20480',
+            'videoFondo' => 'nullable|file|mimes:' . self::FORMATOS_VIDEO . '|max:20480',
             'opacidadCapa' => 'nullable|integer|min:30|max:100',
-        ]);
+        ], $this->mensajesArchivos());
 
-        $tipo = $datos['tipoMedio'];
+        // El tipo se deduce del archivo, por si se sube un video dejando "Imagen" seleccionado.
+        $tipo = in_array($request->file('archivo')->extension(), explode(',', self::FORMATOS_VIDEO), true) ? 'video' : 'imagen';
         $nombre = \App\Support\Archivos::guardar(
             $request->file('archivo'),
             'negocios',
@@ -144,11 +149,11 @@ class NegocioController extends Controller
             'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
             'posicion' => 'required|in:' . implode(',', array_keys(Anunciante::POSICIONES)),
             'capa' => 'nullable|file|mimes:png,webp|max:5120',
-            'videoFondo' => 'nullable|file|mimes:mp4,webm|max:20480',
+            'videoFondo' => 'nullable|file|mimes:' . self::FORMATOS_VIDEO . '|max:20480',
             'opacidadCapa' => 'nullable|integer|min:30|max:100',
             'quitarCapa' => 'nullable|boolean',
             'zonaVideo' => 'nullable|string|max:60',
-        ]);
+        ], $this->mensajesArchivos());
 
         $cambios = ['link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']), 'posicion' => $datos['posicion']];
 
@@ -177,6 +182,22 @@ class NegocioController extends Controller
         $banner->update($cambios);
 
         return back()->with('ok', 'Banner actualizado.');
+    }
+
+    private function mensajesArchivos(): array
+    {
+        $formatoVideo = 'Ese formato de video no se puede mostrar en la web. Usa MP4, MOV, M4V, WEBM u OGG (si es AVI, WMV o MKV, conviértelo a MP4).';
+        $muyPesado = 'El archivo no se pudo subir: pesa más de lo que permite el servidor. Prueba con uno más liviano (idealmente menos de 10 MB).';
+
+        return [
+            'videoFondo.mimes' => $formatoVideo,
+            'archivo.mimes' => 'Formato no permitido. Imágenes: JPG, PNG o WEBP. Videos: MP4, MOV, M4V, WEBM u OGG.',
+            'videoFondo.max' => 'El video de fondo no puede pesar más de 20 MB.',
+            'archivo.max' => 'El archivo no puede pesar más de 20 MB.',
+            'videoFondo.uploaded' => $muyPesado,
+            'archivo.uploaded' => $muyPesado,
+            'capa.uploaded' => $muyPesado,
+        ];
     }
 
     private function guardarVideoFondo(Request $request, Anunciante $negocio): string

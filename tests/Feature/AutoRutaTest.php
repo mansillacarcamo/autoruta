@@ -619,6 +619,18 @@ class AutoRutaTest extends TestCase
         auth()->logout();
         $this->get('/')->assertSee('opacity:0.8', false)->assertSee('opacity:0.75', false);
 
+        // Videos de iPhone (MOV) se aceptan; formatos que el navegador no reproduce (AVI) se rechazan con un mensaje claro.
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
+            'linkUrl' => 'www.fondo.cl', 'posicion' => 'lateral_izquierdo',
+            'videoFondo' => UploadedFile::fake()->create('clip.avi', 500, 'video/x-msvideo'),
+        ])->assertSessionHasErrors(['videoFondo' => 'Ese formato de video no se puede mostrar en la web. Usa MP4, MOV, M4V, WEBM u OGG (si es AVI, WMV o MKV, conviértelo a MP4).']);
+        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
+            'tipoMedio' => 'imagen', 'posicion' => 'superior', 'linkUrl' => 'www.fondo.cl',
+            'archivo' => UploadedFile::fake()->create('iphone.mov', 500, 'video/quicktime'),
+        ])->assertSessionHas('ok');
+        // Aunque quedó "Imagen" seleccionado, se guarda como video.
+        $this->assertSame('video', $negocio->banners()->where('posicion', 'superior')->firstOrFail()->tipo_medio);
+
         // Zona del video: la imagen se ve completa y el video solo dentro del rectángulo marcado.
         $this->actingAs($admin)->get("/admin/negocios/{$negocio->id}")->assertOk()->assertSee('Zona del video dentro de la imagen');
         $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [

@@ -77,11 +77,11 @@
               <p class="admin-ayuda">Bájala para que el video se vea a través del diseño. Entre 75% y 85% suele verse el movimiento sin perder los textos. Mueve la barra para verlo en la vista previa y luego Guardar.</p>
             @else
               <label>Video de fondo (opcional)</label>
-              <input type="file" name="videoFondo" accept="video/mp4,video/webm">
+              <input type="file" name="videoFondo" accept="video/*,.mov,.m4v">
               <label>Opacidad de la imagen: <strong data-valor-opacidad>{{ $b->opacidad_capa }}%</strong></label>
               <input type="range" name="opacidadCapa" min="30" max="100" step="5" value="{{ $b->opacidad_capa }}"
                      data-opacidad data-previa="capaPrevia{{ $b->id }}">
-              <p class="admin-ayuda">La opacidad se aplica a la imagen (mueve la barra para verlo en la vista previa y luego Guardar). Si además subes un video (MP4 o WEBM, máx. 20 MB, mismo formato que la imagen), la imagen pasa a ir encima de él; entre 75% y 85% se ve el video sin perder los textos.</p>
+              <p class="admin-ayuda">La opacidad se aplica a la imagen (mueve la barra para verlo en la vista previa y luego Guardar). Si además subes un video (MP4, MOV, M4V, WEBM u OGG, máx. 20 MB, mismo formato que la imagen), la imagen pasa a ir encima de él; entre 75% y 85% se ve el video sin perder los textos.</p>
             @endif
             @php($imagenZona = $b->tipo_medio === 'imagen' ? $b->url() : $b->urlCapa())
             @if ($imagenZona)
@@ -137,7 +137,7 @@
         </div>
       </div>
       <div class="form-grupo"><label>Link al hacer clic</label><input type="text" name="linkUrl" required placeholder="www.minegocio.cl o https://wa.me/56912345678" value="{{ old('linkUrl') }}"><p class="admin-ayuda">Puede ser la web del negocio, su Instagram o su WhatsApp (https://wa.me/569XXXXXXXX). Si no escribes https:// se agrega solo.</p></div>
-      <div class="form-grupo"><label>Archivo</label><input type="file" name="archivo" accept="image/*,video/*" required><p class="admin-ayuda">JPG, PNG, WEBP, MP4 o WEBM. Máximo 20 MB.</p></div>
+      <div class="form-grupo"><label>Archivo</label><input type="file" name="archivo" accept="image/*,video/*" required><p class="admin-ayuda">Imagen: JPG, PNG o WEBP. Video: MP4, MOV (iPhone), M4V, WEBM u OGG. Máximo 20 MB.</p></div>
       <div class="form-grupo" id="campoCapa" hidden>
         <label>Imagen encima del video (opcional)</label>
         <input type="file" name="capa" accept="image/png,image/webp">
@@ -145,8 +145,8 @@
       </div>
       <div class="form-grupo" id="campoVideoFondo">
         <label>Video de fondo (opcional)</label>
-        <input type="file" name="videoFondo" accept="video/mp4,video/webm">
-        <p class="admin-ayuda">MP4 o WEBM, máximo 20 MB, mismo formato que la imagen. La imagen queda encima del video.</p>
+        <input type="file" name="videoFondo" accept="video/*,.mov,.m4v">
+        <p class="admin-ayuda">MP4, MOV (iPhone), M4V, WEBM u OGG, máximo 20 MB, mismo formato que la imagen. La imagen queda encima del video.</p>
       </div>
       <div class="form-grupo">
         <label>Opacidad de la imagen: <strong data-valor-opacidad>100%</strong></label>
