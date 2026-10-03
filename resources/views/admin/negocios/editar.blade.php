@@ -38,7 +38,14 @@
       @foreach ($negocio->banners as $b)
         <div class="admin-medio">
           @if ($b->tipo_medio === 'video')
-            <video src="{{ $b->url() }}" muted controls></video>
+            {{-- Vista previa: video con su imagen encima, tal como se ve en la web --}}
+            <div style="position:relative">
+              <video src="{{ $b->url() }}" muted loop autoplay playsinline></video>
+              @if ($b->archivo_capa)
+                <img src="{{ $b->urlCapa() }}" alt="" id="capaPrevia{{ $b->id }}"
+                     style="position:absolute;inset:0;height:100%;background:none;pointer-events:none;opacity:{{ $b->opacidad_capa / 100 }}">
+              @endif
+            </div>
           @else
             <img src="{{ $b->url() }}" alt="">
           @endif
@@ -61,6 +68,10 @@
                 </div>
               @endif
               <input type="file" name="capa" accept="image/png,image/webp">
+              <label>Opacidad de la imagen: <strong data-valor-opacidad>{{ $b->opacidad_capa }}%</strong></label>
+              <input type="range" name="opacidadCapa" min="30" max="100" step="5" value="{{ $b->opacidad_capa }}"
+                     data-opacidad data-previa="capaPrevia{{ $b->id }}">
+              <p class="admin-ayuda">Bájala para que el video se vea a través del diseño. Entre 75% y 85% suele verse el movimiento sin perder los textos. Mueve la barra para verlo en la vista previa y luego Guardar.</p>
             @endif
             <label>Link al hacer clic</label>
             <input type="text" name="linkUrl" required value="{{ $b->link_url }}" placeholder="https://www.minegocio.cl">
@@ -103,7 +114,9 @@
       <div class="form-grupo" id="campoCapa" hidden>
         <label>Imagen encima del video (opcional)</label>
         <input type="file" name="capa" accept="image/png,image/webp">
-        <p class="admin-ayuda">PNG o WEBP con fondo transparente (logo, teléfono, texto) que queda fijo sobre el video. Hazla del mismo tamaño que el video para que calce. Máximo 5 MB.</p>
+        <p class="admin-ayuda">PNG o WEBP (logo, teléfono, texto) que queda fijo sobre el video. Hazla del mismo tamaño que el video para que calce. Máximo 5 MB. Si tiene fondo sólido, baja la opacidad para que se vea el video detrás.</p>
+        <label>Opacidad de la imagen: <strong data-valor-opacidad>100%</strong></label>
+        <input type="range" name="opacidadCapa" min="30" max="100" step="5" value="100" data-opacidad>
       </div>
       <script>
         (function () {
@@ -117,4 +130,15 @@
     </form>
   @endif
 </div>
+<script>
+  // Deslizadores de opacidad: muestran el % y actualizan la vista previa del banner.
+  document.querySelectorAll('[data-opacidad]').forEach(function (barra) {
+    var etiqueta = barra.parentNode.querySelector('[data-valor-opacidad]');
+    var previa = barra.dataset.previa && document.getElementById(barra.dataset.previa);
+    barra.addEventListener('input', function () {
+      if (etiqueta) etiqueta.textContent = barra.value + '%';
+      if (previa) previa.style.opacity = barra.value / 100;
+    });
+  });
+</script>
 @endsection

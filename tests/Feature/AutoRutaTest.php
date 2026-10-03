@@ -552,6 +552,7 @@ class AutoRutaTest extends TestCase
             'tipoMedio' => 'video', 'posicion' => 'lateral_derecho', 'linkUrl' => 'www.videocapa.cl',
             'archivo' => UploadedFile::fake()->create('promo.mp4', 500, 'video/mp4'),
             'capa' => UploadedFile::fake()->image('logo.png', 320, 1200),
+            'opacidadCapa' => '80',
         ])->assertSessionHas('ok');
         $banner = $negocio->banners()->firstOrFail();
         $this->assertNotNull($banner->archivo_capa);
@@ -559,6 +560,14 @@ class AutoRutaTest extends TestCase
         // La capa se muestra sobre el video en la web.
         auth()->logout();
         $this->get('/')->assertSee('class="banner-capa"', false)->assertSee($banner->urlCapa(), false);
+        $this->assertSame(80, $banner->opacidad_capa);
+        $this->get('/')->assertSee('opacity:0.8', false);
+
+        // Opacidad fuera de rango se rechaza.
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
+            'linkUrl' => 'www.videocapa.cl', 'posicion' => 'lateral_derecho', 'opacidadCapa' => '10',
+        ])->assertSessionHasErrors('opacidadCapa');
+        $this->actingAs($admin)->get("/admin/negocios/{$negocio->id}")->assertOk()->assertSee('Opacidad de la imagen');
 
         // El admin puede quitarla.
         $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [

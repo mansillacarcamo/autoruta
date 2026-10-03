@@ -105,6 +105,7 @@ class NegocioController extends Controller
             'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
             'archivo' => 'required|file|mimes:jpg,jpeg,png,webp,mp4,webm|max:20480',
             'capa' => 'nullable|file|mimes:png,webp|max:5120',
+            'opacidadCapa' => 'nullable|integer|min:30|max:100',
         ]);
 
         $nombre = \App\Support\Archivos::guardar(
@@ -122,6 +123,7 @@ class NegocioController extends Controller
             'tipo_medio' => $datos['tipoMedio'],
             'archivo' => $nombre,
             'archivo_capa' => $capa,
+            'opacidad_capa' => (int) ($datos['opacidadCapa'] ?? 100),
             'link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']),
             'posicion' => $datos['posicion'],
         ]);
@@ -137,12 +139,17 @@ class NegocioController extends Controller
             'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
             'posicion' => 'required|in:' . implode(',', array_keys(Anunciante::POSICIONES)),
             'capa' => 'nullable|file|mimes:png,webp|max:5120',
+            'opacidadCapa' => 'nullable|integer|min:30|max:100',
             'quitarCapa' => 'nullable|boolean',
         ]);
 
         $cambios = ['link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']), 'posicion' => $datos['posicion']];
 
         // Reemplazar o quitar la capa del video (la anterior se borra del almacenamiento).
+        if ($banner->tipo_medio === 'video' && isset($datos['opacidadCapa'])) {
+            $cambios['opacidad_capa'] = (int) $datos['opacidadCapa'];
+        }
+
         if ($banner->tipo_medio === 'video' && ($request->hasFile('capa') || $request->boolean('quitarCapa'))) {
             if ($banner->archivo_capa) {
                 \App\Support\Archivos::borrar('negocios/' . $banner->archivo_capa);
