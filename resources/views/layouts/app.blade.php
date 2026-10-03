@@ -149,7 +149,7 @@
     </div>
     <div class="footer-abajo">
       &copy; {{ date('Y') }} {{ config('autoruta.nombre_sitio') }}. Todos los derechos reservados.
-      <br>Desarrollado por <a href="https://www.bynari.cl" target="_blank" rel="noopener" style="font-weight:600">www.bynari.cl</a>
+      <br>Desarrollado por <span style="font-weight:600">Cesar Mansilla C.</span>
     </div>
   </footer>
 
