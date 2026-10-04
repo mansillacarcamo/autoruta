@@ -653,8 +653,10 @@ class AutoRutaTest extends TestCase
             'tipoMedio' => 'imagen', 'posicion' => 'lateral_izquierdo', 'linkUrl' => 'www.lacolonia.cl',
             'archivo' => UploadedFile::fake()->image('diseno.png', 320, 1200),
             'alterno' => UploadedFile::fake()->create('local.mp4', 500, 'video/mp4'),
+            'segundosPrincipal' => '4', 'segundosAlterno' => '8',
         ])->assertSessionHas('ok');
         $banner = $negocio->banners()->firstOrFail();
+        $this->assertSame([4, 8], [$banner->segundos_principal, $banner->segundos_alterno]);
         $this->assertSame('imagen', $banner->tipo_medio);
         $this->assertSame('video', $banner->tipo_alterno);
         Storage::disk('public')->assertExists('negocios/' . $banner->archivo_alterno);
@@ -664,6 +666,17 @@ class AutoRutaTest extends TestCase
         $this->assertStringContainsString('class="banner-alterna"', $html);
         $this->assertStringContainsString($banner->url(), $html);
         $this->assertStringContainsString($banner->urlAlterno(), $html);
+        $this->assertStringContainsString('data-segundos="4"', $html);
+        $this->assertStringContainsString('data-segundos="8"', $html);
+
+        // Los segundos se pueden cambiar (de 1 a 60).
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
+            'linkUrl' => 'www.lacolonia.cl', 'posicion' => 'lateral_izquierdo', 'segundosAlterno' => '0',
+        ])->assertSessionHasErrors('segundosAlterno');
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
+            'linkUrl' => 'www.lacolonia.cl', 'posicion' => 'lateral_izquierdo', 'segundosPrincipal' => '2', 'segundosAlterno' => '10',
+        ])->assertSessionHas('ok');
+        $this->assertSame([2, 10], [$banner->fresh()->segundos_principal, $banner->fresh()->segundos_alterno]);
 
         // Cambiar el segundo archivo por otro subido en trozos (como lo hace el navegador).
         $subida = (string) \Illuminate\Support\Str::uuid();

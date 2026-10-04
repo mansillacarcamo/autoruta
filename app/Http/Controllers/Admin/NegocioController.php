@@ -165,6 +165,8 @@ class NegocioController extends Controller
             'archivo' => 'required|file|mimes:jpg,jpeg,png,webp,' . self::FORMATOS_VIDEO . '|max:20480',
             'logo' => 'nullable|file|mimes:png,jpg,jpeg,webp|max:5120',
             'alterno' => 'nullable|file|mimes:jpg,jpeg,png,webp,' . self::FORMATOS_VIDEO . '|max:20480',
+            'segundosPrincipal' => 'nullable|integer|min:1|max:60',
+            'segundosAlterno' => 'nullable|integer|min:1|max:60',
         ], $this->mensajesArchivos());
 
         // El tipo se deduce del archivo, por si se sube un video dejando "Imagen" seleccionado.
@@ -183,6 +185,8 @@ class NegocioController extends Controller
             'archivo' => $nombre,
             'logo' => $logo,
             ...$this->guardarAlterno($request, $negocio),
+            'segundos_principal' => (int) ($datos['segundosPrincipal'] ?? 3),
+            'segundos_alterno' => (int) ($datos['segundosAlterno'] ?? 3),
             'link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']),
             'posicion' => $datos['posicion'],
         ]);
@@ -202,6 +206,8 @@ class NegocioController extends Controller
             'logo' => 'nullable|file|mimes:png,jpg,jpeg,webp|max:5120',
             'quitarLogo' => 'nullable|boolean',
             'alterno' => 'nullable|file|mimes:jpg,jpeg,png,webp,' . self::FORMATOS_VIDEO . '|max:20480',
+            'segundosPrincipal' => 'nullable|integer|min:1|max:60',
+            'segundosAlterno' => 'nullable|integer|min:1|max:60',
             'quitarAlterno' => 'nullable|boolean',
         ], $this->mensajesArchivos());
 
@@ -213,6 +219,12 @@ class NegocioController extends Controller
                 \App\Support\Archivos::borrar('negocios/' . $banner->logo);
             }
             $cambios['logo'] = $request->hasFile('logo') ? $this->guardarLogo($request, $negocio) : null;
+        }
+
+        foreach (['segundosPrincipal' => 'segundos_principal', 'segundosAlterno' => 'segundos_alterno'] as $campo => $columna) {
+            if (isset($datos[$campo])) {
+                $cambios[$columna] = (int) $datos[$campo];
+            }
         }
 
         // Cambiar o quitar el segundo archivo (el anterior se borra del almacenamiento).

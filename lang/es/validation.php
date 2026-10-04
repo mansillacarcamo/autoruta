@@ -180,6 +180,8 @@ return [
         'fotos.*' => 'foto',
         'kilometraje' => 'kilometraje',
         'linkUrl' => 'link',
+        'segundosPrincipal' => 'segundos del archivo principal',
+        'segundosAlterno' => 'segundos del segundo archivo',
         'marca' => 'marca',
         'modelo' => 'modelo',
         'nombreNegocio' => 'nombre del negocio',

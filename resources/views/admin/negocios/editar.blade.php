@@ -67,7 +67,7 @@
               @endif
               <input type="file" name="logo" accept="image/png,image/jpeg,image/webp">
             @endif
-            <label>Segundo archivo (se alterna cada 3 s)</label>
+            <label>Segundo archivo (se alterna con el principal)</label>
             @if ($b->archivo_alterno)
               <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
                 @if ($b->tipo_alterno === 'video')
@@ -79,6 +79,10 @@
               </div>
             @endif
             <input type="file" name="alterno" accept="image/*,video/*,.mov,.m4v" data-por-trozos>
+            <div style="display:flex;gap:10px">
+              <div style="flex:1"><label>Segundos principal</label><input type="number" name="segundosPrincipal" min="1" max="60" value="{{ $b->segundos_principal }}"></div>
+              <div style="flex:1"><label>Segundos 2º archivo</label><input type="number" name="segundosAlterno" min="1" max="60" value="{{ $b->segundos_alterno }}"></div>
+            </div>
             <label>Link al hacer clic</label>
             <input type="text" name="linkUrl" required value="{{ $b->link_url }}" placeholder="https://www.minegocio.cl">
             <label>Ubicación</label>
@@ -120,7 +124,11 @@
       <div class="form-grupo">
         <label>Segundo archivo (opcional)</label>
         <input type="file" name="alterno" accept="image/*,video/*,.mov,.m4v" data-por-trozos>
-        <p class="admin-ayuda">Imagen o video que se alterna con el archivo principal cada 3 segundos (por ejemplo, el diseño y un video del local). Mismo tamaño que el principal. Máximo 20 MB.</p>
+        <p class="admin-ayuda">Imagen o video que se alterna con el archivo principal (por ejemplo, el diseño y un video del local). Mismo tamaño que el principal. Máximo 20 MB.</p>
+      </div>
+      <div class="admin-campos">
+        <div class="form-grupo"><label>Segundos del archivo principal</label><input type="number" name="segundosPrincipal" min="1" max="60" value="3"></div>
+        <div class="form-grupo"><label>Segundos del segundo archivo</label><input type="number" name="segundosAlterno" min="1" max="60" value="3"><p class="admin-ayuda">Solo se usan si hay segundo archivo. Para un video, pon lo que dura (por ejemplo 8) para que se vea completo.</p></div>
       </div>
       <div class="form-grupo" id="campoLogo" hidden>
         <label>Logo (opcional)</label>
