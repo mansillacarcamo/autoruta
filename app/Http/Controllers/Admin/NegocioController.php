@@ -156,7 +156,7 @@ class NegocioController extends Controller
             return back()->with('error', 'Máximo ' . config('autoruta.max_banners_negocio') . ' banners por negocio.');
         }
 
-        $this->unirTrozos($request, ['archivo']);
+        $this->unirTrozos($request, ['archivo', 'alterno']);
 
         $datos = $request->validate([
             'tipoMedio' => 'required|in:imagen,video',
@@ -164,6 +164,7 @@ class NegocioController extends Controller
             'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
             'archivo' => 'required|file|mimes:jpg,jpeg,png,webp,' . self::FORMATOS_VIDEO . '|max:20480',
             'logo' => 'nullable|file|mimes:png,jpg,jpeg,webp|max:5120',
+            'alterno' => 'nullable|file|mimes:jpg,jpeg,png,webp,' . self::FORMATOS_VIDEO . '|max:20480',
         ], $this->mensajesArchivos());
 
         // El tipo se deduce del archivo, por si se sube un video dejando "Imagen" seleccionado.
@@ -181,6 +182,7 @@ class NegocioController extends Controller
             'tipo_medio' => $tipo,
             'archivo' => $nombre,
             'logo' => $logo,
+            ...$this->guardarAlterno($request, $negocio),
             'link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']),
             'posicion' => $datos['posicion'],
         ]);
@@ -192,11 +194,15 @@ class NegocioController extends Controller
     {
         abort_unless((int) $banner->anunciante_id === (int) $negocio->id, 404);
 
+        $this->unirTrozos($request, ['alterno']);
+
         $datos = $request->validate([
             'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
             'posicion' => 'required|in:' . implode(',', array_keys(Anunciante::POSICIONES)),
             'logo' => 'nullable|file|mimes:png,jpg,jpeg,webp|max:5120',
             'quitarLogo' => 'nullable|boolean',
+            'alterno' => 'nullable|file|mimes:jpg,jpeg,png,webp,' . self::FORMATOS_VIDEO . '|max:20480',
+            'quitarAlterno' => 'nullable|boolean',
         ], $this->mensajesArchivos());
 
         $cambios = ['link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']), 'posicion' => $datos['posicion']];
@@ -207,6 +213,15 @@ class NegocioController extends Controller
                 \App\Support\Archivos::borrar('negocios/' . $banner->logo);
             }
             $cambios['logo'] = $request->hasFile('logo') ? $this->guardarLogo($request, $negocio) : null;
+        }
+
+        // Cambiar o quitar el segundo archivo (el anterior se borra del almacenamiento).
+        if ($request->hasFile('alterno') || $request->boolean('quitarAlterno')) {
+            if ($banner->archivo_alterno) {
+                \App\Support\Archivos::borrar('negocios/' . $banner->archivo_alterno);
+            }
+            $cambios += ['archivo_alterno' => null, 'tipo_alterno' => null];
+            $cambios = array_merge($cambios, $this->guardarAlterno($request, $negocio));
         }
 
         $banner->update($cambios);
@@ -220,9 +235,26 @@ class NegocioController extends Controller
             'archivo.mimes' => 'Formato no permitido. Imágenes: JPG, PNG o WEBP. Videos: MP4, MOV, M4V, WEBM u OGG (si es AVI, WMV o MKV, conviértelo a MP4).',
             'archivo.max' => 'El archivo no puede pesar más de 20 MB.',
             'archivo.uploaded' => 'El archivo no se pudo subir: pesa más de lo que permite el servidor. Prueba con uno más liviano.',
+            'alterno.mimes' => 'El segundo archivo debe ser imagen (JPG, PNG, WEBP) o video (MP4, MOV, M4V, WEBM, OGG).',
+            'alterno.max' => 'El segundo archivo no puede pesar más de 20 MB.',
+            'alterno.uploaded' => 'El segundo archivo no se pudo subir: pesa más de lo que permite el servidor. Prueba con uno más liviano.',
             'logo.mimes' => 'El logo debe ser PNG, JPG o WEBP (ideal PNG con fondo transparente).',
             'logo.max' => 'El logo no puede pesar más de 5 MB.',
             'logo.uploaded' => 'El logo no se pudo subir: pesa más de lo que permite el servidor. Prueba con uno más liviano.',
+        ];
+    }
+
+    // Guarda el segundo archivo (si viene) y devuelve los campos para el banner.
+    private function guardarAlterno(Request $request, Anunciante $negocio): array
+    {
+        if (! $request->hasFile('alterno')) {
+            return [];
+        }
+        $archivo = $request->file('alterno');
+
+        return [
+            'archivo_alterno' => \App\Support\Archivos::guardar($archivo, 'negocios', 'neg' . $negocio->id . '_' . time() . '_alt.' . $archivo->extension()),
+            'tipo_alterno' => in_array($archivo->extension(), explode(',', self::FORMATOS_VIDEO), true) ? 'video' : 'imagen',
         ];
     }
 
@@ -248,8 +280,10 @@ class NegocioController extends Controller
     {
         abort_unless($banner->anunciante_id === $negocio->id, 404);
         \App\Support\Archivos::borrar('negocios/' . $banner->archivo);
-        if ($banner->logo) {
-            \App\Support\Archivos::borrar('negocios/' . $banner->logo);
+        foreach ([$banner->logo, $banner->archivo_alterno] as $extra) {
+            if ($extra) {
+                \App\Support\Archivos::borrar('negocios/' . $extra);
+            }
         }
         $banner->delete();
 

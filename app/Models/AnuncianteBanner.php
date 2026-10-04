@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AnuncianteBanner extends Model
 {
-    protected $fillable = ['anunciante_id', 'tipo_medio', 'archivo', 'logo', 'link_url', 'posicion', 'orden', 'clics'];
+    protected $fillable = ['anunciante_id', 'tipo_medio', 'archivo', 'logo', 'archivo_alterno', 'tipo_alterno', 'link_url', 'posicion', 'orden', 'clics'];
 
     public function anunciante(): BelongsTo
     {
@@ -23,6 +23,12 @@ class AnuncianteBanner extends Model
     public function urlLogo(): ?string
     {
         return $this->tipo_medio === 'video' && $this->logo ? \App\Support\Archivos::url('negocios/' . $this->logo) : null;
+    }
+
+    // Segundo archivo (imagen o video) que se alterna con el principal cada 3 segundos; opcional.
+    public function urlAlterno(): ?string
+    {
+        return $this->archivo_alterno ? \App\Support\Archivos::url('negocios/' . $this->archivo_alterno) : null;
     }
 
     public function urlClic(): string

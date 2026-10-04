@@ -67,6 +67,18 @@
               @endif
               <input type="file" name="logo" accept="image/png,image/jpeg,image/webp">
             @endif
+            <label>Segundo archivo (se alterna cada 3 s)</label>
+            @if ($b->archivo_alterno)
+              <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
+                @if ($b->tipo_alterno === 'video')
+                  <video src="{{ $b->urlAlterno() }}" muted loop autoplay playsinline style="height:48px;width:auto;aspect-ratio:auto;border-radius:6px"></video>
+                @else
+                  <img src="{{ $b->urlAlterno() }}" alt="" style="height:48px;width:auto;aspect-ratio:auto;border-radius:6px">
+                @endif
+                <label style="font-size:12px;display:flex;gap:4px;align-items:center;margin:0"><input type="checkbox" name="quitarAlterno" value="1"> Quitar</label>
+              </div>
+            @endif
+            <input type="file" name="alterno" accept="image/*,video/*,.mov,.m4v" data-por-trozos>
             <label>Link al hacer clic</label>
             <input type="text" name="linkUrl" required value="{{ $b->link_url }}" placeholder="https://www.minegocio.cl">
             <label>Ubicación</label>
@@ -105,6 +117,11 @@
       </div>
       <div class="form-grupo"><label>Link al hacer clic</label><input type="text" name="linkUrl" required placeholder="www.minegocio.cl o https://wa.me/56912345678" value="{{ old('linkUrl') }}"><p class="admin-ayuda">Puede ser la web del negocio, su Instagram o su WhatsApp (https://wa.me/569XXXXXXXX). Si no escribes https:// se agrega solo.</p></div>
       <div class="form-grupo"><label>Archivo</label><input type="file" name="archivo" accept="image/*,video/*" required data-por-trozos><p class="admin-ayuda">Imagen: JPG, PNG o WEBP. Video: MP4, MOV (iPhone), M4V, WEBM u OGG. Máximo 20 MB.</p></div>
+      <div class="form-grupo">
+        <label>Segundo archivo (opcional)</label>
+        <input type="file" name="alterno" accept="image/*,video/*,.mov,.m4v" data-por-trozos>
+        <p class="admin-ayuda">Imagen o video que se alterna con el archivo principal cada 3 segundos (por ejemplo, el diseño y un video del local). Mismo tamaño que el principal. Máximo 20 MB.</p>
+      </div>
       <div class="form-grupo" id="campoLogo" hidden>
         <label>Logo (opcional)</label>
         <input type="file" name="logo" accept="image/png,image/jpeg,image/webp">

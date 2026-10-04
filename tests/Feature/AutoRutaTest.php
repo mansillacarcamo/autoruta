@@ -618,6 +618,74 @@ class AutoRutaTest extends TestCase
         $this->post('/admin/banners/trozo', ['subida' => $subida, 'indice' => 0, 'trozo' => UploadedFile::fake()->create('t', 10)])->assertRedirect();
     }
 
+    public function test_slider_publicitario_del_inicio(): void
+    {
+        // Sin avisos: se muestra la invitación a publicar.
+        $this->get('/')->assertSee('¿Tienes un vehículo para vender?')->assertDontSee('data-slider-pub', false);
+
+        $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Slider', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
+        $tercero = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 's3.jpg', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'slider_3']);
+        $primero = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 's1.jpg', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'slider_1']);
+
+        // Con avisos: el slider reemplaza la invitación, en orden de posición, con flechas y puntos.
+        $html = $this->get('/')->assertOk()->assertDontSee('¿Tienes un vehículo para vender?')->getContent();
+        $this->assertSame(2, substr_count($html, 'class="slider-pub-slide"'));
+        $this->assertLessThan(strpos($html, route('publicidad.clic', $tercero)), strpos($html, route('publicidad.clic', $primero)));
+        $this->assertStringContainsString('slider-pub-flecha', $html);
+
+        // Las 4 posiciones aparecen en el admin para asignarlas.
+        $admin = User::where('usuario', 'cesar')->firstOrFail();
+        $this->actingAs($admin)->get("/admin/negocios/{$negocio->id}")->assertSee('Slider inicio 4 — 1200 × 330 px');
+
+        // Negocio pausado: vuelve la invitación.
+        $negocio->update(['estado' => 'pausado']);
+        auth()->logout();
+        $this->get('/')->assertSee('¿Tienes un vehículo para vender?');
+    }
+
+    public function test_banner_con_imagen_y_video_que_se_alternan(): void
+    {
+        $admin = User::where('usuario', 'cesar')->firstOrFail();
+        $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'La Colonia', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
+
+        // Imagen principal + video como segundo archivo.
+        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
+            'tipoMedio' => 'imagen', 'posicion' => 'lateral_izquierdo', 'linkUrl' => 'www.lacolonia.cl',
+            'archivo' => UploadedFile::fake()->image('diseno.png', 320, 1200),
+            'alterno' => UploadedFile::fake()->create('local.mp4', 500, 'video/mp4'),
+        ])->assertSessionHas('ok');
+        $banner = $negocio->banners()->firstOrFail();
+        $this->assertSame('imagen', $banner->tipo_medio);
+        $this->assertSame('video', $banner->tipo_alterno);
+        Storage::disk('public')->assertExists('negocios/' . $banner->archivo_alterno);
+
+        // En la web van los dos superpuestos para alternarse.
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('class="banner-alterna"', $html);
+        $this->assertStringContainsString($banner->url(), $html);
+        $this->assertStringContainsString($banner->urlAlterno(), $html);
+
+        // Cambiar el segundo archivo por otro subido en trozos (como lo hace el navegador).
+        $subida = (string) \Illuminate\Support\Str::uuid();
+        $this->actingAs($admin)->post('/admin/banners/trozo', ['subida' => $subida, 'indice' => 0, 'trozo' => UploadedFile::fake()->createWithContent('trozo', UploadedFile::fake()->image('otra.png', 320, 1200)->get())])->assertOk();
+        $anterior = $banner->archivo_alterno;
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
+            'linkUrl' => 'www.lacolonia.cl', 'posicion' => 'lateral_izquierdo',
+            'alterno_subida' => $subida, 'alterno_total' => 1, 'alterno_nombre' => 'otra.png',
+        ])->assertSessionHasNoErrors();
+        $banner->refresh();
+        $this->assertSame('imagen', $banner->tipo_alterno);
+        Storage::disk('public')->assertMissing('negocios/' . $anterior);
+
+        // Quitarlo deja el banner con un solo archivo.
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", [
+            'linkUrl' => 'www.lacolonia.cl', 'posicion' => 'lateral_izquierdo', 'quitarAlterno' => '1',
+        ])->assertSessionHas('ok');
+        $this->assertNull($banner->fresh()->archivo_alterno);
+        auth()->logout();
+        $this->get('/')->assertDontSee('class="banner-alterna"', false);
+    }
+
     public function test_banner_lateral_5_se_muestra_en_costado_y_en_fila_5_del_celular(): void
     {
         $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Lateral 5', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);

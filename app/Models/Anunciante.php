@@ -33,6 +33,10 @@ class Anunciante extends Model
         'lateral_derecho_3' => ['Lateral derecho 3', '160 × 600 px'],
         'lateral_derecho_4' => ['Lateral derecho 4', '160 × 600 px'],
         'lateral_derecho_5' => ['Lateral derecho 5', '160 × 600 px'],
+        'slider_1' => ['Slider inicio 1', '1200 × 330 px'],
+        'slider_2' => ['Slider inicio 2', '1200 × 330 px'],
+        'slider_3' => ['Slider inicio 3', '1200 × 330 px'],
+        'slider_4' => ['Slider inicio 4', '1200 × 330 px'],
         'inicio' => ['Inicio · "Auspiciado por"', '1280 × 720 px'],
         'listado' => ['Ficha de vehículo · negocio destacado', '1280 × 720 px'],
     ];
@@ -43,6 +47,7 @@ class Anunciante extends Model
         'lateral_izquierdo_4' => 'Lateral izquierdo 4', 'lateral_izquierdo_5' => 'Lateral izquierdo 5',
         'lateral_derecho' => 'Lateral derecho 1', 'lateral_derecho_2' => 'Lateral derecho 2', 'lateral_derecho_3' => 'Lateral derecho 3',
         'lateral_derecho_4' => 'Lateral derecho 4', 'lateral_derecho_5' => 'Lateral derecho 5',
+        'slider_1' => 'Slider inicio 1', 'slider_2' => 'Slider inicio 2', 'slider_3' => 'Slider inicio 3', 'slider_4' => 'Slider inicio 4',
         'inicio' => 'Inicio', 'listado' => 'Ficha de vehículo', 'lateral' => 'Lateral',
     ];
 

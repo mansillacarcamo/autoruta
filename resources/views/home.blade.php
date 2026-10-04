@@ -177,19 +177,7 @@
 
 @include('partials.banners-laterales-movil', ['fila' => 3])
 
-<section class="seccion contenedor">
-  <div class="promo">
-    <span class="promo-badge">100% GRATIS</span>
-    <h2>¿Tienes un vehículo para vender?</h2>
-    <p>Publica gratis en minutos, sin comisión por venta.</p>
-    <ul class="promo-beneficios">
-      <li>Sin comisión</li>
-      <li>Hasta {{ config('autoruta.max_fotos_vehiculo') }} fotos</li>
-      <li>Contacto directo por WhatsApp</li>
-    </ul>
-    <a href="{{ route('register') }}" class="btn btn-acento promo-boton">Publicar mi vehículo →</a>
-  </div>
-</section>
+@include('partials.slider-publicidad')
 
 @include('partials.banners-laterales-movil', ['fila' => 5])
 
