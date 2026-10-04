@@ -31,8 +31,6 @@
   @include('partials.categorias')
 </section>
 
-@include('partials.banners-laterales-movil', ['fila' => 1])
-
 <section class="seccion contenedor">
   <div class="seccion-titulo">
     <h2>Últimos publicados</h2>
@@ -51,8 +49,6 @@
   @include('partials.vehiculos-en-vivo', ['modo' => 'insertar', 'grilla' => 'grillaUltimos', 'desde' => (int) \App\Models\Vehiculo::max('id'), 'maxTarjetas' => 36])
 </section>
 
-@include('partials.banners-laterales-movil', ['fila' => 2])
-
 @if ($destacados->isNotEmpty())
 <section class="seccion contenedor">
   <div class="seccion-titulo">
@@ -70,10 +66,6 @@
     </div>
 </section>
 @endif
-
-@include('partials.banners-laterales-movil', ['fila' => 4])
-
-
 
 <script>
   // Carruseles de Destacados y Últimos publicados: se mueven con las flechas o deslizando.
@@ -175,11 +167,7 @@
 </section>
 @endif
 
-@include('partials.banners-laterales-movil', ['fila' => 3])
-
 @include('partials.slider-publicidad')
-
-@include('partials.banners-laterales-movil', ['fila' => 5])
 
 <script>
   (function () {

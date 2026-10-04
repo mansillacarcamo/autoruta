@@ -529,18 +529,27 @@ class AutoRutaTest extends TestCase
         $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Lateral', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
         $banner = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 'lat.jpg', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'lateral_derecho_2']);
 
+        // Sin avisos: una sola franja "Publicita aquí" al final, sin recuadros vacíos.
+        $vacio = $this->get('/vehiculos')->getContent();
+        $this->assertSame(1, substr_count($vacio, 'class="laterales-movil"'));
+        $banner->delete();
+        $sinAvisos = $this->get('/')->getContent();
+        $this->assertSame(1, substr_count($sinAvisos, 'class="laterales-movil"'));
+        $this->assertStringContainsString('Publicita aquí', $sinAvisos);
+
+        // Con avisos: una sola sección al final con todos, intercalando izquierdo y derecho.
+        $der2 = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 'd2.jpg', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'lateral_derecho_2']);
+        $izq1 = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 'i1.jpg', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'lateral_izquierdo']);
         $html = $this->get('/')->assertOk()->getContent();
-
-        // Versión celular: 3 filas en el inicio; la fila 2 trae el banner y las vacías muestran la franja "Disponible".
-        $this->assertSame(3, substr_count($html, 'class="laterales-movil"'));
-        $this->assertSame(1, substr_count($html, 'class="laterales-movil-banner"'));
-        $this->assertStringContainsString('Espacios publicitarios laterales 1', $html);
-        $this->assertStringContainsString('Espacios publicitarios laterales 3', $html);
-        // El mismo banner también está en el costado para pantallas grandes (2 enlaces en total).
-        $this->assertSame(2, substr_count($html, route('publicidad.clic', $banner)));
-
-        // En otras páginas se muestra la fila 1.
-        $this->assertSame(1, substr_count($this->get('/vehiculos')->getContent(), 'class="laterales-movil"'));
+        $this->assertSame(1, substr_count($html, 'class="laterales-movil"'));
+        $this->assertSame(2, substr_count($html, 'class="laterales-movil-banner"'));
+        $this->assertStringNotContainsString('Publicita aquí', $html);
+        $movil = substr($html, strpos($html, 'class="laterales-movil"'));
+        $this->assertLessThan(strpos($movil, route('publicidad.clic', $der2)), strpos($movil, route('publicidad.clic', $izq1)));
+        // La sección de celular va después del contenido de la página (al final).
+        $this->assertGreaterThan(strpos($html, 'Últimos publicados'), strpos($html, 'class="laterales-movil"'));
+        // Cada banner está en el costado (pantallas grandes) y en la sección de celular.
+        $this->assertSame(2, substr_count($html, route('publicidad.clic', $der2)));
     }
 
     public function test_banner_de_video_con_logo_encima(): void
@@ -699,16 +708,16 @@ class AutoRutaTest extends TestCase
         $this->get('/')->assertDontSee('class="banner-alterna"', false);
     }
 
-    public function test_banner_lateral_5_se_muestra_en_costado_y_en_fila_5_del_celular(): void
+    public function test_banner_lateral_5_se_muestra_en_costado_y_en_celular(): void
     {
         $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Lateral 5', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
         $banner = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 'lat5.jpg', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'lateral_izquierdo_5']);
 
         $html = $this->get('/')->assertOk()->getContent();
 
-        // Costado (pantallas grandes) + fila 5 del celular; la fila 4 vacía no se muestra.
+        // Costado (pantallas grandes) + sección de celular al final.
         $this->assertSame(2, substr_count($html, route('publicidad.clic', $banner)));
-        $this->assertSame(4, substr_count($html, 'class="laterales-movil"'));
+        $this->assertSame(1, substr_count($html, 'class="laterales-movil"'));
         $this->assertSame(10, substr_count($html, 'class="banner-lateral-tramo"'));
     }
 }

@@ -86,9 +86,8 @@
 
       @yield('contenido')
 
-      @unless (request()->routeIs('home'))
-        @include('partials.banners-laterales-movil', ['fila' => 1])
-      @endunless
+      {{-- Celular/tablet: la publicidad lateral va toda junta al final --}}
+      @include('partials.banners-laterales-movil')
     </main>
 
     @include('partials.banner-lateral', ['lado' => 'derecho'])
