@@ -12,7 +12,8 @@
     @foreach ($mediosBanner as $i => [$tipoMedio, $urlMedio, $segundos])
       <div class="banner-alterna-capa{{ $i === 0 ? ' activa' : '' }}" data-segundos="{{ $segundos }}">
         @if ($tipoMedio === 'video')
-          <video src="{{ $urlMedio }}" class="banner-medio" muted loop playsinline @if ($i === 0) autoplay @endif></video>
+          {{-- autoplay + preload en todos: en celulares un video oculto sin autoplay no se descarga ni se deja reproducir --}}
+          <video src="{{ $urlMedio }}" class="banner-medio" autoplay muted loop playsinline preload="auto"></video>
         @else
           <img src="{{ $urlMedio }}" class="banner-medio" alt="{{ $alt ?? 'Publicidad' }}" loading="lazy">
         @endif
@@ -31,19 +32,40 @@
 @once
 <script>
   // Banners con dos archivos: cada uno se muestra los segundos elegidos en el admin; el video parte desde el inicio.
+  // Si el teléfono no deja reproducir el video (p. ej. modo de bajo consumo), se queda en la imagen.
   document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('[data-alterna]').forEach(function (caja) {
-      var capas = caja.querySelectorAll('.banner-alterna-capa'), actual = 0;
-      function siguiente() {
-        if (document.hidden) { setTimeout(siguiente, 1000); return; }
-        var anterior = capas[actual];
-        actual = (actual + 1) % capas.length;
-        var nueva = capas[actual], videoAnterior = anterior.querySelector('video'), videoNuevo = nueva.querySelector('video');
-        if (videoNuevo) { videoNuevo.currentTime = 0; videoNuevo.play().catch(function () {}); }
-        anterior.classList.remove('activa');
+      var capas = Array.prototype.slice.call(caja.querySelectorAll('.banner-alterna-capa')), actual = 0;
+      capas.forEach(function (capa) {
+        var video = capa.querySelector('video');
+        if (video) { video.muted = true; }
+      });
+
+      function mostrar(indice) {
+        var anterior = capas[actual], nueva = capas[indice];
+        actual = indice;
         nueva.classList.add('activa');
-        if (videoAnterior) setTimeout(function () { videoAnterior.pause(); }, 600);
-        setTimeout(siguiente, (Number(nueva.dataset.segundos) || 3) * 1000);
+        if (anterior !== nueva) anterior.classList.remove('activa');
+        var video = nueva.querySelector('video');
+        if (video) {
+          try { video.currentTime = 0; } catch (e) {}
+          var intento = video.play();
+          if (intento && intento.catch) intento.catch(function () { quitarCapa(nueva); });
+        }
+      }
+
+      function quitarCapa(capa) {
+        if (capas.length < 2) return;
+        capas = capas.filter(function (c) { return c !== capa; });
+        capa.classList.remove('activa');
+        actual = 0;
+        capas[0].classList.add('activa');
+      }
+
+      function siguiente() {
+        if (document.hidden || capas.length < 2) { setTimeout(siguiente, 1000); return; }
+        mostrar((actual + 1) % capas.length);
+        setTimeout(siguiente, (Number(capas[actual].dataset.segundos) || 3) * 1000);
       }
       setTimeout(siguiente, (Number(capas[0].dataset.segundos) || 3) * 1000);
     });
