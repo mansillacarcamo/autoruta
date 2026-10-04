@@ -708,6 +708,31 @@ class AutoRutaTest extends TestCase
         $this->get('/')->assertDontSee('class="banner-alterna"', false);
     }
 
+    public function test_videos_se_sirven_por_partes_para_iphone(): void
+    {
+        $contenido = "\x00\x00\x00\x18ftypmp42" . str_repeat('A', 1000);
+
+        // Desde el disco: responde 206 con el trozo pedido.
+        Storage::disk('public')->put('negocios/clip.mp4', $contenido);
+        $this->get('/media/negocios/clip.mp4', ['Range' => 'bytes=0-1'])
+            ->assertStatus(206)
+            ->assertHeader('Content-Range', 'bytes 0-1/' . strlen($contenido))
+            ->assertHeader('Accept-Ranges', 'bytes');
+
+        // Desde el respaldo en la base de datos (el disco se borró en un deploy).
+        ArchivoGuardado::create(['ruta' => 'negocios/respaldo.mp4', 'mime' => 'video/mp4', 'contenido' => $contenido]);
+        $parcial = $this->get('/media/negocios/respaldo.mp4', ['Range' => 'bytes=4-11'])
+            ->assertStatus(206)
+            ->assertHeader('Content-Range', 'bytes 4-11/' . strlen($contenido))
+            ->assertHeader('Content-Length', '8');
+        $this->assertSame('ftypmp42', $parcial->getContent());
+        $this->get('/media/negocios/respaldo.mp4', ['Range' => 'bytes=-10'])->assertStatus(206)
+            ->assertHeader('Content-Range', 'bytes ' . (strlen($contenido) - 10) . '-' . (strlen($contenido) - 1) . '/' . strlen($contenido));
+        $this->get('/media/negocios/respaldo.mp4', ['Range' => 'bytes=99999-'])->assertStatus(416);
+        $completo = $this->get('/media/negocios/respaldo.mp4')->assertOk()->assertHeader('Accept-Ranges', 'bytes');
+        $this->assertSame($contenido, $completo->getContent());
+    }
+
     public function test_banner_lateral_5_se_muestra_en_costado_y_en_celular(): void
     {
         $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Lateral 5', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
