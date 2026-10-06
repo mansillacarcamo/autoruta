@@ -693,8 +693,6 @@ body { overflow-x: clip; }
   .galeria-principal { border-radius: 0; margin: 0 -16px; }
   .galeria-miniaturas { margin-top: 8px; }
 
-  /* Botón "Asesor web" más discreto */
-  .wa-flotante { padding: 8px 13px; font-size: 12.5px; bottom: 12px; right: 12px; }
 
   .contenedor-pagina { padding-top: 16px; padding-bottom: 24px; }
   .contenedor-pagina h2 { font-size: 19px; }
@@ -717,6 +715,10 @@ body { overflow-x: clip; }
   .menu-movil a.activo { color: #ff4d5a; }
   .menu-movil-separador { height: 10px; }
   .menu-movil-publicar { display: flex; justify-content: center; gap: 5px; margin-top: 16px; padding: 13px; font-size: 15px; }
+  .menu-movil-asesor { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 10px; padding: 12px; font-size: 15px; background: #25D366; color: #fff; }
+  .menu-movil-asesor:hover { background: #1ebe5b; color: #fff; }
+  /* El "Asesor web" va dentro del menú: en celular/tablet no se muestra el botón flotante */
+  .wa-flotante { display: none !important; }
   .menu-movil-redes { display: flex; justify-content: center; gap: 22px; margin-top: 16px; }
   .menu-movil-redes a { padding: 4px !important; border: 0 !important; color: #a3a3a3 !important; font-size: 13px !important; font-weight: 500 !important; }
 }
@@ -738,4 +740,35 @@ body { overflow-x: clip; }
   .paginacion { gap: 6px; font-size: 13px; }
   .paginacion a, .paginacion .deshabilitado, .paginacion button { padding: 8px 11px; }
   .paginacion .pagina-numero { min-width: 36px; padding: 8px 9px; }
+}
+
+/* ===== Pie de página ===== */
+.footer-redes { display: flex; gap: 10px; margin-top: 14px; }
+.footer-redes a { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; background: var(--carbon-claro); border: 1px solid #2e2f3a; color: #e5e5e5; transition: .15s; }
+.footer-redes a:hover { background: var(--acento); border-color: var(--acento); color: #fff; }
+.footer-contacto li a, .footer-contacto li > span { display: inline-flex; align-items: center; gap: 8px; }
+.footer-contacto svg { flex-shrink: 0; color: var(--acento); }
+.footer-admin-movil { display: none; }
+
+/* Celular: pie ordenado tipo app (marca centrada, enlaces en dos columnas, contacto como tarjeta) */
+@media (max-width: 640px) {
+  .footer { margin-top: 40px; }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 26px 16px; padding-top: 32px; padding-bottom: 24px; }
+  .footer-marca { grid-column: 1 / -1; text-align: center; padding-bottom: 22px; border-bottom: 1px solid var(--carbon-claro); }
+  .footer-marca img { height: 46px !important; margin: 0 auto; }
+  .footer-marca p { max-width: 280px; margin-left: auto; margin-right: auto; }
+  .footer-redes { justify-content: center; }
+  .footer-admin { display: none; }
+  .footer h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #fff; margin-bottom: 12px; }
+  .footer li { font-size: 14px; margin-bottom: 10px; }
+  .footer-contacto { grid-column: 1 / -1; }
+  .footer-contacto ul { background: var(--carbon-claro); border: 1px solid #2e2f3a; border-radius: 14px; overflow: hidden; }
+  .footer-contacto li { margin: 0; border-bottom: 1px solid #2e2f3a; }
+  .footer-contacto li:last-child { border-bottom: 0; }
+  .footer-contacto li a, .footer-contacto li > span { display: flex; width: 100%; padding: 13px 14px; gap: 12px; color: #e5e5e5; }
+  .footer-contacto li a::after { content: "›"; margin-left: auto; color: #6b6b75; font-size: 18px; line-height: 1; }
+  .app-pronto { margin: 0 16px; padding-top: 22px; border-top: 1px solid var(--carbon-claro); }
+  .contador-visitas { margin-top: 14px; }
+  .footer-abajo { padding: 16px 16px 24px; line-height: 1.7; }
+  .footer-admin-movil { display: inline-block; margin-top: 8px; font-size: 11px; color: #6b6b75; text-decoration: underline; }
 }

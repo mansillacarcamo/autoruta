@@ -84,6 +84,10 @@
           <a href="{{ route('register') }}">Regístrate</a>
           <a href="{{ route('register') }}" class="btn btn-acento menu-movil-publicar">Publica <strong>100% gratis</strong></a>
         @endauth
+        <a href="https://wa.me/{{ preg_replace('/\D/', '', config('autoruta.asesor_whatsapp')) }}?text={{ urlencode('Hola, quiero hablar con un asesor web') }}" target="_blank" rel="noopener" class="btn menu-movil-asesor">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-3.3-.8-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.1.3.7 1.1 1.4 1.8 1 .9 1.8 1.2 2.1 1.3.3.1.4.1.6-.1l.8-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg>
+          Asesor web
+        </a>
         @if (config('autoruta.redes_sociales.facebook') || config('autoruta.redes_sociales.instagram'))
           <div class="menu-movil-redes">
             @if (config('autoruta.redes_sociales.facebook'))<a href="{{ config('autoruta.redes_sociales.facebook') }}" target="_blank" rel="noopener">Facebook</a>@endif
@@ -140,34 +144,44 @@
 
   <footer class="footer">
     <div class="contenedor footer-grid">
-      <div>
+      <div class="footer-marca">
         <a href="{{ route('home') }}"><img src="{{ asset('img/logo-autoruta.png') }}" alt="{{ config('autoruta.nombre_sitio') }}" style="height:56px;width:auto"></a>
         <p style="margin-top:8px;font-size:14px">Compra y venta de vehículos entre particulares en todo Chile.</p>
+        @if (config('autoruta.redes_sociales.facebook') || config('autoruta.redes_sociales.instagram'))
+          <div class="footer-redes">
+            @if (config('autoruta.redes_sociales.facebook'))
+              <a href="{{ config('autoruta.redes_sociales.facebook') }}" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M24 12.07C24 5.7 18.63.5 12 .5S0 5.7 0 12.07c0 5.75 4.39 10.52 10.13 11.36v-8.04H7.08v-3.32h3.05V9.41c0-2.99 1.83-4.63 4.6-4.63 1.33 0 2.72.23 2.72.23v2.92h-1.53c-1.51 0-1.98.92-1.98 1.87v2.27h3.37l-.54 3.32h-2.83v8.04C19.61 22.6 24 17.82 24 12.07Z"/></svg></a>
+            @endif
+            @if (config('autoruta.redes_sociales.instagram'))
+              <a href="{{ config('autoruta.redes_sociales.instagram') }}" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+            @endif
+          </div>
+        @endif
       </div>
-      <div>
+      <div class="footer-explorar">
         <h3>Explorar</h3>
         <ul>
           <li><a href="{{ route('vehiculos.index') }}">Ver vehículos</a></li>
           <li><a href="{{ route('como-funciona') }}">Cómo funciona</a></li>
         </ul>
       </div>
-      <div>
+      <div class="footer-admin">
         <h3>Administración</h3>
         <ul><li><a href="{{ route('admin.inicio') }}">Panel admin</a></li></ul>
       </div>
-      <div>
+      <div class="footer-legal">
         <h3>Legal</h3>
         <ul>
           <li><a href="{{ route('terminos') }}">Términos y condiciones</a></li>
           <li><a href="{{ route('privacidad') }}">Política de privacidad</a></li>
         </ul>
       </div>
-      <div>
+      <div class="footer-contacto">
         <h3>Contacto</h3>
         <ul>
-          <li><a href="mailto:{{ config('autoruta.contacto_email') }}">{{ config('autoruta.contacto_email') }}</a></li>
-          <li><a href="tel:{{ str_replace(' ', '', config('autoruta.contacto_telefono')) }}">{{ config('autoruta.contacto_telefono') }}</a></li>
-          <li>{{ config('autoruta.contacto_ubicacion') }}</li>
+          <li><a href="mailto:{{ config('autoruta.contacto_email') }}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>{{ config('autoruta.contacto_email') }}</a></li>
+          <li><a href="tel:{{ str_replace(' ', '', config('autoruta.contacto_telefono')) }}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>{{ config('autoruta.contacto_telefono') }}</a></li>
+          <li><span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s7-7.6 7-13a7 7 0 0 0-14 0c0 5.4 7 13 7 13z"/><circle cx="12" cy="9" r="2.5"/></svg>{{ config('autoruta.contacto_ubicacion') }}</span></li>
         </ul>
       </div>
     </div>
@@ -192,6 +206,7 @@
     <div class="footer-abajo">
       &copy; {{ date('Y') }} {{ config('autoruta.nombre_sitio') }}. Todos los derechos reservados.
       <br>Desarrollado por <span style="font-weight:600">Cesar Mansilla C.</span>
+      <a href="{{ route('admin.inicio') }}" class="footer-admin-movil">Panel admin</a>
     </div>
   </footer>
 
