@@ -1,8 +1,7 @@
 {{-- Versión celular/tablet de los banners laterales (en pantallas grandes van a los costados).
      Todos los avisos laterales se juntan al final de la página en un slider de rectángulos 300 × 250,
      de a uno, intercalando izquierdo y derecho (izq. 1, der. 1, izq. 2, der. 2…).
-     Si el aviso tiene "versión celular" se usa esa; si no, el diseño vertical va completo y centrado
-     sobre un fondo difuminado del mismo aviso. --}}
+     Solo se muestran los avisos que tienen "versión celular": los verticales largos no se ven bien en el teléfono. --}}
 @php
     $posicionesIzq = \App\Models\Anunciante::posicionesLaterales('izquierdo');
     $posicionesDer = \App\Models\Anunciante::posicionesLaterales('derecho');
@@ -15,7 +14,7 @@
         $avisosMovil->push($bannersMovil->firstWhere('posicion', $izq) ?? ($n === 0 ? $bannersMovil->firstWhere('posicion', 'lateral') : null));
         $avisosMovil->push($bannersMovil->firstWhere('posicion', $der));
     }
-    $avisosMovil = $avisosMovil->filter()->values();
+    $avisosMovil = $avisosMovil->filter(fn ($b) => $b && $b->urlMovil())->values();
 @endphp
 <div class="laterales-movil">
   @if ($avisosMovil->isNotEmpty())
@@ -25,18 +24,10 @@
         @foreach ($avisosMovil as $i => $bannerMovil)
           <a href="{{ $bannerMovil->urlClic() }}" target="_blank" rel="sponsored noopener" class="slider-pub-slide"
              @if ($i > 0) inert @endif aria-label="Publicidad {{ $i + 1 }} de {{ $avisosMovil->count() }}">
-            @if ($bannerMovil->urlMovil())
-              @if ($bannerMovil->tipo_movil === 'video')
-                <video src="{{ $bannerMovil->urlMovil() }}" class="banner-medio" autoplay muted loop playsinline></video>
-              @else
-                <img src="{{ $bannerMovil->urlMovil() }}" class="banner-medio" alt="Publicidad" loading="lazy">
-              @endif
-            @elseif ($bannerMovil->tipo_medio === 'video')
-              <video src="{{ $bannerMovil->url() }}" class="banner-medio banner-movil-vertical" autoplay muted loop playsinline></video>
+            @if ($bannerMovil->tipo_movil === 'video')
+              <video src="{{ $bannerMovil->urlMovil() }}" class="banner-medio" autoplay muted loop playsinline></video>
             @else
-              {{-- Sin versión celular: el vertical completo al centro, con su propia imagen difuminada de fondo --}}
-              <span class="banner-movil-fondo" style="background-image:url('{{ $bannerMovil->url() }}')"></span>
-              <img src="{{ $bannerMovil->url() }}" class="banner-movil-vertical" alt="Publicidad" loading="lazy">
+              <img src="{{ $bannerMovil->urlMovil() }}" class="banner-medio" alt="Publicidad" loading="lazy">
             @endif
           </a>
         @endforeach

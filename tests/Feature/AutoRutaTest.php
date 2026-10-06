@@ -537,14 +537,21 @@ class AutoRutaTest extends TestCase
         $this->assertSame(1, substr_count($sinAvisos, 'class="laterales-movil"'));
         $this->assertStringContainsString('Publicita aquí', $sinAvisos);
 
-        // Con avisos: una sola sección al final con todos, intercalando izquierdo y derecho.
-        $der2 = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 'd2.jpg', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'lateral_derecho_2']);
-        $izq1 = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 'i1.jpg', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'lateral_izquierdo']);
+        // Un aviso solo vertical (sin versión celular) no aparece en celular.
+        $soloVertical = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 'v.jpg', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'lateral_derecho']);
+        $this->assertStringContainsString('Publicita aquí', $this->get('/')->getContent());
+        $this->assertSame(1, substr_count($this->get('/')->getContent(), route('publicidad.clic', $soloVertical)));
+        $soloVertical->delete();
+
+        // Con avisos con versión celular: una sola sección al final con todos, intercalando izquierdo y derecho.
+        $der2 = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 'd2.jpg', 'archivo_movil' => 'd2m.jpg', 'tipo_movil' => 'imagen', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'lateral_derecho_2']);
+        $izq1 = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 'i1.jpg', 'archivo_movil' => 'i1m.jpg', 'tipo_movil' => 'imagen', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'lateral_izquierdo']);
         $html = $this->get('/')->assertOk()->getContent();
         $this->assertSame(1, substr_count($html, 'class="laterales-movil"'));
         $this->assertSame(2, substr_count($html, 'class="slider-pub-slide"'));
         $this->assertStringNotContainsString('Publicita aquí', $html);
-        $movil = substr($html, strpos($html, 'class="laterales-movil"'));
+        $inicioMovil = strpos($html, 'class="laterales-movil"');
+        $movil = substr($html, $inicioMovil, strpos($html, '</main>', $inicioMovil) - $inicioMovil);
         $this->assertLessThan(strpos($movil, route('publicidad.clic', $der2)), strpos($movil, route('publicidad.clic', $izq1)));
         // La sección de celular va después del contenido de la página (al final).
         $this->assertGreaterThan(strpos($html, 'Últimos publicados'), strpos($html, 'class="laterales-movil"'));
@@ -752,11 +759,13 @@ class AutoRutaTest extends TestCase
         $sinMovil = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 'vert2.png', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'lateral_derecho']);
 
         $html = $this->get('/')->assertOk()->getContent();
-        $movil = substr($html, strpos($html, 'class="laterales-movil"'));
+        $inicioMovil = strpos($html, 'class="laterales-movil"');
+        $movil = substr($html, $inicioMovil, strpos($html, '</main>', $inicioMovil) - $inicioMovil);
         $this->assertStringContainsString('slider-pub-movil', $movil);
         $this->assertStringContainsString($conMovil->urlMovil(), $movil);
-        $this->assertStringContainsString('banner-movil-fondo', $movil);
-        $this->assertStringContainsString($sinMovil->url(), $movil);
+        // El aviso sin versión celular no aparece en el slider del teléfono.
+        $this->assertStringNotContainsString(route('publicidad.clic', $sinMovil), $movil);
+        $this->assertSame(1, substr_count($movil, 'class="slider-pub-slide"'));
         // En el costado (pantallas grandes) se sigue usando el vertical.
         $this->assertStringNotContainsString($conMovil->urlMovil(), substr($html, 0, strpos($html, 'class="laterales-movil"')));
 
@@ -777,8 +786,8 @@ class AutoRutaTest extends TestCase
 
         $html = $this->get('/')->assertOk()->getContent();
 
-        // Costado (pantallas grandes) + sección de celular al final.
-        $this->assertSame(2, substr_count($html, route('publicidad.clic', $banner)));
+        // Solo en el costado (pantallas grandes): sin versión celular no va en el slider del teléfono.
+        $this->assertSame(1, substr_count($html, route('publicidad.clic', $banner)));
         $this->assertSame(1, substr_count($html, 'class="laterales-movil"'));
         $this->assertSame(10, substr_count($html, 'class="banner-lateral-tramo"'));
     }

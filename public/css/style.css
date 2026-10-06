@@ -625,10 +625,6 @@ body { overflow-x: clip; }
 /* Slider de rectángulos 300 × 250 (versión celular de los avisos laterales), de a uno */
 .slider-pub.slider-pub-movil { aspect-ratio: 300 / 250; max-width: 400px; margin: 0 auto; border-radius: 14px; background: #111; }
 .slider-pub.slider-pub-movil .slider-pub-slide { overflow: hidden; }
-/* Aviso sin versión celular: el vertical completo al centro sobre su propia imagen difuminada */
-.banner-movil-fondo { position: absolute; inset: -24px; background-size: cover; background-position: center; filter: blur(16px) brightness(.55); }
-.banner-movil-vertical { position: relative; display: block; height: 100%; width: auto; max-width: 100%; margin: 0 auto; object-fit: contain; }
-video.banner-movil-vertical { width: 100%; }
 .laterales-movil-vacio { flex-direction: row; flex-wrap: wrap; column-gap: 10px; min-height: 70px; max-width: 728px; margin: 0 auto; }
 @media (min-width: 1100px) { .laterales-movil { display: none; } }
 

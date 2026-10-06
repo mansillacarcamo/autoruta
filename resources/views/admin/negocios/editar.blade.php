@@ -95,7 +95,7 @@
                   <label style="font-size:12px;display:flex;gap:4px;align-items:center;margin:0"><input type="checkbox" name="quitarMovil" value="1"> Quitar</label>
                 </div>
               @else
-                <p class="admin-ayuda" style="margin-top:0">Sin versión celular: en teléfonos se muestra el aviso vertical achicado.</p>
+                <p class="admin-ayuda" style="margin-top:0">Sin versión celular: este aviso no aparece en teléfonos ni tablets.</p>
               @endif
               <input type="file" name="movil" accept="image/*,video/*,.mov,.m4v" data-por-trozos>
             @endif
@@ -145,7 +145,7 @@
       <div class="form-grupo">
         <label>Versión celular (opcional, solo avisos laterales)</label>
         <input type="file" name="movil" accept="image/*,video/*,.mov,.m4v" data-por-trozos>
-        <p class="admin-ayuda">Rectángulo de <strong>300 × 250 px</strong> (ideal 600 × 500 para que se vea nítido). En celulares y tablets los avisos laterales se muestran en este formato, de a uno en un slider. Imagen o video, máximo 20 MB.</p>
+        <p class="admin-ayuda">Rectángulo de <strong>300 × 250 px</strong> (ideal 600 × 500 para que se vea nítido). En celulares y tablets solo aparecen los avisos laterales que tienen esta versión, de a uno en un slider. Imagen o video, máximo 20 MB.</p>
       </div>
       <div class="admin-campos">
         <div class="form-grupo"><label>Segundos del archivo principal</label><input type="number" name="segundosPrincipal" min="1" max="60" value="3"></div>
