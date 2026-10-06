@@ -83,6 +83,22 @@
               <div style="flex:1"><label>Segundos principal</label><input type="number" name="segundosPrincipal" min="1" max="60" value="{{ $b->segundos_principal }}"></div>
               <div style="flex:1"><label>Segundos 2º archivo</label><input type="number" name="segundosAlterno" min="1" max="60" value="{{ $b->segundos_alterno }}"></div>
             </div>
+            @if (str_starts_with($b->posicion, 'lateral'))
+              <label>Versión celular (300 × 250)</label>
+              @if ($b->archivo_movil)
+                <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
+                  @if ($b->tipo_movil === 'video')
+                    <video src="{{ $b->urlMovil() }}" muted loop autoplay playsinline style="height:48px;width:auto;aspect-ratio:auto;border-radius:6px"></video>
+                  @else
+                    <img src="{{ $b->urlMovil() }}" alt="" style="height:48px;width:auto;aspect-ratio:auto;border-radius:6px">
+                  @endif
+                  <label style="font-size:12px;display:flex;gap:4px;align-items:center;margin:0"><input type="checkbox" name="quitarMovil" value="1"> Quitar</label>
+                </div>
+              @else
+                <p class="admin-ayuda" style="margin-top:0">Sin versión celular: en teléfonos se muestra el aviso vertical achicado.</p>
+              @endif
+              <input type="file" name="movil" accept="image/*,video/*,.mov,.m4v" data-por-trozos>
+            @endif
             <label>Link al hacer clic</label>
             <input type="text" name="linkUrl" required value="{{ $b->link_url }}" placeholder="https://www.minegocio.cl">
             <label>Ubicación</label>
@@ -125,6 +141,11 @@
         <label>Segundo archivo (opcional)</label>
         <input type="file" name="alterno" accept="image/*,video/*,.mov,.m4v" data-por-trozos>
         <p class="admin-ayuda">Imagen o video que se alterna con el archivo principal (por ejemplo, el diseño y un video del local). Mismo tamaño que el principal. Máximo 20 MB.</p>
+      </div>
+      <div class="form-grupo">
+        <label>Versión celular (opcional, solo avisos laterales)</label>
+        <input type="file" name="movil" accept="image/*,video/*,.mov,.m4v" data-por-trozos>
+        <p class="admin-ayuda">Rectángulo de <strong>300 × 250 px</strong> (ideal 600 × 500 para que se vea nítido). En celulares y tablets los avisos laterales se muestran en este formato, de a uno en un slider. Imagen o video, máximo 20 MB.</p>
       </div>
       <div class="admin-campos">
         <div class="form-grupo"><label>Segundos del archivo principal</label><input type="number" name="segundosPrincipal" min="1" max="60" value="3"></div>

@@ -156,7 +156,7 @@ class NegocioController extends Controller
             return back()->with('error', 'Máximo ' . config('autoruta.max_banners_negocio') . ' banners por negocio.');
         }
 
-        $this->unirTrozos($request, ['archivo', 'alterno']);
+        $this->unirTrozos($request, ['archivo', 'alterno', 'movil']);
 
         $datos = $request->validate([
             'tipoMedio' => 'required|in:imagen,video',
@@ -165,6 +165,7 @@ class NegocioController extends Controller
             'archivo' => 'required|file|mimes:jpg,jpeg,png,webp,' . self::FORMATOS_VIDEO . '|max:20480',
             'logo' => 'nullable|file|mimes:png,jpg,jpeg,webp|max:5120',
             'alterno' => 'nullable|file|mimes:jpg,jpeg,png,webp,' . self::FORMATOS_VIDEO . '|max:20480',
+            'movil' => 'nullable|file|mimes:jpg,jpeg,png,webp,' . self::FORMATOS_VIDEO . '|max:20480',
             'segundosPrincipal' => 'nullable|integer|min:1|max:60',
             'segundosAlterno' => 'nullable|integer|min:1|max:60',
         ], $this->mensajesArchivos());
@@ -184,7 +185,8 @@ class NegocioController extends Controller
             'tipo_medio' => $tipo,
             'archivo' => $nombre,
             'logo' => $logo,
-            ...$this->guardarAlterno($request, $negocio),
+            ...$this->guardarExtra($request, $negocio, 'alterno'),
+            ...$this->guardarExtra($request, $negocio, 'movil'),
             'segundos_principal' => (int) ($datos['segundosPrincipal'] ?? 3),
             'segundos_alterno' => (int) ($datos['segundosAlterno'] ?? 3),
             'link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']),
@@ -198,7 +200,7 @@ class NegocioController extends Controller
     {
         abort_unless((int) $banner->anunciante_id === (int) $negocio->id, 404);
 
-        $this->unirTrozos($request, ['alterno']);
+        $this->unirTrozos($request, ['alterno', 'movil']);
 
         $datos = $request->validate([
             'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
@@ -206,9 +208,11 @@ class NegocioController extends Controller
             'logo' => 'nullable|file|mimes:png,jpg,jpeg,webp|max:5120',
             'quitarLogo' => 'nullable|boolean',
             'alterno' => 'nullable|file|mimes:jpg,jpeg,png,webp,' . self::FORMATOS_VIDEO . '|max:20480',
+            'movil' => 'nullable|file|mimes:jpg,jpeg,png,webp,' . self::FORMATOS_VIDEO . '|max:20480',
             'segundosPrincipal' => 'nullable|integer|min:1|max:60',
             'segundosAlterno' => 'nullable|integer|min:1|max:60',
             'quitarAlterno' => 'nullable|boolean',
+            'quitarMovil' => 'nullable|boolean',
         ], $this->mensajesArchivos());
 
         $cambios = ['link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']), 'posicion' => $datos['posicion']];
@@ -227,13 +231,14 @@ class NegocioController extends Controller
             }
         }
 
-        // Cambiar o quitar el segundo archivo (el anterior se borra del almacenamiento).
-        if ($request->hasFile('alterno') || $request->boolean('quitarAlterno')) {
-            if ($banner->archivo_alterno) {
-                \App\Support\Archivos::borrar('negocios/' . $banner->archivo_alterno);
+        // Cambiar o quitar el segundo archivo y la versión celular (el anterior se borra del almacenamiento).
+        foreach (['alterno' => 'quitarAlterno', 'movil' => 'quitarMovil'] as $campo => $quitar) {
+            if ($request->hasFile($campo) || $request->boolean($quitar)) {
+                if ($banner->{'archivo_' . $campo}) {
+                    \App\Support\Archivos::borrar('negocios/' . $banner->{'archivo_' . $campo});
+                }
+                $cambios = array_merge($cambios, ['archivo_' . $campo => null, 'tipo_' . $campo => null], $this->guardarExtra($request, $negocio, $campo));
             }
-            $cambios += ['archivo_alterno' => null, 'tipo_alterno' => null];
-            $cambios = array_merge($cambios, $this->guardarAlterno($request, $negocio));
         }
 
         $banner->update($cambios);
@@ -250,23 +255,27 @@ class NegocioController extends Controller
             'alterno.mimes' => 'El segundo archivo debe ser imagen (JPG, PNG, WEBP) o video (MP4, MOV, M4V, WEBM, OGG).',
             'alterno.max' => 'El segundo archivo no puede pesar más de 20 MB.',
             'alterno.uploaded' => 'El segundo archivo no se pudo subir: pesa más de lo que permite el servidor. Prueba con uno más liviano.',
+            'movil.mimes' => 'La versión celular debe ser imagen (JPG, PNG, WEBP) o video (MP4, MOV, M4V, WEBM, OGG).',
+            'movil.max' => 'La versión celular no puede pesar más de 20 MB.',
+            'movil.uploaded' => 'La versión celular no se pudo subir: pesa más de lo que permite el servidor. Prueba con una más liviana.',
             'logo.mimes' => 'El logo debe ser PNG, JPG o WEBP (ideal PNG con fondo transparente).',
             'logo.max' => 'El logo no puede pesar más de 5 MB.',
             'logo.uploaded' => 'El logo no se pudo subir: pesa más de lo que permite el servidor. Prueba con uno más liviano.',
         ];
     }
 
-    // Guarda el segundo archivo (si viene) y devuelve los campos para el banner.
-    private function guardarAlterno(Request $request, Anunciante $negocio): array
+    // Guarda un archivo adicional del banner ("alterno" = segundo archivo, "movil" = versión celular)
+    // si viene en la petición, y devuelve sus columnas archivo_* y tipo_*.
+    private function guardarExtra(Request $request, Anunciante $negocio, string $campo): array
     {
-        if (! $request->hasFile('alterno')) {
+        if (! $request->hasFile($campo)) {
             return [];
         }
-        $archivo = $request->file('alterno');
+        $archivo = $request->file($campo);
 
         return [
-            'archivo_alterno' => \App\Support\Archivos::guardar($archivo, 'negocios', 'neg' . $negocio->id . '_' . time() . '_alt.' . $archivo->extension()),
-            'tipo_alterno' => in_array($archivo->extension(), explode(',', self::FORMATOS_VIDEO), true) ? 'video' : 'imagen',
+            'archivo_' . $campo => \App\Support\Archivos::guardar($archivo, 'negocios', 'neg' . $negocio->id . '_' . time() . '_' . $campo . '.' . $archivo->extension()),
+            'tipo_' . $campo => in_array($archivo->extension(), explode(',', self::FORMATOS_VIDEO), true) ? 'video' : 'imagen',
         ];
     }
 
@@ -292,7 +301,7 @@ class NegocioController extends Controller
     {
         abort_unless($banner->anunciante_id === $negocio->id, 404);
         \App\Support\Archivos::borrar('negocios/' . $banner->archivo);
-        foreach ([$banner->logo, $banner->archivo_alterno] as $extra) {
+        foreach ([$banner->logo, $banner->archivo_alterno, $banner->archivo_movil] as $extra) {
             if ($extra) {
                 \App\Support\Archivos::borrar('negocios/' . $extra);
             }

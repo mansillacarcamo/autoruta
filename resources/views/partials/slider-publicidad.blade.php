@@ -42,36 +42,6 @@
       @endif
       <span class="slider-pub-etiqueta">Publicidad</span>
     </div>
-    <script>
-      // Avanza cada 6 s; flechas, puntos y deslizar con el dedo. Se pausa con el mouse encima o la pestaña oculta.
-      (function () {
-        var slider = document.querySelector('[data-slider-pub]');
-        var slides = slider.querySelectorAll('.slider-pub-slide');
-        if (slides.length < 2) return;
-        var pista = slider.querySelector('.slider-pub-pista'), puntos = slider.querySelectorAll('.slider-pub-puntos button');
-        var actual = 0, pausado = false, inicioX = null;
-
-        function ir(n) {
-          actual = (n + slides.length) % slides.length;
-          pista.style.transform = 'translateX(' + (-actual * 100) + '%)';
-          slides.forEach(function (s, i) { s.inert = i !== actual; });
-          puntos.forEach(function (p, i) { p.classList.toggle('activo', i === actual); });
-        }
-
-        slider.querySelector('.anterior').addEventListener('click', function () { ir(actual - 1); });
-        slider.querySelector('.siguiente').addEventListener('click', function () { ir(actual + 1); });
-        puntos.forEach(function (p, i) { p.addEventListener('click', function () { ir(i); }); });
-        slider.addEventListener('mouseenter', function () { pausado = true; });
-        slider.addEventListener('mouseleave', function () { pausado = false; });
-        slider.addEventListener('touchstart', function (e) { inicioX = e.touches[0].clientX; }, { passive: true });
-        slider.addEventListener('touchend', function (e) {
-          if (inicioX === null) return;
-          var dx = e.changedTouches[0].clientX - inicioX;
-          if (Math.abs(dx) > 40) ir(actual + (dx < 0 ? 1 : -1));
-          inicioX = null;
-        });
-        setInterval(function () { if (!pausado && !document.hidden) ir(actual + 1); }, 6000);
-      })();
-    </script>
+    @include('partials.slider-pub-script')
   @endif
 </section>

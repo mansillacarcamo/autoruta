@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AnuncianteBanner extends Model
 {
-    protected $fillable = ['anunciante_id', 'tipo_medio', 'archivo', 'logo', 'archivo_alterno', 'tipo_alterno', 'segundos_principal', 'segundos_alterno', 'link_url', 'posicion', 'orden', 'clics'];
+    protected $fillable = ['anunciante_id', 'tipo_medio', 'archivo', 'logo', 'archivo_alterno', 'tipo_alterno', 'segundos_principal', 'segundos_alterno', 'archivo_movil', 'tipo_movil', 'link_url', 'posicion', 'orden', 'clics'];
 
     public function anunciante(): BelongsTo
     {
@@ -29,6 +29,12 @@ class AnuncianteBanner extends Model
     public function urlAlterno(): ?string
     {
         return $this->archivo_alterno ? \App\Support\Archivos::url('negocios/' . $this->archivo_alterno) : null;
+    }
+
+    // Versión celular del aviso lateral (300 × 250, imagen o video); opcional.
+    public function urlMovil(): ?string
+    {
+        return $this->archivo_movil ? \App\Support\Archivos::url('negocios/' . $this->archivo_movil) : null;
     }
 
     public function urlClic(): string

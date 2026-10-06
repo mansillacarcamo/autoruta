@@ -542,7 +542,7 @@ class AutoRutaTest extends TestCase
         $izq1 = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 'i1.jpg', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'lateral_izquierdo']);
         $html = $this->get('/')->assertOk()->getContent();
         $this->assertSame(1, substr_count($html, 'class="laterales-movil"'));
-        $this->assertSame(2, substr_count($html, 'class="laterales-movil-banner"'));
+        $this->assertSame(2, substr_count($html, 'class="slider-pub-slide"'));
         $this->assertStringNotContainsString('Publicita aquí', $html);
         $movil = substr($html, strpos($html, 'class="laterales-movil"'));
         $this->assertLessThan(strpos($movil, route('publicidad.clic', $der2)), strpos($movil, route('publicidad.clic', $izq1)));
@@ -731,6 +731,43 @@ class AutoRutaTest extends TestCase
         $this->get('/media/negocios/respaldo.mp4', ['Range' => 'bytes=99999-'])->assertStatus(416);
         $completo = $this->get('/media/negocios/respaldo.mp4')->assertOk()->assertHeader('Accept-Ranges', 'bytes');
         $this->assertSame($contenido, $completo->getContent());
+    }
+
+    public function test_version_celular_de_avisos_laterales(): void
+    {
+        $admin = User::where('usuario', 'cesar')->firstOrFail();
+        $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'La Colonia', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
+
+        // Aviso lateral con versión celular 300 × 250.
+        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
+            'tipoMedio' => 'imagen', 'posicion' => 'lateral_izquierdo', 'linkUrl' => 'www.lacolonia.cl',
+            'archivo' => UploadedFile::fake()->image('vertical.png', 320, 1200),
+            'movil' => UploadedFile::fake()->image('rectangulo.png', 600, 500),
+        ])->assertSessionHas('ok');
+        $conMovil = $negocio->banners()->firstOrFail();
+        $this->assertSame('imagen', $conMovil->tipo_movil);
+        Storage::disk('public')->assertExists('negocios/' . $conMovil->archivo_movil);
+
+        // Aviso lateral sin versión celular: va el vertical sobre fondo difuminado.
+        $sinMovil = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 'vert2.png', 'link_url' => 'https://ejemplo.cl', 'posicion' => 'lateral_derecho']);
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $movil = substr($html, strpos($html, 'class="laterales-movil"'));
+        $this->assertStringContainsString('slider-pub-movil', $movil);
+        $this->assertStringContainsString($conMovil->urlMovil(), $movil);
+        $this->assertStringContainsString('banner-movil-fondo', $movil);
+        $this->assertStringContainsString($sinMovil->url(), $movil);
+        // En el costado (pantallas grandes) se sigue usando el vertical.
+        $this->assertStringNotContainsString($conMovil->urlMovil(), substr($html, 0, strpos($html, 'class="laterales-movil"')));
+
+        // El admin ve el campo y puede quitar la versión celular.
+        $this->actingAs($admin)->get("/admin/negocios/{$negocio->id}")->assertSee('Versión celular (300 × 250)');
+        $archivo = $conMovil->archivo_movil;
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$conMovil->id}", [
+            'linkUrl' => 'www.lacolonia.cl', 'posicion' => 'lateral_izquierdo', 'quitarMovil' => '1',
+        ])->assertSessionHas('ok');
+        $this->assertNull($conMovil->fresh()->archivo_movil);
+        Storage::disk('public')->assertMissing('negocios/' . $archivo);
     }
 
     public function test_banner_lateral_5_se_muestra_en_costado_y_en_celular(): void
