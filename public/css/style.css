@@ -216,11 +216,14 @@ img { max-width: 100%; display: block; }
 .mt-1 { margin-top: 8px; } .mt-2 { margin-top: 16px; } .mt-3 { margin-top: 24px; }
 
 /* Banners laterales: ocultos en celular, visibles desde pantallas grandes */
-.banner-lateral-slot { display: none; flex-shrink: 0; width: 160px; }
+/* Ancho de los avisos laterales: 160px en pantallas grandes; en laptops se achica según el ancho (10vw)
+   y el alto de la ventana, para que el aviso de 160×600 a escala se vea completo bajo el menú. */
+.contenido-con-laterales { --ancho-lateral: max(100px, min(160px, 10vw, calc((100vh - 150px) * 160 / 600))); }
+.banner-lateral-slot { display: none; flex-shrink: 0; width: var(--ancho-lateral); }
 .contenido-con-laterales { display: flex; gap: 16px; align-items: flex-start; }
-@media (min-width: 1400px) { .contenido-con-laterales { padding: 0 16px; } }
+@media (min-width: 1100px) { .contenido-con-laterales { padding: 0 16px; } }
 .contenido-con-laterales > main { flex: 1; min-width: 0; }
-@media (min-width: 1400px) { .banner-lateral-slot { display: block; align-self: stretch; } }
+@media (min-width: 1100px) { .banner-lateral-slot { display: block; align-self: stretch; } }
 .espacio-publicitario {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center;
   border: 2px dashed #d4d4d4; border-radius: 12px; background: var(--gris-claro); color: #737373; font-size: 13px; padding: 8px;
@@ -475,7 +478,7 @@ body { overflow-x: clip; }
 .banner-lateral-pegado { position: sticky; top: 104px; display: flex; flex-direction: column; gap: 6px; }
 .banner-lateral-titulo { margin: 0; text-align: center; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #a3a3a3; }
 /* Los avisos se apilan en la misma celda del rotador (grid) para deslizarse uno sobre otro */
-.banner-lateral-rotador { display: grid; width: 160px; overflow: hidden; }
+.banner-lateral-rotador { display: grid; width: 100%; overflow: hidden; }
 .banner-lateral-media { display: block; position: relative; aspect-ratio: 160 / 600; border-radius: 12px; overflow: hidden; border: 1px solid #e5e5e5; background: var(--gris-claro); box-shadow: 0 2px 10px rgba(0,0,0,.06); }
 /* Cada aviso entra deslizándose desde el borde exterior de su columna y sale por el lado contrario */
 .banner-lateral-item { grid-area: 1 / 1; display: block; opacity: 0; visibility: hidden; transform: translateX(var(--entrada)) scale(.96); transition: transform .75s cubic-bezier(.65,0,.35,1), opacity .75s ease, visibility .75s; }
@@ -617,15 +620,15 @@ body { overflow-x: clip; }
 .vendedor-comercial { display: block; font-size: 12px; font-weight: 700; color: var(--acento); text-transform: uppercase; letter-spacing: .4px; }
 
 /* Banners laterales en celular y tablet: de a pares dentro del contenido */
-.laterales-movil { padding: 28px 16px 8px; max-width: 760px; margin: 0 auto; }
+.laterales-movil { padding: 24px 16px 8px; max-width: 100%; margin: 0 auto; }
 .laterales-movil-titulo { margin: 0 0 8px; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #a3a3a3; }
-/* 2 por fila en celular, 3 en tablet (sin pasar de 220px); si sobra uno queda centrado */
-.laterales-movil-grilla { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
-.laterales-movil-grilla > * { width: calc((100% - 12px) / 2); max-width: 220px; }
-@media (min-width: 640px) { .laterales-movil-grilla > * { width: calc((100% - 24px) / 3); } }
+/* Una fila compacta que se desliza con el dedo (avisos de 120px; 140px en tablet). Si caben, quedan centrados. */
+.laterales-movil-grilla { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; justify-content: safe center; padding-bottom: 6px; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+.laterales-movil-grilla > * { flex: 0 0 120px; scroll-snap-align: start; }
+@media (min-width: 640px) { .laterales-movil-grilla > * { flex-basis: 140px; } }
 .laterales-movil-banner { display: block; position: relative; aspect-ratio: 160 / 600; border-radius: 12px; overflow: hidden; border: 1px solid #e5e5e5; background: var(--gris-claro); }
 .laterales-movil-vacio { flex-direction: row; flex-wrap: wrap; column-gap: 10px; min-height: 70px; max-width: 728px; margin: 0 auto; }
-@media (min-width: 1400px) { .laterales-movil { display: none; } }
+@media (min-width: 1100px) { .laterales-movil { display: none; } }
 
 /* Slider publicitario del inicio (posiciones Slider inicio 1–4, 1200 × 330 px) */
 .slider-pub { position: relative; overflow: hidden; border-radius: 16px; aspect-ratio: 1200 / 330; background: var(--carbon); box-shadow: 0 4px 18px rgba(0,0,0,.12); }
@@ -641,3 +644,8 @@ body { overflow-x: clip; }
 .slider-pub-etiqueta { position: absolute; top: 8px; right: 10px; background: rgba(0,0,0,.45); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; pointer-events: none; }
 @media (max-width: 640px) { .slider-pub { border-radius: 12px; } .slider-pub-flecha { display: none; } }
 @media (prefers-reduced-motion: reduce) { .slider-pub-pista { transition: none; } }
+/* Recuadro "Espacio disponible" en columnas laterales angostas (laptops) */
+.banner-lateral-slot .espacio-publicitario { font-size: 11px; padding: 6px; }
+.banner-lateral-slot .espacio-publicitario strong { font-size: 12px; }
+.banner-lateral-slot .espacio-publicitario .ep-medida { font-size: 10px; padding: 2px 6px; }
+.banner-lateral-slot .espacio-publicitario .ep-disponible { font-size: 9px; padding: 3px 7px; }

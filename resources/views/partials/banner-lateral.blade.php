@@ -29,7 +29,7 @@
             </div>
             <p class="banner-lateral-titulo">Publicidad</p>
           @else
-            @include('partials.espacio-publicitario', ['estilo' => 'width:160px;aspect-ratio:160/600', 'posicion' => $posicionLateral])
+            @include('partials.espacio-publicitario', ['estilo' => 'width:100%;aspect-ratio:160/600', 'posicion' => $posicionLateral])
           @endif
         </div>
       </div>
@@ -40,7 +40,6 @@
 @once
 <script>
   (function () {
-    var ALTO_TRAMO = 660; // aviso 160×600 + rótulo + separación
 
     function crear(tag, clase) { var el = document.createElement(tag); el.className = clase; return el; }
 
@@ -48,7 +47,9 @@
     // (repartidos en ronda si sobran) y después, si queda espacio, los "Espacio disponible".
     function distribuir(columna) {
       if (!columna.offsetParent) return; // columna oculta (pantalla chica)
-      var caben = Math.max(1, Math.floor(columna.clientHeight / ALTO_TRAMO));
+      // Alto de un tramo: aviso a escala (ancho de la columna × 600/160) + rótulo + separación.
+      var altoTramo = columna.clientWidth * 600 / 160 + 60;
+      var caben = Math.max(1, Math.floor(columna.clientHeight / altoTramo));
       if (columna._caben === caben) return;
       columna._caben = caben;
 
