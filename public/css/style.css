@@ -647,3 +647,61 @@ body { overflow-x: clip; }
 .banner-lateral-slot .espacio-publicitario strong { font-size: 12px; }
 .banner-lateral-slot .espacio-publicitario .ep-medida { font-size: 10px; padding: 2px 6px; }
 .banner-lateral-slot .espacio-publicitario .ep-disponible { font-size: 9px; padding: 3px 7px; }
+
+.contenedor-pagina { padding-top: 32px; padding-bottom: 32px; }
+
+/* Listado: filtros plegables ("Filtrar y ordenar"); en escritorio siempre abiertos y sin el título plegable */
+.filtros-listado { height: fit-content; }
+.filtros-listado > summary { display: flex; align-items: center; gap: 8px; font-weight: 700; cursor: pointer; list-style: none; }
+.filtros-listado > summary::-webkit-details-marker { display: none; }
+.filtros-listado > summary::after { content: "▾"; margin-left: auto; transition: transform .2s; }
+.filtros-listado[open] > summary { margin-bottom: 14px; }
+.filtros-listado[open] > summary::after { transform: rotate(180deg); }
+@media (min-width: 900px) { .filtros-listado > summary { display: none; } }
+
+/* ===== Celular: diseño más compacto y ordenado, tipo app ===== */
+@media (max-width: 640px) {
+  /* Encabezado compacto: sin íconos de redes (están en el pie), botones más chicos */
+  .header .red-social, .header .separador { display: none; }
+  .logo img { height: 36px; }
+  .header-acciones { gap: 6px; }
+  .header-acciones .btn { padding: 7px 11px; font-size: 12.5px; border-radius: 8px; }
+  .nav { gap: 6px; overflow-x: auto; justify-content: flex-start; scrollbar-width: none; }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav a { padding: 6px 12px; font-size: 12.5px; flex-shrink: 0; }
+  @supports (justify-content: safe center) { .nav { justify-content: safe center; } }
+
+  /* Espacios publicitarios vacíos (superior/inferior): en celular no se muestran */
+  .banner-ancho-vacio { display: none !important; }
+
+  /* Secciones y títulos con menos aire */
+  h1 { font-size: 24px; line-height: 1.2; }
+  .seccion { padding-top: 24px; padding-bottom: 24px; }
+  .seccion h2 { font-size: 18px; margin-bottom: 12px; }
+
+  /* Categorías más compactas */
+  .categoria { flex-basis: 76px; gap: 6px; padding: 10px 4px 9px; border-radius: 12px; }
+  .categoria svg { width: 20px; height: 20px; padding: 9px; }
+  .categoria span { font-size: 11px; }
+
+  /* Autos de a dos por fila (listado), tarjetas más livianas */
+  .grilla.grilla-autos { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tarjeta { border-radius: 12px; box-shadow: 0 1px 3px rgba(16,17,26,.06); }
+  .tarjeta-cuerpo { padding: 9px 10px 11px; }
+  .tarjeta-titulo { font-size: 13.5px; }
+  .tarjeta-precio { font-size: 16px; margin: 2px 0; }
+  .tarjeta-meta { gap: 4px; margin-top: 6px; font-size: 11px; }
+  .meta-chip { padding: 3px 7px; gap: 3px; }
+  .meta-chip svg { width: 11px; height: 11px; }
+  .carrusel-pista { grid-auto-columns: 64%; grid-template-rows: repeat(2, auto); gap: 10px; }
+
+  /* Ficha del auto: galería de borde a borde */
+  .galeria-principal { border-radius: 0; margin: 0 -16px; }
+  .galeria-miniaturas { margin-top: 8px; }
+
+  /* Botón "Asesor web" más discreto */
+  .wa-flotante { padding: 8px 13px; font-size: 12.5px; bottom: 12px; right: 12px; }
+
+  .contenedor-pagina { padding-top: 16px; padding-bottom: 24px; }
+  .contenedor-pagina h2 { font-size: 19px; }
+}

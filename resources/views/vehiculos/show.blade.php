@@ -3,7 +3,7 @@
 @section('titulo', "{$vehiculo->marca} {$vehiculo->modelo} {$vehiculo->anio} – desde {$vehiculo->precioFormateado()}")
 
 @section('contenido')
-<div class="contenedor" style="padding:32px 16px">
+<div class="contenedor contenedor-pagina">
   <a href="{{ route('vehiculos.index') }}" class="btn btn-outline-oscuro">← Volver al listado</a>
 
   @if (! $vehiculo->estaVisible())

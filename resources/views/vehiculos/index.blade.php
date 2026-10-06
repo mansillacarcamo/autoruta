@@ -2,7 +2,7 @@
 @section('titulo', 'Vehículos en venta')
 
 @section('contenido')
-<div class="contenedor" style="padding:32px 16px">
+<div class="contenedor contenedor-pagina">
   <h1>
     Vehículos en venta
     @if (array_key_exists((string) request('tipo'), \App\Models\Vehiculo::ETIQUETA_TIPO))
@@ -12,7 +12,14 @@
   <div class="mt-2">@include('partials.categorias')</div>
 
   <div style="display:grid;gap:24px;margin-top:24px" class="lg-grid">
-    <form class="caja" method="get" style="height:fit-content">
+    {{-- En celular los filtros van plegados tras "Filtrar y ordenar" (abiertos si hay alguno aplicado); en escritorio siempre abiertos. --}}
+    @php($hayFiltros = collect(request()->except(['page', 'tipo']))->filter(fn ($v) => $v !== null && $v !== '')->isNotEmpty())
+    <details class="caja filtros-listado" data-filtros @if ($hayFiltros) open @endif>
+    <summary>
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+      Filtrar y ordenar
+    </summary>
+    <form method="get">
       <div class="form-grupo">
         <label>Buscar</label>
         <input type="text" name="q" list="marcas" value="{{ request('q') }}" placeholder="Marca o modelo">
@@ -70,13 +77,14 @@
 
       <button type="submit" class="btn btn-acento btn-block">Filtrar</button>
     </form>
+    </details>
 
     <div>
       <p class="texto-mutado">{{ $vehiculos->total() }} {{ $vehiculos->total() === 1 ? 'vehículo encontrado' : 'vehículos encontrados' }}</p>
       @if ($vehiculos->isEmpty())
         <p class="caja texto-mutado" style="text-align:center;border-style:dashed">No hay vehículos que coincidan con estos filtros.</p>
       @else
-        <div class="grilla">
+        <div class="grilla grilla-autos">
           @foreach ($vehiculos as $v)
             @include('vehiculos._tarjeta', ['v' => $v])
           @endforeach
@@ -96,4 +104,11 @@
 @include('partials.vehiculos-en-vivo', ['modo' => 'aviso', 'grilla' => null, 'desde' => (int) \App\Models\Vehiculo::max('id')])
 
 <style>@media (min-width:900px){.lg-grid{grid-template-columns:260px 1fr}}</style>
+<script>
+  // En escritorio el panel de filtros va siempre abierto (en celular se pliega).
+  (function () {
+    var filtros = document.querySelector('[data-filtros]');
+    if (filtros && window.matchMedia('(min-width: 900px)').matches) filtros.open = true;
+  })();
+</script>
 @endsection
