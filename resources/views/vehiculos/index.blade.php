@@ -92,7 +92,14 @@
         @if ($vehiculos->hasPages())
           <nav class="paginacion" aria-label="Páginas">
             @if ($vehiculos->onFirstPage())<span class="deshabilitado">← Anterior</span>@else<a href="{{ $vehiculos->previousPageUrl() }}">← Anterior</a>@endif
-            <span>Página {{ $vehiculos->currentPage() }} de {{ $vehiculos->lastPage() }}</span>
+            {{-- Números de página: la actual ±2, más la primera y la última --}}
+            @php($desdePag = max(1, $vehiculos->currentPage() - 2))
+            @php($hastaPag = min($vehiculos->lastPage(), $vehiculos->currentPage() + 2))
+            @if ($desdePag > 1)<a href="{{ $vehiculos->url(1) }}" class="pagina-numero">1</a>@if ($desdePag > 2)<span class="pagina-puntos">…</span>@endif @endif
+            @foreach ($vehiculos->getUrlRange($desdePag, $hastaPag) as $numero => $urlPagina)
+              @if ($numero === $vehiculos->currentPage())<span class="pagina-numero activa" aria-current="page">{{ $numero }}</span>@else<a href="{{ $urlPagina }}" class="pagina-numero">{{ $numero }}</a>@endif
+            @endforeach
+            @if ($hastaPag < $vehiculos->lastPage())@if ($hastaPag < $vehiculos->lastPage() - 1)<span class="pagina-puntos">…</span>@endif<a href="{{ $vehiculos->url($vehiculos->lastPage()) }}" class="pagina-numero">{{ $vehiculos->lastPage() }}</a>@endif
             @if ($vehiculos->hasMorePages())<a href="{{ $vehiculos->nextPageUrl() }}">Siguiente →</a>@else<span class="deshabilitado">Siguiente →</span>@endif
           </nav>
         @endif

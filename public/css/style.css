@@ -456,7 +456,7 @@ body { overflow-x: clip; }
 /* Carruseles de Destacados y Últimos publicados */
 .carrusel { position: relative; }
 /* 3 filas de tarjetas que avanzan de a una columna */
-.carrusel-pista { display: grid; grid-auto-flow: column; grid-template-rows: repeat(3, auto); grid-auto-columns: 78%; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 4px 2px 12px; scrollbar-width: none; }
+.carrusel-pista { display: grid; grid-auto-flow: column; grid-template-rows: repeat(4, auto); grid-auto-columns: 78%; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 4px 2px 12px; scrollbar-width: none; }
 .carrusel-pista::-webkit-scrollbar { display: none; }
 .carrusel-pista > .tarjeta { scroll-snap-align: start; }
 .carrusel-pista .tarjeta-foto { background: var(--carbon); }
@@ -464,7 +464,6 @@ body { overflow-x: clip; }
 @media (min-width: 521px) { .carrusel-pista { grid-auto-columns: calc((100% - 16px) / 2); } }
 @media (min-width: 800px) { .carrusel-pista { grid-auto-columns: calc((100% - 32px) / 3); } }
 @media (min-width: 1000px) { .carrusel-pista { grid-auto-columns: calc((100% - 48px) / 4); } }
-@media (min-width: 1280px) { .carrusel-pista { grid-auto-columns: calc((100% - 64px) / 5); } }
 .carrusel-flecha { position: absolute; top: 38%; z-index: 2; width: 40px; height: 40px; border-radius: 50%; border: 1px solid #e5e5e5; background: #fff; color: #171717; font-size: 26px; line-height: 1; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.12); display: flex; align-items: center; justify-content: center; transition: .15s; }
 .carrusel-flecha:hover { background: var(--acento); border-color: var(--acento); color: #fff; }
 .carrusel-flecha.anterior { left: -14px; }
@@ -664,16 +663,6 @@ body { overflow-x: clip; }
 
 /* ===== Celular: diseño más compacto y ordenado, tipo app ===== */
 @media (max-width: 640px) {
-  /* Encabezado compacto: sin íconos de redes (están en el pie), botones más chicos */
-  .header .red-social, .header .separador { display: none; }
-  .logo img { height: 36px; }
-  .header-acciones { gap: 6px; }
-  .header-acciones .btn { padding: 7px 11px; font-size: 12.5px; border-radius: 8px; }
-  .nav { gap: 6px; overflow-x: auto; justify-content: flex-start; scrollbar-width: none; }
-  .nav::-webkit-scrollbar { display: none; }
-  .nav a { padding: 6px 12px; font-size: 12.5px; flex-shrink: 0; }
-  @supports (justify-content: safe center) { .nav { justify-content: safe center; } }
-
   /* Espacios publicitarios vacíos (superior/inferior): en celular no se muestran */
   .banner-ancho-vacio { display: none !important; }
 
@@ -709,4 +698,44 @@ body { overflow-x: clip; }
 
   .contenedor-pagina { padding-top: 16px; padding-bottom: 24px; }
   .contenedor-pagina h2 { font-size: 19px; }
+}
+
+/* ===== Menú tipo app (☰): en celular y tablet el encabezado es solo logo + botón, con un menú desplegable ===== */
+.menu-boton { display: none; }
+@media (max-width: 899px) {
+  .header-fila { height: 64px; flex-wrap: nowrap; padding-top: 0; padding-bottom: 0; }
+  .header .nav, .header .header-acciones { display: none; }
+  .logo img { height: 40px; }
+  .menu-boton { display: flex; flex-direction: column; justify-content: center; gap: 5px; width: 44px; height: 44px; padding: 0 11px; border: 1px solid #2e2f3a; border-radius: 10px; background: var(--carbon-claro); cursor: pointer; }
+  .menu-boton span { display: block; height: 2px; border-radius: 2px; background: #fff; transition: transform .2s, opacity .2s; }
+  .menu-boton[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .menu-boton[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+  .menu-boton[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  .menu-movil { background: var(--carbon); border-top: 1px solid var(--carbon-claro); box-shadow: 0 14px 28px rgba(0,0,0,.35); animation: menu-bajar .18s ease-out; }
+  .menu-movil-cuerpo { display: flex; flex-direction: column; padding: 6px 16px 18px; }
+  .menu-movil a:not(.btn) { color: #fff; padding: 14px 4px; font-size: 16px; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,.07); }
+  .menu-movil a.activo { color: #ff4d5a; }
+  .menu-movil-separador { height: 10px; }
+  .menu-movil-publicar { display: flex; justify-content: center; gap: 5px; margin-top: 16px; padding: 13px; font-size: 15px; }
+  .menu-movil-redes { display: flex; justify-content: center; gap: 22px; margin-top: 16px; }
+  .menu-movil-redes a { padding: 4px !important; border: 0 !important; color: #a3a3a3 !important; font-size: 13px !important; font-weight: 500 !important; }
+}
+@media (min-width: 900px) { .menu-movil { display: none !important; } }
+@keyframes menu-bajar { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .menu-movil { animation: none; } }
+
+/* Paginación con números (listado de vehículos y carruseles del inicio) */
+.paginacion { flex-wrap: wrap; gap: 8px; }
+.paginacion button { font: inherit; font-weight: 600; padding: 9px 16px; border-radius: 8px; border: 1px solid #d4d4d4; background: #fff; color: inherit; cursor: pointer; }
+.paginacion button:hover:not(:disabled) { border-color: var(--acento); color: var(--acento); }
+.paginacion button:disabled { color: #a3a3a3; border-color: #eee; cursor: default; }
+.paginacion .pagina-numero { min-width: 40px; padding: 9px 12px; text-align: center; }
+.paginacion .pagina-numero.activa { background: var(--acento); border-color: var(--acento); color: #fff; }
+.paginacion .pagina-puntos { color: #a3a3a3; padding: 0 2px; }
+.carrusel-paginas { margin-top: 14px; }
+@media (max-width: 640px) {
+  .carrusel-paginas { display: none !important; }
+  .paginacion { gap: 6px; font-size: 13px; }
+  .paginacion a, .paginacion .deshabilitado, .paginacion button { padding: 8px 11px; }
+  .paginacion .pagina-numero { min-width: 36px; padding: 8px 9px; }
 }

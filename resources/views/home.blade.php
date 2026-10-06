@@ -89,9 +89,43 @@
     }
     carrusel.querySelector('.anterior').addEventListener('click', function () { mover(-1); });
     carrusel.querySelector('.siguiente').addEventListener('click', function () { mover(1); });
-    new MutationObserver(actualizarFlechas).observe(pista, { childList: true });
-    window.addEventListener('resize', actualizarFlechas);
+
+    // Paginación bajo el carrusel ("← Anterior 1 2 3 Siguiente →"): cada página es lo que cabe a la vista.
+    var paginas = document.createElement('nav');
+    paginas.className = 'paginacion carrusel-paginas';
+    paginas.setAttribute('aria-label', 'Páginas de autos');
+    carrusel.after(paginas);
+    function columnasVisibles() { return Math.max(1, Math.round((pista.clientWidth + 16) / paso())); }
+    function totalPaginas() { return Math.max(1, Math.ceil(Math.round((pista.scrollWidth + 16) / paso()) / columnasVisibles())); }
+    function paginaActual() {
+      if (pista.scrollLeft + pista.clientWidth >= pista.scrollWidth - 4) return totalPaginas() - 1; // al final: última página (suele venir incompleta)
+      return Math.min(totalPaginas() - 1, Math.round(pista.scrollLeft / (paso() * columnasVisibles())));
+    }
+    function irAPagina(n) {
+      pista.scrollTo({ left: n * paso() * columnasVisibles(), behavior: 'smooth' });
+      dibujarPaginas(n); // marca la página elegida de inmediato, sin esperar a que termine el desplazamiento
+    }
+    function dibujarPaginas(elegida) {
+      var total = totalPaginas(), actual = typeof elegida === 'number' ? elegida : paginaActual();
+      paginas.hidden = total < 2;
+      paginas.innerHTML = '';
+      function boton(texto, n, clase, deshabilitado) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.textContent = texto; b.className = clase || '';
+        if (deshabilitado) b.disabled = true; else b.addEventListener('click', function () { irAPagina(n); });
+        paginas.appendChild(b);
+      }
+      boton('← Anterior', actual - 1, 'pagina-flecha', actual === 0);
+      for (var i = 0; i < total; i++) boton(String(i + 1), i, i === actual ? 'pagina-numero activa' : 'pagina-numero', false);
+      boton('Siguiente →', actual + 1, 'pagina-flecha', actual >= total - 1);
+    }
+    var espera;
+    pista.addEventListener('scroll', function () { clearTimeout(espera); espera = setTimeout(function () { dibujarPaginas(); }, 150); });
+
+    new MutationObserver(function () { actualizarFlechas(); dibujarPaginas(); }).observe(pista, { childList: true });
+    window.addEventListener('resize', function () { actualizarFlechas(); dibujarPaginas(); });
     actualizarFlechas();
+    dibujarPaginas();
   });
 
   // Cada tarjeta pasa sus propias fotos, a su propio ritmo, solo mientras está en pantalla.

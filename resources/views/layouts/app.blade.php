@@ -65,8 +65,51 @@
         </a>
         @endif
       </div>
+      <button type="button" class="menu-boton" id="menuBoton" aria-label="Abrir menú" aria-expanded="false" aria-controls="menuMovil">
+        <span></span><span></span><span></span>
+      </button>
     </div>
+    {{-- Celular/tablet: un solo menú desplegable (☰) con todas las opciones --}}
+    <nav class="menu-movil" id="menuMovil" hidden aria-label="Menú">
+      <div class="contenedor menu-movil-cuerpo">
+        <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'activo' : '' }}">Inicio</a>
+        <a href="{{ route('vehiculos.index') }}" class="{{ request()->routeIs('vehiculos.*') ? 'activo' : '' }}">Ver vehículos</a>
+        <a href="{{ route('como-funciona') }}" class="{{ request()->routeIs('como-funciona') ? 'activo' : '' }}">Cómo funciona</a>
+        <span class="menu-movil-separador"></span>
+        @auth
+          <a href="{{ route('panel') }}">Mi panel</a>
+          <a href="{{ route('panel.publicar') }}" class="btn btn-acento menu-movil-publicar">Publicar mi vehículo</a>
+        @else
+          <a href="{{ route('login') }}">Iniciar sesión</a>
+          <a href="{{ route('register') }}">Regístrate</a>
+          <a href="{{ route('register') }}" class="btn btn-acento menu-movil-publicar">Publica <strong>100% gratis</strong></a>
+        @endauth
+        @if (config('autoruta.redes_sociales.facebook') || config('autoruta.redes_sociales.instagram'))
+          <div class="menu-movil-redes">
+            @if (config('autoruta.redes_sociales.facebook'))<a href="{{ config('autoruta.redes_sociales.facebook') }}" target="_blank" rel="noopener">Facebook</a>@endif
+            @if (config('autoruta.redes_sociales.instagram'))<a href="{{ config('autoruta.redes_sociales.instagram') }}" target="_blank" rel="noopener">Instagram</a>@endif
+          </div>
+        @endif
+      </div>
+    </nav>
   </header>
+  <script>
+    // Menú desplegable del celular: abre/cierra con ☰, y se cierra con Escape, al tocar fuera o al elegir una opción.
+    (function () {
+      var boton = document.getElementById('menuBoton'), menu = document.getElementById('menuMovil');
+      if (!boton || !menu) return;
+      function abrir(si) {
+        menu.hidden = !si;
+        boton.setAttribute('aria-expanded', si ? 'true' : 'false');
+        boton.setAttribute('aria-label', si ? 'Cerrar menú' : 'Abrir menú');
+      }
+      boton.addEventListener('click', function () { abrir(menu.hidden); });
+      menu.addEventListener('click', function (e) { if (e.target.closest('a')) abrir(false); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') abrir(false); });
+      document.addEventListener('click', function (e) { if (!menu.hidden && !menu.contains(e.target) && !boton.contains(e.target)) abrir(false); });
+      window.matchMedia('(min-width: 900px)').addEventListener('change', function (m) { if (m.matches) abrir(false); });
+    })();
+  </script>
 
   @include('partials.banner-ancho', ['posicion' => 'superior'])
 
