@@ -45,6 +45,8 @@
     </div>
     <button type="button" class="carrusel-flecha siguiente" aria-label="Siguiente">&#8250;</button>
   </div>
+  {{-- En celular los autos van en lista (uno por fila) y se muestran los primeros; este botón lleva al resto --}}
+  @if ($ultimos->count() > 8)<a href="{{ route('vehiculos.index') }}" class="btn btn-outline-oscuro ver-todos-movil">Ver todos los vehículos →</a>@endif
   @if ($ultimos->isEmpty())<p class="texto-mutado" id="sinVehiculos">Todavía no hay vehículos publicados.</p>@endif
   @include('partials.vehiculos-en-vivo', ['modo' => 'insertar', 'grilla' => 'grillaUltimos', 'desde' => (int) \App\Models\Vehiculo::max('id'), 'maxTarjetas' => 36])
 </section>
@@ -57,13 +59,14 @@
   </div>
     <div class="carrusel" data-carrusel>
       <button type="button" class="carrusel-flecha anterior" aria-label="Anterior">&#8249;</button>
-      <div class="carrusel-pista">
+      <div class="carrusel-pista carrusel-destacados">
         @foreach ($destacados as $v)
           @include('vehiculos._tarjeta', ['v' => $v])
         @endforeach
       </div>
       <button type="button" class="carrusel-flecha siguiente" aria-label="Siguiente">&#8250;</button>
     </div>
+    @if ($destacados->count() > 4)<a href="{{ route('vehiculos.index') }}" class="btn btn-outline-oscuro ver-todos-movil">Ver todos los vehículos →</a>@endif
 </section>
 @endif
 

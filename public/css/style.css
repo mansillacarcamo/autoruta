@@ -464,6 +464,7 @@ body { overflow-x: clip; }
 @media (min-width: 521px) { .carrusel-pista { grid-auto-columns: calc((100% - 16px) / 2); } }
 @media (min-width: 800px) { .carrusel-pista { grid-auto-columns: calc((100% - 32px) / 3); } }
 @media (min-width: 1000px) { .carrusel-pista { grid-auto-columns: calc((100% - 48px) / 4); } }
+@media (min-width: 1280px) { .carrusel-pista { grid-auto-columns: calc((100% - 64px) / 5); } }
 .carrusel-flecha { position: absolute; top: 38%; z-index: 2; width: 40px; height: 40px; border-radius: 50%; border: 1px solid #e5e5e5; background: #fff; color: #171717; font-size: 26px; line-height: 1; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.12); display: flex; align-items: center; justify-content: center; transition: .15s; }
 .carrusel-flecha:hover { background: var(--acento); border-color: var(--acento); color: #fff; }
 .carrusel-flecha.anterior { left: -14px; }
@@ -650,6 +651,8 @@ body { overflow-x: clip; }
 
 .contenedor-pagina { padding-top: 32px; padding-bottom: 32px; }
 
+.ver-todos-movil { display: none; }
+
 /* Listado: filtros plegables ("Filtrar y ordenar"); en escritorio siempre abiertos y sin el título plegable */
 .filtros-listado { height: fit-content; }
 .filtros-listado > summary { display: flex; align-items: center; gap: 8px; font-weight: 700; cursor: pointer; list-style: none; }
@@ -684,16 +687,18 @@ body { overflow-x: clip; }
   .categoria svg { width: 20px; height: 20px; padding: 9px; }
   .categoria span { font-size: 11px; }
 
-  /* Autos de a dos por fila (listado), tarjetas más livianas */
-  .grilla.grilla-autos { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .tarjeta { border-radius: 12px; box-shadow: 0 1px 3px rgba(16,17,26,.06); }
-  .tarjeta-cuerpo { padding: 9px 10px 11px; }
-  .tarjeta-titulo { font-size: 13.5px; }
-  .tarjeta-precio { font-size: 16px; margin: 2px 0; }
-  .tarjeta-meta { gap: 4px; margin-top: 6px; font-size: 11px; }
-  .meta-chip { padding: 3px 7px; gap: 3px; }
-  .meta-chip svg { width: 11px; height: 11px; }
-  .carrusel-pista { grid-auto-columns: 64%; grid-template-rows: repeat(2, auto); gap: 10px; }
+  /* Autos en lista, uno por fila a lo ancho, para recorrerlos bajando (listado e inicio) */
+  .grilla.grilla-autos { grid-template-columns: 1fr; gap: 14px; }
+  .carrusel-pista { grid-auto-flow: row; grid-template-columns: 1fr; grid-template-rows: none; grid-auto-columns: auto; overflow: visible; gap: 14px; padding: 0; }
+  .carrusel-flecha { display: none; }
+  /* En el inicio se muestran los primeros (8 últimos, 4 destacados) y luego "Ver todos los vehículos" */
+  #grillaUltimos > .tarjeta:nth-child(n+9), .carrusel-destacados > .tarjeta:nth-child(n+5) { display: none; }
+  .ver-todos-movil { display: flex; justify-content: center; width: 100%; margin-top: 14px; }
+  .tarjeta { border-radius: 14px; box-shadow: 0 2px 8px rgba(16,17,26,.07); }
+  .tarjeta-foto { aspect-ratio: 16 / 10; }
+  .tarjeta-cuerpo { padding: 12px 14px 14px; }
+  .tarjeta-titulo { font-size: 16px; }
+  .tarjeta-precio { font-size: 20px; margin: 3px 0; }
 
   /* Ficha del auto: galería de borde a borde */
   .galeria-principal { border-radius: 0; margin: 0 -16px; }
