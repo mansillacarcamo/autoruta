@@ -5,21 +5,33 @@ namespace App\Http\Controllers;
 use App\Models\AnuncianteBanner;
 use App\Models\Vehiculo;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class VehiculoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = $this->filtrar(Vehiculo::activos()->with(['fotos', 'usuario']), $request)->premiumPrimero();
+        $orden = $request->string('orden')->toString();
 
-        match ($request->string('orden')->toString()) {
-            'precio_asc' => $query->orderBy('precio'),
-            'precio_desc' => $query->orderByDesc('precio'),
-            'km_asc' => $query->orderBy('kilometraje'),
-            default => $query->orderByDesc('publicado_en'),
-        };
-
-        $vehiculos = $query->paginate(24)->withQueryString();
+        if (in_array($orden, ['precio_asc', 'precio_desc', 'km_asc'], true)) {
+            $query = $this->filtrar(Vehiculo::activos()->with(['fotos', 'usuario']), $request)->premiumPrimero();
+            match ($orden) {
+                'precio_asc' => $query->orderBy('precio'),
+                'precio_desc' => $query->orderByDesc('precio'),
+                'km_asc' => $query->orderBy('kilometraje'),
+            };
+            $vehiculos = $query->paginate(24)->withQueryString();
+        } else {
+            // Orden por defecto: más recientes, intercalando automotoras.
+            $ids = Vehiculo::idsIntercalados($this->filtrar(Vehiculo::activos(), $request));
+            $pagina = LengthAwarePaginator::resolveCurrentPage();
+            $idsPagina = array_slice($ids, ($pagina - 1) * 24, 24);
+            $items = Vehiculo::with(['fotos', 'usuario'])->whereIn('id', $idsPagina)->get()
+                ->sortBy(fn ($v) => array_search($v->id, $idsPagina))->values();
+            $vehiculos = (new LengthAwarePaginator($items, count($ids), 24, $pagina, [
+                'path' => $request->url(),
+            ]))->withQueryString();
+        }
 
         return view('vehiculos.index', compact('vehiculos'));
     }

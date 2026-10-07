@@ -348,6 +348,26 @@ class AutoRutaTest extends TestCase
         $this->get('/vehiculos')->assertSeeInOrder(['Kia Rio', 'Lada Niva'])->assertDontSee('★ Premium');
     }
 
+    public function test_avisos_se_intercalan_por_automotora(): void
+    {
+        $a = $this->vendedor();
+        $b = $this->vendedor();
+        // La automotora A publicó 3 seguidos, después B publicó 2.
+        $this->aviso($a, ['modelo' => 'A1', 'publicado_en' => now()->subMinutes(5)]);
+        $this->aviso($a, ['modelo' => 'A2', 'publicado_en' => now()->subMinutes(4)]);
+        $this->aviso($a, ['modelo' => 'A3', 'publicado_en' => now()->subMinutes(3)]);
+        $this->aviso($b, ['modelo' => 'B1', 'publicado_en' => now()->subMinutes(2)]);
+        $this->aviso($b, ['modelo' => 'B2', 'publicado_en' => now()->subMinutes(1)]);
+
+        $orden = ['Kia B2', 'Kia A3', 'Kia B1', 'Kia A2', 'Kia A1'];
+        $this->get('/vehiculos')->assertSeeInOrder($orden);
+        $this->get('/')->assertSeeInOrder($orden);
+
+        // Ordenar por precio respeta el precio, no intercala.
+        Vehiculo::where('modelo', 'A1')->update(['precio' => 1000]);
+        $this->get('/vehiculos?orden=precio_asc')->assertSeeInOrder(['Kia A1', 'Kia B2']);
+    }
+
     public function test_popup_del_inicio_se_administra_desde_admin(): void
     {
         $this->actingAs($this->vendedor())->get('/admin/popup')->assertForbidden();

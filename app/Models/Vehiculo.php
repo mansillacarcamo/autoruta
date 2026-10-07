@@ -58,6 +58,28 @@ class Vehiculo extends Model
         return $query->orderByDesc('premium')->orderByDesc('premium_desde');
     }
 
+    // Ids ordenados intercalando automotoras (una de cada una, por turnos), para que ninguna acapare el listado.
+    // Los Premium siguen arriba, intercalados entre ellos; dentro de cada turno va primero lo más reciente.
+    // Se ordena en PHP y no con ROW_NUMBER() para no depender de la versión de MySQL del hosting.
+    public static function idsIntercalados($query): array
+    {
+        $filas = $query->premiumPrimero()
+            ->orderByDesc('publicado_en')->orderByDesc('id')
+            ->get(['id', 'user_id', 'premium']);
+
+        $turnos = [];
+        $posicion = 0;
+        $filas = $filas->map(function ($v) use (&$turnos, &$posicion) {
+            $grupo = ($v->premium ? 'p' : 'n') . $v->user_id;
+            $turnos[$grupo] = ($turnos[$grupo] ?? -1) + 1;
+            return [$v->id, $v->premium ? 0 : 1, $turnos[$grupo], $posicion++];
+        })->all();
+
+        usort($filas, fn ($a, $b) => [$a[1], $a[2], $a[3]] <=> [$b[1], $b[2], $b[3]]);
+
+        return array_column($filas, 0);
+    }
+
     public function estaVencida(): bool
     {
         return $this->estado === 'activa' && $this->vence_en && $this->vence_en->isPast();

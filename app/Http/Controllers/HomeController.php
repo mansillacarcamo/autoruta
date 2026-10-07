@@ -14,7 +14,10 @@ class HomeController extends Controller
         DB::table('visitas')->where('id', 1)->increment('total');
 
         // Sin repetir avisos: Últimos = los 36 más recientes; Destacados = los más vistos del resto.
-        $ultimos = Vehiculo::activos()->with(['fotos', 'usuario'])->premiumPrimero()->orderByDesc('publicado_en')->orderByDesc('id')->take(36)->get();
+        // Los "Últimos" van intercalando automotoras para que ninguna llene la portada.
+        $idsUltimos = array_slice(Vehiculo::idsIntercalados(Vehiculo::activos()), 0, 36);
+        $ultimos = Vehiculo::with(['fotos', 'usuario'])->whereIn('id', $idsUltimos)->get()
+            ->sortBy(fn ($v) => array_search($v->id, $idsUltimos))->values();
         $destacados = Vehiculo::activos()->with(['fotos', 'usuario'])
             ->whereNotIn('id', $ultimos->pluck('id'))
             ->orderByDesc('vistas')
