@@ -521,6 +521,9 @@ body { overflow-x: clip; }
 .galeria-contador { position: absolute; bottom: 12px; right: 12px; background: rgba(4,5,13,.7); color: #fff; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
 .galeria.una-foto .galeria-flecha, .galeria.una-foto .galeria-contador, .galeria.una-foto .galeria-miniaturas { display: none; }
 .galeria-miniaturas { display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; padding-bottom: 4px; }
+/* Las columnas de la ficha y del listado no se ensanchan por su contenido (p. ej. muchas miniaturas): si no, empujan
+   la tarjeta del vendedor hacia la derecha y queda debajo de la publicidad lateral. */
+.ficha-grid > *, .lg-grid > * { min-width: 0; }
 .galeria-miniatura { flex: 0 0 86px; height: 66px; padding: 0; border: 2px solid transparent; border-radius: 8px; overflow: hidden; cursor: pointer; background: var(--gris-claro); opacity: .65; transition: .15s; }
 .galeria-miniatura img { width: 100%; height: 100%; object-fit: cover; }
 .galeria-miniatura:hover { opacity: 1; }
