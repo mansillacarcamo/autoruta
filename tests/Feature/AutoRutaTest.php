@@ -779,6 +779,60 @@ class AutoRutaTest extends TestCase
         Storage::disk('public')->assertMissing('negocios/' . $archivo);
     }
 
+    public function test_slider_del_banner_principal(): void
+    {
+        $admin = User::where('usuario', 'cesar')->firstOrFail();
+
+        // Sin banners extra: solo el diseño de AutoRuta, sin slider.
+        $this->get('/')->assertSee('img/banner-portada.jpg', false)->assertDontSee('slider-portada', false);
+
+        // Banner con link y versión celular.
+        $this->actingAs($admin)->post('/admin/portada', [
+            'archivo' => UploadedFile::fake()->image('oferta.jpg', 2087, 753),
+            'movil' => UploadedFile::fake()->image('oferta-movil.jpg', 1080, 390),
+            'linkUrl' => 'www.ofertas.cl',
+        ])->assertSessionHas('ok');
+        $medio = \App\Models\PortadaMedio::firstOrFail();
+        $this->assertSame('https://www.ofertas.cl', $medio->link_url);
+        Storage::disk('public')->assertExists('portada/' . $medio->archivo_movil);
+
+        // Video de ~2,5 MB subido en trozos (como lo hace el navegador), sin link.
+        $video = "\x00\x00\x00\x18ftypmp42\x00\x00\x00\x00mp42isom" . str_repeat("\x00", 2_500_000);
+        $subida = (string) \Illuminate\Support\Str::uuid();
+        foreach (str_split($video, 1024 * 1024) as $i => $parte) {
+            $this->actingAs($admin)->post('/admin/banners/trozo', ['subida' => $subida, 'indice' => $i, 'trozo' => UploadedFile::fake()->createWithContent('trozo', $parte)])->assertOk();
+        }
+        $this->actingAs($admin)->post('/admin/portada', ['archivo_subida' => $subida, 'archivo_total' => 3, 'archivo_nombre' => 'promo.mp4'])
+            ->assertSessionHasNoErrors()->assertSessionHas('ok');
+        $this->assertSame('video', \App\Models\PortadaMedio::latest('id')->first()->tipo_medio);
+
+        // En el inicio: slider con el banner de AutoRuta primero y los 2 banners después (3 puntos).
+        auth()->logout();
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('slider-portada', $html);
+        $this->assertLessThan(strpos($html, $medio->url()), strpos($html, 'img/banner-portada.jpg'));
+        $this->assertStringContainsString('href="https://www.ofertas.cl"', $html);
+        $this->assertStringContainsString($medio->urlMovil(), $html);
+        $this->assertSame(3, substr_count($html, 'aria-label="Ir al banner'));
+
+        // Máximo 3 banners extra.
+        $this->actingAs($admin)->post('/admin/portada', ['archivo' => UploadedFile::fake()->image('c.jpg', 2087, 753)])->assertSessionHas('ok');
+        $this->actingAs($admin)->post('/admin/portada', ['archivo' => UploadedFile::fake()->image('d.jpg', 2087, 753)])->assertSessionHas('error');
+        $this->assertSame(3, \App\Models\PortadaMedio::count());
+
+        // Editar el link y quitar la versión celular; eliminar borra los archivos.
+        $movil = $medio->archivo_movil;
+        $this->actingAs($admin)->put("/admin/portada/{$medio->id}", ['linkUrl' => '', 'quitarMovil' => '1'])->assertSessionHas('ok');
+        $medio->refresh();
+        $this->assertNull($medio->link_url);
+        $this->assertNull($medio->archivo_movil);
+        Storage::disk('public')->assertMissing('portada/' . $movil);
+        $this->actingAs($admin)->put("/admin/portada/{$medio->id}", ['linkUrl' => 'javascript:alert(1)'])->assertSessionHasErrors('linkUrl');
+        $this->actingAs($admin)->delete("/admin/portada/{$medio->id}")->assertSessionHas('ok');
+        Storage::disk('public')->assertMissing('portada/' . $medio->archivo);
+        $this->actingAs($admin)->get('/admin/portada')->assertOk()->assertSee('Banner de AutoRuta (fijo)');
+    }
+
     public function test_banner_lateral_5_se_muestra_en_costado_y_en_celular(): void
     {
         $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Lateral 5', 'rubro' => 'taller', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);

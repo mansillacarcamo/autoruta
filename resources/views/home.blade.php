@@ -1,25 +1,39 @@
 @extends('layouts.app')
 
 @section('contenido')
-{{-- Banner de portada completo, sin texto encima (el banner ya trae su mensaje). Si en Admin se subieron
-     fotos o video de portada, se muestran esos en el mismo marco; si no, el banner fijo de AutoRuta. --}}
+{{-- Banner principal: el diseño de AutoRuta va siempre primero; si en Admin > Portada se agregaron banners,
+     se arma un slider (cada 6 s, con flechas, puntos y deslizar con el dedo). --}}
 <section class="portada-banner">
-  @if ($portada->isNotEmpty())
-    <div class="hero-medios">
-      @if ($video = $portada->firstWhere('tipo_medio', 'video'))
-        <video src="{{ $video->url() }}" autoplay muted loop playsinline></video>
-      @else
-        @foreach ($portada as $i => $m)
-          <img src="{{ $m->url() }}" alt="" class="{{ $i === 0 ? 'activa' : '' }}">
-        @endforeach
-      @endif
-    </div>
+  @php($bannerAutoruta = '<picture><source media="(max-width: 700px)" srcset="' . asset('img/banner-portada-movil.jpg') . '"><img src="' . asset('img/banner-portada.jpg') . '" width="2087" height="753" fetchpriority="high" alt="AutoRuta: ¿Buscas un auto o quieres vender? Esta es tu opción. www.autoruta.cl"></picture>')
+  @if ($portada->isEmpty())
+    {!! $bannerAutoruta !!}
   @else
-    <picture>
-      <source media="(max-width: 700px)" srcset="{{ asset('img/banner-portada-movil.jpg') }}">
-      <img src="{{ asset('img/banner-portada.jpg') }}" width="2087" height="753" fetchpriority="high"
-           alt="AutoRuta: ¿Buscas un auto o quieres vender? Esta es tu opción. www.autoruta.cl">
-    </picture>
+    <div class="slider-pub slider-portada" data-slider-pub data-intervalo="6000" aria-roledescription="carrusel" aria-label="Banners principales">
+      <div class="slider-pub-pista">
+        <div class="slider-pub-slide">{!! $bannerAutoruta !!}</div>
+        @foreach ($portada as $m)
+          @php($etiqueta = $m->link_url ? 'a' : 'div')
+          <{{ $etiqueta }} class="slider-pub-slide" inert @if ($m->link_url) href="{{ $m->link_url }}" target="_blank" rel="noopener" @endif>
+            @if ($m->tipo_medio === 'video')
+              <video src="{{ $m->url() }}" class="banner-medio" autoplay muted loop playsinline></video>
+            @else
+              <picture>
+                @if ($m->urlMovil())<source media="(max-width: 700px)" srcset="{{ $m->urlMovil() }}">@endif
+                <img src="{{ $m->url() }}" class="banner-medio" alt="Banner" loading="lazy">
+              </picture>
+            @endif
+          </{{ $etiqueta }}>
+        @endforeach
+      </div>
+      <button type="button" class="slider-pub-flecha anterior" aria-label="Anterior">&#8249;</button>
+      <button type="button" class="slider-pub-flecha siguiente" aria-label="Siguiente">&#8250;</button>
+      <div class="slider-pub-puntos">
+        @foreach (range(0, $portada->count()) as $n)
+          <button type="button" class="{{ $n === 0 ? 'activo' : '' }}" aria-label="Ir al banner {{ $n + 1 }}"></button>
+        @endforeach
+      </div>
+    </div>
+    @include('partials.slider-pub-script')
   @endif
 </section>
 
@@ -206,17 +220,5 @@
 
 @include('partials.slider-publicidad')
 
-<script>
-  (function () {
-    var fotos = document.querySelectorAll('.hero-medios img');
-    if (fotos.length < 2) return;
-    var i = 0;
-    setInterval(function () {
-      fotos[i].classList.remove('activa');
-      i = (i + 1) % fotos.length;
-      fotos[i].classList.add('activa');
-    }, 5000);
-  })();
-</script>
 @include('partials.popup-inicio')
 @endsection
