@@ -3,7 +3,7 @@
 
 @section('contenido')
 <div class="contenedor" style="max-width:640px;padding:32px 16px">
-  <p style="margin:0 0 8px"><a href="{{ route('panel') }}" class="texto-mutado" style="font-size:14px">← Volver a mi panel</a></p>
+  <p style="margin:0 0 8px"><a href="{{ route('panel') }}" class="texto-mutado" style="font-size:15px">← Volver a mi panel</a></p>
   <h1>Mi cuenta</h1>
 
   <form method="post" action="{{ route('panel.cuenta.datos') }}" class="caja mt-2">
@@ -17,15 +17,15 @@
     <div class="form-grupo">
       <label>Teléfono (WhatsApp)</label>
       <input type="tel" name="telefono" required value="{{ old('telefono', $usuario->telefono_whatsapp) }}" placeholder="+56 9 1234 5678" autocomplete="tel">
-      <p class="texto-mutado" style="font-size:12px;margin:4px 0 0">Los compradores te contactarán a este número.</p>
+      <p class="texto-mutado" style="font-size:13px;margin:4px 0 0">Los compradores te contactarán a este número.</p>
     </div>
     <div class="form-grupo"><label>Ciudad</label><input type="text" name="ciudad" required value="{{ old('ciudad', $usuario->comuna) }}" autocomplete="address-level2"></div>
     <button type="submit" class="btn btn-acento">Guardar datos</button>
   </form>
 
   <div class="caja mt-3">
-    <h2 style="margin-top:0">Automotora o negocio <span class="texto-mutado" style="font-size:14px;font-weight:500">(opcional)</span></h2>
-    <p class="texto-mutado" style="font-size:14px;margin:0 0 14px">Si vendes como automotora, sube tu logo: aparecerá en la esquina de las fotos de tus avisos y en el recuadro de contacto.</p>
+    <h2 style="margin-top:0">Automotora o negocio <span class="texto-mutado" style="font-size:15px;font-weight:500">(opcional)</span></h2>
+    <p class="texto-mutado" style="font-size:15px;margin:0 0 14px">Si vendes como automotora, sube tu logo: aparecerá en la esquina de las fotos de tus avisos y en el recuadro de contacto.</p>
     @if ($errors->logo->any())
       <div class="alerta-error"><ul style="margin:0;padding-left:18px">@foreach ($errors->logo->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
     @endif
@@ -46,7 +46,7 @@
             {{ $usuario->logo ? 'Cambiar logo' : 'Subir logo' }}
             <input type="file" name="logo" id="inputLogo" accept="image/png,image/jpeg,image/webp" hidden>
           </label>
-          <p class="texto-mutado" style="font-size:12px;margin:6px 0 0">JPG, PNG o WEBP. Ideal cuadrado y con fondo transparente (PNG).</p>
+          <p class="texto-mutado" style="font-size:13px;margin:6px 0 0">JPG, PNG o WEBP. Ideal cuadrado y con fondo transparente (PNG).</p>
         </div>
       </div>
 
@@ -63,7 +63,7 @@
     @if ($usuario->logo)
       <form method="post" action="{{ route('panel.cuenta.logo.quitar') }}" onsubmit="return confirm('¿Quitar tu logo?')" style="margin-top:10px">
         @csrf @method('DELETE')
-        <button type="submit" style="background:none;border:none;padding:0;color:#b91c1c;font-size:13px;font-weight:600;cursor:pointer">Quitar logo</button>
+        <button type="submit" style="background:none;border:none;padding:0;color:#b91c1c;font-size:14px;font-weight:600;cursor:pointer">Quitar logo</button>
       </form>
     @endif
   </div>
@@ -75,7 +75,7 @@
       <div class="alerta-error"><ul style="margin:0;padding-left:18px">@foreach ($errors->clave->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
     @endif
     <div class="form-grupo"><label>Contraseña actual</label><input type="password" name="clave_actual" required autocomplete="current-password"></div>
-    <div class="form-grupo"><label>Nueva contraseña</label><input type="password" name="password" required autocomplete="new-password"><p class="texto-mutado" style="font-size:12px;margin:4px 0 0">Mínimo 8 caracteres.</p></div>
+    <div class="form-grupo"><label>Nueva contraseña</label><input type="password" name="password" required autocomplete="new-password"><p class="texto-mutado" style="font-size:13px;margin:4px 0 0">Mínimo 8 caracteres.</p></div>
     <div class="form-grupo"><label>Repite la nueva contraseña</label><input type="password" name="password_confirmation" required autocomplete="new-password"></div>
     <button type="submit" class="btn btn-acento">Cambiar contraseña</button>
   </form>

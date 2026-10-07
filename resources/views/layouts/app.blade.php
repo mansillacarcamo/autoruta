@@ -146,7 +146,7 @@
     <div class="contenedor footer-grid">
       <div class="footer-marca">
         <a href="{{ route('home') }}"><img src="{{ asset('img/logo-autoruta.png') }}" alt="{{ config('autoruta.nombre_sitio') }}" style="height:56px;width:auto"></a>
-        <p style="margin-top:8px;font-size:14px">Compra y venta de vehículos entre particulares en todo Chile.</p>
+        <p style="margin-top:8px;font-size:15px">Compra y venta de vehículos entre particulares en todo Chile.</p>
         @if (config('autoruta.redes_sociales.facebook') || config('autoruta.redes_sociales.instagram'))
           <div class="footer-redes">
             @if (config('autoruta.redes_sociales.facebook'))

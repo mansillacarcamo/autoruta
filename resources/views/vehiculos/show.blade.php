@@ -235,7 +235,7 @@
       @if ($vehiculo->premium)<p class="mt-3" style="margin-bottom:0"><span class="etiqueta-premium etiqueta-premium-ficha">★ Premium</span></p>@endif
       <h1 class="mt-3">{{ $vehiculo->marca }} {{ $vehiculo->modelo }} {{ $vehiculo->anio }}</h1>
       <p class="tarjeta-precio" style="font-size:28px"><span class="precio-desde">Desde</span> {{ $vehiculo->precioFormateado() }}</p>
-      @if ($vehiculo->pie)<p class="tarjeta-pie" style="font-size:15px">Pie {{ $vehiculo->pieFormateado() }}</p>@endif
+      @if ($vehiculo->pie)<p class="tarjeta-pie" style="font-size:16px">Pie {{ $vehiculo->pieFormateado() }}</p>@endif
       <p class="texto-mutado">{{ $vehiculo->comuna }}, {{ $vehiculo->region }}</p>
 
       @php
@@ -331,7 +331,7 @@
           </a>
 
           @else
-            <p class="texto-mutado" style="font-size:14px;margin:0">{{ $vehiculo->estado === 'vendida' ? 'Vehículo vendido: el contacto ya no está disponible.' : 'Publicación no vigente: el contacto no está disponible.' }}</p>
+            <p class="texto-mutado" style="font-size:15px;margin:0">{{ $vehiculo->estado === 'vendida' ? 'Vehículo vendido: el contacto ya no está disponible.' : 'Publicación no vigente: el contacto no está disponible.' }}</p>
           @endif
 
           <div class="vendedor-enlaces">

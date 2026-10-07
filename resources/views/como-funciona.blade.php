@@ -19,7 +19,7 @@
 
   <div class="caja mt-2" style="border:2px solid var(--acento)">
     <h2>Plan Publicidad para negocios (financieras, talleres, otros rubros)</h2>
-    <p class="tarjeta-precio" style="font-size:24px">${{ number_format($precioPublicidad, 0, ',', '.') }} <span style="font-size:14px;font-weight:400;color:#737373">al mes</span></p>
+    <p class="tarjeta-precio" style="font-size:24px">${{ number_format($precioPublicidad, 0, ',', '.') }} <span style="font-size:15px;font-weight:400;color:#737373">al mes</span></p>
     <p>Banner en el inicio y tarjeta de negocio destacado en el listado y ficha de vehículos, por 30 días.</p>
     <p style="font-weight:600">Es el único producto pagado del sitio: publicar vehículos siempre es gratis.</p>
     <a href="https://wa.me/{{ preg_replace('/\D/', '', config('autoruta.contacto_whatsapp')) }}?text={{ urlencode('Hola, quiero anunciar mi negocio en ' . config('autoruta.nombre_sitio')) }}"

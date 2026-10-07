@@ -6,10 +6,10 @@
 @section('contenido')
 <div class="{{ $enAdmin ? 'admin-tarjeta' : 'contenedor' }}" style="max-width:760px;{{ $enAdmin ? '' : 'padding:32px 16px' }}">
   @if ($enAdmin)
-    <p style="margin:0 0 8px"><a href="{{ route('admin.vehiculos.index') }}" class="texto-mutado" style="font-size:14px">← Volver a Vehículos</a></p>
+    <p style="margin:0 0 8px"><a href="{{ route('admin.vehiculos.index') }}" class="texto-mutado" style="font-size:15px">← Volver a Vehículos</a></p>
   @endif
   @if ($vehiculo)
-    @unless ($enAdmin)<p style="margin:0 0 8px"><a href="{{ route('panel') }}" class="texto-mutado" style="font-size:14px">← Volver a mi panel</a></p>@endunless
+    @unless ($enAdmin)<p style="margin:0 0 8px"><a href="{{ route('panel') }}" class="texto-mutado" style="font-size:15px">← Volver a mi panel</a></p>@endunless
     <h1>Editar publicación</h1>
     <p class="texto-mutado">{{ $vehiculo->marca }} {{ $vehiculo->modelo }} {{ $vehiculo->anio }}@if ($enAdmin) · Vendedor: <strong>{{ $dueno?->nombre_comercial ?: $dueno?->name }}</strong>@endif</p>
   @else
@@ -94,13 +94,13 @@
       <div class="form-grupo">
         <label>WhatsApp de contacto</label>
         <input type="text" name="telefonoWhatsapp" required placeholder="+56912345678" value="{{ old('telefonoWhatsapp', $dueno->telefono_whatsapp) }}">
-        <p class="texto-mutado" style="font-size:12px;margin:4px 0 0">Los compradores te escribirán a este número desde el botón de WhatsApp de tu aviso.</p>
+        <p class="texto-mutado" style="font-size:13px;margin:4px 0 0">Los compradores te escribirán a este número desde el botón de WhatsApp de tu aviso.</p>
       </div>
     </div>
     <div class="form-grupo"><label>Descripción</label><textarea name="descripcion" required rows="4" maxlength="3000">{{ old('descripcion', $vehiculo?->descripcion) }}</textarea></div>
 
-    <h2 class="mt-2">2. Fotos <span class="texto-mutado" id="contadorFotos" style="font-size:15px;font-weight:600"></span></h2>
-    <p class="texto-mutado" style="font-size:13px;margin:0 0 10px">Hasta {{ config('autoruta.max_fotos_vehiculo') }} fotos en formato JPG, PNG, WEBP o HEIC (iPhone). Las achicamos automáticamente para que suban rápido.</p>
+    <h2 class="mt-2">2. Fotos <span class="texto-mutado" id="contadorFotos" style="font-size:16px;font-weight:600"></span></h2>
+    <p class="texto-mutado" style="font-size:14px;margin:0 0 10px">Hasta {{ config('autoruta.max_fotos_vehiculo') }} fotos en formato JPG, PNG, WEBP o HEIC (iPhone). Las achicamos automáticamente para que suban rápido.</p>
 
     @if ($vehiculo && $vehiculo->fotos->isNotEmpty())
       <div class="fotos-grilla" id="fotosActuales">
@@ -125,7 +125,7 @@
         <input type="file" name="fotos[]" id="inputFotos" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*" multiple hidden>
       </label>
     </div>
-    <p class="texto-mutado" id="estadoFotos" style="font-size:13px;margin:8px 0 0"></p>
+    <p class="texto-mutado" id="estadoFotos" style="font-size:14px;margin:8px 0 0"></p>
     <div class="fotos-grilla" id="vistaFotos"></div>
 
     <h2 class="mt-2">3. Ficha técnica (opcional)</h2>
