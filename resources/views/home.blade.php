@@ -223,7 +223,8 @@
   })();
 </script>
 
-<section class="seccion contenedor">
+{{-- Oculto a pedido: las comunas siguen enlazadas desde el sitemap.xml y el pie de página. --}}
+<section class="seccion contenedor" hidden>
   <h2>Compra y vende autos en la Región de Los Lagos</h2>
   <p class="texto-mutado" style="max-width:820px">
     {{ config('autoruta.nombre_sitio') }} reúne autos, camionetas, SUV y motos usados de particulares y automotoras de Puerto Montt, Osorno,
