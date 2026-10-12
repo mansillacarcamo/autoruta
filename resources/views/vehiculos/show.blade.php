@@ -236,7 +236,7 @@
       <h1 class="mt-3">{{ $vehiculo->marca }} {{ $vehiculo->modelo }} {{ $vehiculo->anio }}</h1>
       <p class="tarjeta-precio" style="font-size:28px"><span class="precio-desde">Desde</span> {{ $vehiculo->precioFormateado() }}</p>
       @if ($vehiculo->pie)<p class="tarjeta-pie" style="font-size:16px">Pie {{ $vehiculo->pieFormateado() }}</p>@endif
-      <p class="texto-mutado">{{ $vehiculo->comuna }}, {{ $vehiculo->region }}@if ($fechaAviso = $vehiculo->fechaPublicacion(true)) · Publicado el {{ $fechaAviso }}@endif</p>
+      <p class="texto-mutado">{{ $vehiculo->comuna }}, {{ $vehiculo->region }}</p>
 
       @php
         $iconosFicha = [

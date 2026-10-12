@@ -348,15 +348,6 @@ class AutoRutaTest extends TestCase
         $this->get('/vehiculos')->assertSeeInOrder(['Kia Rio', 'Lada Niva'])->assertDontSee('★ Premium');
     }
 
-    public function test_fecha_de_publicacion_en_tarjeta_y_ficha(): void
-    {
-        // 02:00 UTC del 8 de octubre todavía es 7 de octubre en Chile (UTC-3 en horario de verano).
-        $aviso = $this->aviso($this->vendedor(), ['publicado_en' => \Illuminate\Support\Carbon::parse('2026-10-08 02:00:00', 'UTC')]);
-
-        $this->get('/vehiculos')->assertSee('Publicado el 07-10-2026');
-        $this->get('/vehiculos/' . $aviso->id)->assertSee('Publicado el 7 de octubre de 2026');
-    }
-
     public function test_espacio_publicitario_vacio_invita_al_rubro_automotriz(): void
     {
         $this->get('/vehiculos')->assertSee('Agrégate gratis si eres del rubro automotriz');

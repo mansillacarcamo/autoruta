@@ -106,17 +106,6 @@ class Vehiculo extends Model
         return $this->fotos->map(fn ($f) => \App\Support\Archivos::url('vehiculos/' . $f->archivo))->all();
     }
 
-    // Fecha de publicación en hora de Chile (en la base se guarda en UTC). Corta: 08-10-2026; larga: 8 de octubre de 2026.
-    public function fechaPublicacion(bool $larga = false): ?string
-    {
-        $fecha = ($this->publicado_en ?? $this->created_at)?->copy()->timezone('America/Santiago');
-        if (! $fecha) {
-            return null;
-        }
-
-        return $larga ? $fecha->locale('es')->translatedFormat('j \d\e F \d\e Y') : $fecha->format('d-m-Y');
-    }
-
     public function precioFormateado(): string
     {
         return '$' . number_format($this->precio, 0, ',', '.');
