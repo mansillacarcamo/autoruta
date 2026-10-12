@@ -5,5 +5,6 @@
   <strong>Espacio publicitario</strong>
   <span class="ep-posicion">{{ $etiquetaPosicion }}</span>
   <span class="ep-medida">{{ $medida }}</span>
+  <span class="ep-gratis">¡Agrégate gratis si eres del rubro automotriz!</span>
   <span>Contáctanos</span>
 </a>

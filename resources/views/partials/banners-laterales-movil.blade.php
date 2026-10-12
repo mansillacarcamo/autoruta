@@ -46,6 +46,7 @@
        href="https://wa.me/{{ preg_replace('/\D/', '', config('autoruta.contacto_whatsapp')) }}?text={{ urlencode('Hola, quiero publicitar en AutoRuta (espacios laterales)') }}">
       <span class="ep-disponible">Disponible</span>
       <strong>Publicita aquí</strong>
+      <span class="ep-gratis">¡Agrégate gratis si eres del rubro automotriz!</span>
       <span>Contáctanos</span>
     </a>
   @endif
