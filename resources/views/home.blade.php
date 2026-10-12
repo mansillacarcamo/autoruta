@@ -1,4 +1,28 @@
 @extends('layouts.app')
+@section('titulo', 'Autos usados en venta en Puerto Montt, Osorno y la Región de Los Lagos')
+@section('canonical', route('home'))
+
+@push('seo_json')
+<script type="application/ld+json">{!! \App\Support\SeoLocal::jsonLd(['@graph' => [
+  [
+    '@type' => 'WebSite',
+    'name' => config('autoruta.nombre_sitio'),
+    'url' => route('home'),
+    'inLanguage' => 'es-CL',
+    'potentialAction' => ['@type' => 'SearchAction', 'target' => route('vehiculos.index') . '?q={search_term_string}', 'query-input' => 'required name=search_term_string'],
+  ],
+  [
+    '@type' => 'Organization',
+    'name' => config('autoruta.nombre_sitio'),
+    'url' => route('home'),
+    'logo' => asset('img/logo-autoruta.png'),
+    'email' => config('autoruta.contacto_email'),
+    'telephone' => config('autoruta.contacto_telefono'),
+    'address' => ['@type' => 'PostalAddress', 'addressLocality' => 'Puerto Montt', 'addressRegion' => 'Los Lagos', 'addressCountry' => 'CL'],
+    'areaServed' => ['@type' => 'AdministrativeArea', 'name' => 'Región de Los Lagos, Chile'],
+  ],
+]]) !!}</script>
+@endpush
 
 @section('contenido')
 {{-- Banner principal: el diseño de AutoRuta va siempre primero; si en Admin > Portada se agregaron banners,
@@ -38,7 +62,7 @@
 </section>
 
 {{-- Título solo para buscadores y lectores de pantalla: el banner ya lo dice visualmente. --}}
-<h1 class="solo-lectores">Compra y vende tu vehículo en {{ config('autoruta.nombre_sitio') }}</h1>
+<h1 class="solo-lectores">Compra y vende autos usados en Puerto Montt, Osorno y la Región de Los Lagos</h1>
 
 <section class="seccion contenedor" style="padding-bottom:0">
   <h2>Explora por categoría</h2>
@@ -198,6 +222,25 @@
     });
   })();
 </script>
+
+<section class="seccion contenedor">
+  <h2>Compra y vende autos en la Región de Los Lagos</h2>
+  <p class="texto-mutado" style="max-width:820px">
+    {{ config('autoruta.nombre_sitio') }} reúne autos, camionetas, SUV y motos usados de particulares y automotoras de Puerto Montt, Osorno,
+    Puerto Varas, Chiloé y toda la región. Contacta directo al vendedor por WhatsApp, sin comisiones.
+  </p>
+  <div class="grilla" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:16px">
+    <a href="{{ route('vender') }}" class="caja" style="text-decoration:none;color:inherit">
+      <h3 style="margin-top:0">¿Quieres vender tu auto?</h3>
+      <p class="texto-mutado" style="margin-bottom:0">Publícalo gratis y recibe mensajes de compradores de tu zona. →</p>
+    </a>
+    <a href="{{ route('publicidad-automotriz') }}" class="caja" style="text-decoration:none;color:inherit">
+      <h3 style="margin-top:0">¿Eres del rubro automotriz?</h3>
+      <p class="texto-mutado" style="margin-bottom:0">Automotoras, talleres, repuestos y financieras: agrégate gratis. →</p>
+    </a>
+  </div>
+  @include('partials.comunas-los-lagos')
+</section>
 
 @if ($bannersInicio->isNotEmpty())
 <section class="seccion contenedor">

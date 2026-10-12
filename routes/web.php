@@ -13,6 +13,13 @@ Route::get('/vehiculos', [VehiculoController::class, 'index'])->name('vehiculos.
 Route::get('/vehiculos/nuevos', [VehiculoController::class, 'nuevos'])->name('vehiculos.nuevos');
 Route::get('/vehiculos/{vehiculo}', [VehiculoController::class, 'show'])->name('vehiculos.show');
 
+// SEO local (Región de Los Lagos): una página por comuna, vender y publicidad del rubro automotriz.
+Route::get('/autos-usados/{lugar}', [VehiculoController::class, 'porLugar'])->where('lugar', '[a-z0-9-]+')->name('vehiculos.lugar');
+Route::view('/vender-mi-auto', 'seo.vender')->name('vender');
+Route::view('/publicidad-automotriz', 'seo.publicidad')->name('publicidad-automotriz');
+Route::get('/sitemap.xml', [\App\Http\Controllers\SeoController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt', [\App\Http\Controllers\SeoController::class, 'robots']);
+
 Route::get('/media/{carpeta}/{archivo}', [\App\Http\Controllers\MediaController::class, 'mostrar'])
     ->where(['carpeta' => 'vehiculos|negocios|portada|logos|popup', 'archivo' => '[A-Za-z0-9_.-]+'])
     ->name('media');

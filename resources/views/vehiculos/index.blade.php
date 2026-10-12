@@ -1,14 +1,24 @@
 @extends('layouts.app')
-@section('titulo', 'Vehículos en venta')
+@section('titulo', $seo['titulo'])
+@section('descripcion', $seo['descripcion'])
+@section('canonical', $seo['canonical'])
+@section('robots', $seo['robots'])
 
 @section('contenido')
 <div class="contenedor contenedor-pagina">
   <h1>
-    Vehículos en venta
+    {{ $seo['lugar'] ? 'Autos usados en venta en ' . $seo['lugar'] : 'Vehículos en venta' }}
     @if (array_key_exists((string) request('tipo'), \App\Models\Vehiculo::ETIQUETA_TIPO))
       <span style="color:var(--acento)">· {{ \App\Models\Vehiculo::ETIQUETA_TIPO[request('tipo')] }}</span>
     @endif
   </h1>
+  @if ($seo['lugar'])
+    <p class="texto-mutado" style="max-width:780px;margin-top:6px">
+      Autos, camionetas, SUV y motos usados publicados en {{ $seo['lugar'] }} por particulares y automotoras de la zona.
+      Contacta directo al vendedor por WhatsApp, sin intermediarios ni comisiones.
+      ¿Quieres vender? <a href="{{ route('vender') }}">Publica tu vehículo gratis</a>.
+    </p>
+  @endif
   <div class="mt-2">@include('partials.categorias')</div>
 
   <div style="display:grid;gap:24px;margin-top:24px" class="lg-grid">
@@ -19,7 +29,7 @@
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
       Filtrar y ordenar
     </summary>
-    <form method="get">
+    <form method="get" action="{{ route('vehiculos.index') }}">
       <div class="form-grupo">
         <label>Buscar</label>
         <input type="text" name="q" list="marcas" value="{{ request('q') }}" placeholder="Marca o modelo">
@@ -43,18 +53,18 @@
         <select name="region" onchange="this.form.submit()">
           <option value="">Todas</option>
           @foreach (array_keys(config('regiones')) as $r)
-            <option value="{{ $r }}" @selected(request('region') === $r)>{{ $r }}</option>
+            <option value="{{ $r }}" @selected($filtroRegion === $r)>{{ $r }}</option>
           @endforeach
         </select>
       </div>
 
-      @if (request('region'))
+      @if ($filtroRegion)
       <div class="form-grupo">
         <label>Comuna</label>
         <select name="comuna">
           <option value="">Todas</option>
-          @foreach (config('regiones.' . request('region'), []) as $c)
-            <option value="{{ $c }}" @selected(request('comuna') === $c)>{{ $c }}</option>
+          @foreach (config('regiones.' . $filtroRegion, []) as $c)
+            <option value="{{ $c }}" @selected($filtroComuna === $c)>{{ $c }}</option>
           @endforeach
         </select>
       </div>
@@ -106,6 +116,8 @@
       @endif
     </div>
   </div>
+
+  @include('partials.comunas-los-lagos')
 </div>
 
 @include('partials.vehiculos-en-vivo', ['modo' => 'aviso', 'grilla' => null, 'desde' => (int) \App\Models\Vehiculo::max('id')])

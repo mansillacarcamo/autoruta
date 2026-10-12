@@ -109,6 +109,23 @@ img { max-width: 100%; display: block; }
 .meta-km svg { color: #f5c518; }
 .meta-lugar { background: #fde8ea; color: var(--acento); }
 
+/* SEO local: enlaces por comuna de Los Lagos y páginas Vender / Publicidad automotriz */
+.comunas-seo { margin-top: 40px; padding-top: 24px; border-top: 1px solid #e5e5e5; }
+.comunas-seo h2 { font-size: 18px; }
+.comunas-enlaces { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+.comunas-enlaces a { display: inline-block; padding: 6px 12px; border: 1px solid #e5e5e5; border-radius: 999px; background: #fff; font-size: 14px; font-weight: 600; color: #404040; text-decoration: none; }
+.comunas-enlaces a:hover, .comunas-enlaces a[aria-current] { border-color: var(--acento); color: var(--acento); }
+.seo-pagina { max-width: 820px; padding: 40px 16px; }
+.seo-pagina h2 { margin-top: 28px; }
+.seo-pasos { display: grid; gap: 12px; padding: 0; list-style: none; counter-reset: paso; }
+.seo-pasos li { counter-increment: paso; position: relative; padding: 14px 16px 14px 56px; border: 1px solid #e5e5e5; border-radius: 12px; background: #fff; }
+.seo-pasos li::before { content: counter(paso); position: absolute; left: 14px; top: 12px; width: 30px; height: 30px; border-radius: 50%; background: var(--acento); color: #fff; font-weight: 800; display: grid; place-items: center; }
+.seo-rubros { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; list-style: none; }
+.seo-rubros li { padding: 6px 12px; border-radius: 999px; background: #fde8ea; color: var(--acento); font-weight: 700; font-size: 14px; }
+.preguntas details { border-bottom: 1px solid #e5e5e5; padding: 12px 0; }
+.preguntas summary { font-weight: 700; cursor: pointer; }
+.preguntas details p { margin: 8px 0 0; }
+
 /* Formularios */
 .form-grupo { margin-bottom: 14px; }
 .form-grupo label { display: block; font-size: 15px; font-weight: 500; margin-bottom: 4px; }

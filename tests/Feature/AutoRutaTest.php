@@ -353,6 +353,58 @@ class AutoRutaTest extends TestCase
         $this->get('/vehiculos')->assertSee('Agrégate gratis si eres del rubro automotriz');
     }
 
+    public function test_seo_paginas_por_comuna_de_los_lagos(): void
+    {
+        $vendedor = $this->vendedor();
+        $this->aviso($vendedor, ['modelo' => 'EnOsorno', 'comuna' => 'Osorno']);
+        $this->aviso($vendedor, ['modelo' => 'EnCastro', 'comuna' => 'Castro']);
+
+        $this->get('/autos-usados/osorno')->assertOk()
+            ->assertSee('<title>Autos usados en venta en Osorno · AutoRuta</title>', false)
+            ->assertSeeInOrder(['<h1>', 'Autos usados en venta en Osorno', '</h1>'], false)
+            ->assertSee('Kia EnOsorno')->assertDontSee('Kia EnCastro')
+            ->assertSee('<link rel="canonical" href="' . url('/autos-usados/osorno') . '">', false);
+        $this->get('/autos-usados/region-de-los-lagos')->assertOk()->assertSee('Kia EnOsorno')->assertSee('Kia EnCastro');
+        $this->get('/autos-usados/rio-negro')->assertOk();
+        $this->get('/autos-usados/santiago')->assertNotFound();
+
+        // El listado filtrado por comuna apunta a la página de la comuna; las búsquedas libres no se indexan.
+        $this->get('/vehiculos?region=Los+Lagos&comuna=Osorno')->assertSee('<link rel="canonical" href="' . url('/autos-usados/osorno') . '">', false);
+        $this->get('/vehiculos?q=kia')->assertSee('<meta name="robots" content="noindex, follow">', false);
+        $this->get('/vehiculos')->assertSee('<meta name="robots" content="index, follow">', false);
+    }
+
+    public function test_seo_ficha_sitemap_robots_y_paginas_de_vender_y_publicidad(): void
+    {
+        $aviso = $this->aviso($this->vendedor(), ['comuna' => 'Puerto Varas']);
+
+        $this->get('/vehiculos/' . $aviso->id)
+            ->assertSee('"@type":"Car"', false)
+            ->assertSee('"priceCurrency":"CLP"', false)
+            ->assertSee('Kia Rio 2019 usado en venta en Puerto Varas, Región de Los Lagos.', false);
+
+        $this->get('/sitemap.xml')->assertOk()
+            ->assertHeader('Content-Type', 'application/xml; charset=UTF-8')
+            ->assertSee(url('/vehiculos/' . $aviso->id), false)
+            ->assertSee(url('/autos-usados/puerto-montt'), false)
+            ->assertSee(url('/publicidad-automotriz'), false);
+
+        $this->get('/robots.txt')->assertOk()->assertSee('Disallow: /admin')->assertSee('Sitemap: ' . url('/sitemap.xml'));
+
+        $this->get('/vender-mi-auto')->assertOk()->assertSee('Vende tu auto gratis')->assertSee('"@type":"FAQPage"', false);
+        $this->get('/publicidad-automotriz')->assertOk()->assertSee('Agrégate gratis si eres del rubro automotriz')->assertSee('"@type":"FAQPage"', false);
+        $this->get('/')->assertSee('"@type":"Organization"', false)->assertSee(url('/autos-usados/osorno'), false);
+
+        // Los datos estructurados deben ser JSON válido o Google los ignora.
+        foreach (['/', '/vehiculos/' . $aviso->id, '/vender-mi-auto', '/publicidad-automotriz'] as $url) {
+            preg_match_all('#<script type="application/ld\+json">(.*?)</script>#s', $this->get($url)->getContent(), $bloques);
+            $this->assertNotEmpty($bloques[1], $url);
+            foreach ($bloques[1] as $json) {
+                $this->assertIsArray(json_decode($json, true), "JSON-LD inválido en $url");
+            }
+        }
+    }
+
     public function test_avisos_se_intercalan_por_automotora(): void
     {
         $a = $this->vendedor();

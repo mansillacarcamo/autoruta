@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>@yield('titulo', 'Admin') · Admin AutoRuta</title>
+  <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="{{ asset('img/logo-autoruta.png') }}">
   <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">
   @include('partials.app-instalable')

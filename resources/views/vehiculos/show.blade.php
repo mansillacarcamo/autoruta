@@ -1,6 +1,42 @@
 @extends('layouts.app')
 
-@section('titulo', "{$vehiculo->marca} {$vehiculo->modelo} {$vehiculo->anio} – desde {$vehiculo->precioFormateado()}")
+@section('titulo', "{$vehiculo->marca} {$vehiculo->modelo} {$vehiculo->anio} en venta en {$vehiculo->comuna} – desde {$vehiculo->precioFormateado()}")
+@php
+  $seoDescripcion = "{$vehiculo->marca} {$vehiculo->modelo} {$vehiculo->anio} usado en venta en {$vehiculo->comuna}, Región de {$vehiculo->region}. "
+    . number_format($vehiculo->kilometraje, 0, ',', '.') . ' km, desde ' . $vehiculo->precioFormateado() . '. Contacta al vendedor por WhatsApp en ' . config('autoruta.nombre_sitio') . '.';
+@endphp
+@section('descripcion', $seoDescripcion)
+@section('canonical', route('vehiculos.show', $vehiculo))
+@section('og_tipo', 'product')
+@section('og_imagen', $vehiculo->primeraFotoUrl())
+@if (! $vehiculo->estaVisible())
+  @section('robots', 'noindex, follow')
+@endif
+
+@push('seo_json')
+<script type="application/ld+json">{!! \App\Support\SeoLocal::jsonLd(array_filter([
+  '@type' => 'Car',
+  'name' => "{$vehiculo->marca} {$vehiculo->modelo} {$vehiculo->anio}",
+  'brand' => ['@type' => 'Brand', 'name' => $vehiculo->marca],
+  'model' => $vehiculo->modelo,
+  'vehicleModelDate' => (string) $vehiculo->anio,
+  'mileageFromOdometer' => ['@type' => 'QuantitativeValue', 'value' => (int) $vehiculo->kilometraje, 'unitCode' => 'KMT'],
+  'vehicleTransmission' => \App\Models\Vehiculo::ETIQUETA_TRANSMISION[$vehiculo->transmision] ?? null,
+  'fuelType' => \App\Models\Vehiculo::ETIQUETA_COMBUSTIBLE[$vehiculo->combustible] ?? null,
+  'color' => $vehiculo->color ?: null,
+  'itemCondition' => 'https://schema.org/UsedCondition',
+  'image' => $vehiculo->fotosUrls() ?: null,
+  'description' => \Illuminate\Support\Str::limit((string) $vehiculo->descripcion, 300),
+  'offers' => [
+    '@type' => 'Offer',
+    'price' => (int) $vehiculo->precio,
+    'priceCurrency' => 'CLP',
+    'availability' => $vehiculo->estaVisible() ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut',
+    'url' => route('vehiculos.show', $vehiculo),
+    'areaServed' => "{$vehiculo->comuna}, Región de {$vehiculo->region}, Chile",
+  ],
+])) !!}</script>
+@endpush
 
 @section('contenido')
 <div class="contenedor contenedor-pagina">

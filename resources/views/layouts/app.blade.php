@@ -4,7 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>@hasSection('titulo')@yield('titulo') · {{ config('autoruta.nombre_sitio') }}@else{{ config('autoruta.nombre_sitio') }}@endif</title>
-  <meta name="description" content="Compra y vende autos, camionetas, SUV y motos usados en Chile. Publicar es 100% gratis.">
+  @php($seoTitulo = trim($__env->yieldContent('titulo')) ?: config('autoruta.nombre_sitio'))
+  @php($seoDescripcion = trim($__env->yieldContent('descripcion')) ?: 'Compra y vende autos, camionetas, SUV y motos usados en Puerto Montt, Osorno, Puerto Varas, Chiloé y toda la Región de Los Lagos. Publicar es 100% gratis.')
+  <meta name="description" content="{!! $seoDescripcion !!}">
+  <meta name="robots" content="@yield('robots', 'index, follow')">
+  <link rel="canonical" href="@yield('canonical', url()->current())">
+  <meta name="geo.region" content="CL-LL">
+  <meta name="geo.placename" content="Puerto Montt, Región de Los Lagos, Chile">
+  <meta property="og:type" content="@yield('og_tipo', 'website')">
+  <meta property="og:site_name" content="{{ config('autoruta.nombre_sitio') }}">
+  <meta property="og:locale" content="es_CL">
+  <meta property="og:title" content="{!! $seoTitulo !!}">
+  <meta property="og:description" content="{!! $seoDescripcion !!}">
+  <meta property="og:url" content="@yield('canonical', url()->current())">
+  <meta property="og:image" content="@yield('og_imagen', asset('img/banner-portada.jpg'))">
+  <meta name="twitter:card" content="summary_large_image">
+  @stack('seo_json')
   <link rel="icon" href="{{ asset('img/logo-autoruta.png') }}">
   <script>
     // Si la foto de una tarjeta no carga, prueba con la siguiente foto del aviso; si ninguna carga, muestra "Sin foto".
@@ -146,7 +161,7 @@
     <div class="contenedor footer-grid">
       <div class="footer-marca">
         <a href="{{ route('home') }}"><img src="{{ asset('img/logo-autoruta.png') }}" alt="{{ config('autoruta.nombre_sitio') }}" style="height:56px;width:auto"></a>
-        <p style="margin-top:8px;font-size:15px">Compra y venta de vehículos entre particulares en todo Chile.</p>
+        <p style="margin-top:8px;font-size:15px">Compra y venta de autos usados en Puerto Montt, Osorno y toda la Región de Los Lagos.</p>
         @if (config('autoruta.redes_sociales.facebook') || config('autoruta.redes_sociales.instagram'))
           <div class="footer-redes">
             @if (config('autoruta.redes_sociales.facebook'))
@@ -162,6 +177,10 @@
         <h3>Explorar</h3>
         <ul>
           <li><a href="{{ route('vehiculos.index') }}">Ver vehículos</a></li>
+          <li><a href="{{ route('vehiculos.lugar', 'puerto-montt') }}">Autos en Puerto Montt</a></li>
+          <li><a href="{{ route('vehiculos.lugar', 'osorno') }}">Autos en Osorno</a></li>
+          <li><a href="{{ route('vender') }}">Vender mi auto</a></li>
+          <li><a href="{{ route('publicidad-automotriz') }}">Publicidad automotriz</a></li>
           <li><a href="{{ route('como-funciona') }}">Cómo funciona</a></li>
         </ul>
       </div>
