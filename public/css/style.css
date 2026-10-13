@@ -598,7 +598,15 @@ body { overflow-x: clip; }
 .vendedor-agendar::-webkit-details-marker { display: none; }
 .vendedor-agendar:hover, .agendar-visita[open] .vendedor-agendar { background: var(--acento); color: #fff; }
 .agendar-form { margin-top: 12px; padding: 14px; border: 1px solid #e5e5e5; border-radius: 10px; background: #fafafa; }
-.agendar-form #agendarNombre { width: 100%; }
+.agendar-form input[type="text"], .agendar-form input[type="tel"] { width: 100%; }
+.agendar-listo { text-align: center; border-color: #86efac; background: #f0fdf4; }
+.agendar-listo strong { color: #15803d; font-size: 16px; }
+.agendar-listo p { margin: 6px 0 0; font-size: 14px; }
+.agendar-errores { margin: 0 0 10px; padding: 8px 12px 8px 28px; font-size: 13.5px; }
+.visitas-panel { display: flex; flex-direction: column; gap: 10px; }
+.visita-panel { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; border-left: 4px solid var(--acento); }
+.visita-panel p { margin: 2px 0 0; font-size: 14px; }
+.visita-acciones { display: flex; gap: 8px; flex-wrap: wrap; }
 .agendar-paso { margin: 12px 0 8px; font-size: 14px; font-weight: 700; }
 .agendar-paso:first-child { margin-top: 0; }
 .agendar-dias { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }

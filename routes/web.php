@@ -12,6 +12,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/vehiculos', [VehiculoController::class, 'index'])->name('vehiculos.index');
 Route::get('/vehiculos/nuevos', [VehiculoController::class, 'nuevos'])->name('vehiculos.nuevos');
 Route::get('/vehiculos/{vehiculo}', [VehiculoController::class, 'show'])->name('vehiculos.show');
+Route::post('/vehiculos/{vehiculo}/visita', [\App\Http\Controllers\VisitaController::class, 'guardar'])->middleware('throttle:5,1')->name('vehiculos.visita');
 
 // SEO local (Región de Los Lagos): una página por comuna, vender y publicidad del rubro automotriz.
 Route::get('/autos-usados/{lugar}', [VehiculoController::class, 'porLugar'])->where('lugar', '[a-z0-9-]+')->name('vehiculos.lugar');
@@ -32,6 +33,7 @@ Route::view('/privacidad', 'legal.privacidad')->name('privacidad');
 
 Route::middleware('auth')->group(function () {
     Route::get('/panel', [PanelController::class, 'index'])->name('panel');
+    Route::post('/panel/visitas/{solicitud}/atendida', [\App\Http\Controllers\VisitaController::class, 'atender'])->name('panel.visita.atendida');
     Route::get('/panel/cuenta', [\App\Http\Controllers\CuentaController::class, 'editar'])->name('panel.cuenta');
     Route::put('/panel/cuenta', [\App\Http\Controllers\CuentaController::class, 'actualizarDatos'])->name('panel.cuenta.datos');
     Route::post('/panel/cuenta/logo', [\App\Http\Controllers\CuentaController::class, 'actualizarLogo'])->name('panel.cuenta.logo');

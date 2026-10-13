@@ -366,24 +366,40 @@
             Llamar al vendedor
           </a>
 
-          {{-- Agendar visita: arma un mensaje con día y hora y lo abre en el WhatsApp del vendedor (no se guarda nada). --}}
-          <details class="agendar-visita">
+          {{-- Agendar visita: el comprador elige día y hora; la solicitud se guarda y le llega al vendedor
+               por correo y en su panel, desde donde le responde por WhatsApp. --}}
+          @php
+            $erroresVisita = $errors->getBag('visita');
+            $hoyChile = now('America/Santiago')->startOfDay();
+            $diasVisita = collect(range(0, \App\Http\Controllers\VisitaController::DIAS - 1))->map(fn ($i) => $hoyChile->copy()->addDays($i)->locale('es'));
+          @endphp
+          <details class="agendar-visita" id="agendar" @if (session('visita_ok') || $erroresVisita->any()) open @endif>
             <summary class="btn btn-block vendedor-agendar">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4"/></svg>
               Agendar visita
             </summary>
-            @php
-              // Calendario de los próximos 14 días (hora de Chile) y horarios de 9 a 19 hrs.
-              $hoyChile = now('America/Santiago')->startOfDay();
-              $diasVisita = collect(range(0, 13))->map(fn ($i) => $hoyChile->copy()->addDays($i)->locale('es'));
-              $horasVisita = range(9, 19);
-            @endphp
-            <form id="formAgendar" class="agendar-form" data-numero="{{ $numeroWa }}" data-vehiculo="{{ $vehiculo->marca }} {{ $vehiculo->modelo }} {{ $vehiculo->anio }}" data-sitio="{{ config('autoruta.nombre_sitio') }}">
+            @if (session('visita_ok'))
+              <div class="agendar-form agendar-listo" role="status">
+                <strong>✓ Solicitud enviada</strong>
+                <p>El vendedor recibió tu solicitud y te responderá por WhatsApp para confirmar la visita.</p>
+              </div>
+            @else
+            <form id="formAgendar" class="agendar-form" method="post" action="{{ route('vehiculos.visita', $vehiculo) }}">
+              @csrf
+              {{-- Campo trampa para bots: las personas no lo ven. --}}
+              <input type="text" name="sitio_web" tabindex="-1" autocomplete="off" class="solo-lectores" aria-hidden="true">
+
+              @if ($erroresVisita->any())
+                <ul class="alerta-error agendar-errores">
+                  @foreach ($erroresVisita->all() as $error)<li>{{ $error }}</li>@endforeach
+                </ul>
+              @endif
+
               <p class="agendar-paso">1. Elige el día</p>
               <div class="agendar-dias" role="radiogroup" aria-label="Día de la visita">
                 @foreach ($diasVisita as $i => $d)
                   <label class="agendar-dia">
-                    <input type="radio" name="agendarDia" value="{{ $d->translatedFormat('l j \d\e F') }}" data-hoy="{{ $i === 0 ? 1 : 0 }}" required>
+                    <input type="radio" name="fecha" value="{{ $d->toDateString() }}" data-hoy="{{ $i === 0 ? 1 : 0 }}" @checked(old('fecha') === $d->toDateString()) required>
                     <span><small>{{ $i === 0 ? 'Hoy' : ($i === 1 ? 'Mañana' : $d->translatedFormat('D')) }}</small><strong>{{ $d->day }}</strong><small>{{ $d->translatedFormat('M') }}</small></span>
                   </label>
                 @endforeach
@@ -391,20 +407,28 @@
 
               <p class="agendar-paso">2. Elige la hora</p>
               <div class="agendar-horas" role="radiogroup" aria-label="Hora de la visita">
-                @foreach ($horasVisita as $h)
+                @foreach (\App\Http\Controllers\VisitaController::HORAS as $h)
                   <label class="agendar-hora">
-                    <input type="radio" name="agendarHora" value="{{ sprintf('%02d:00', $h) }}" data-hora="{{ $h }}" required>
-                    <span>{{ sprintf('%02d:00', $h) }}</span>
+                    <input type="radio" name="hora" value="{{ $h }}" data-hora="{{ (int) $h }}" @checked(old('hora') === $h) required>
+                    <span>{{ $h }}</span>
                   </label>
                 @endforeach
               </div>
 
-              <p class="agendar-paso"><label for="agendarNombre">3. Tu nombre <small class="texto-mutado">(opcional)</small></label></p>
-              <input type="text" id="agendarNombre" maxlength="60" placeholder="Ej: Juan Pérez">
+              <p class="agendar-paso">3. Tus datos</p>
+              <div class="form-grupo">
+                <label for="agendarNombre">Nombre</label>
+                <input type="text" id="agendarNombre" name="nombre" maxlength="60" value="{{ old('nombre') }}" placeholder="Ej: Juan Pérez" required autocomplete="name">
+              </div>
+              <div class="form-grupo" style="margin-bottom:0">
+                <label for="agendarTelefono">Tu WhatsApp</label>
+                <input type="tel" id="agendarTelefono" name="telefono" maxlength="20" value="{{ old('telefono') }}" placeholder="9 1234 5678" required autocomplete="tel" inputmode="tel">
+              </div>
 
-              <button type="submit" class="btn btn-block vendedor-whatsapp" style="margin-top:12px">Enviar solicitud por WhatsApp</button>
-              <p class="texto-mutado agendar-nota">Le llega al vendedor por WhatsApp y te responde para confirmar la visita.</p>
+              <button type="submit" class="btn btn-block btn-acento" style="margin-top:12px">Enviar solicitud</button>
+              <p class="texto-mutado agendar-nota">El vendedor recibe tu solicitud al instante y te responde por WhatsApp para confirmar.</p>
             </form>
+            @endif
           </details>
           <script>
             (function () {
@@ -413,27 +437,18 @@
 
               // Si eligen "Hoy", se desactivan las horas que ya pasaron (con 1 hora de margen).
               function revisarHoras() {
-                var dia = form.querySelector('input[name="agendarDia"]:checked');
+                var dia = form.querySelector('input[name="fecha"]:checked');
                 var esHoy = dia && dia.dataset.hoy === '1';
                 var ahora = new Date().getHours();
-                form.querySelectorAll('input[name="agendarHora"]').forEach(function (h) {
+                form.querySelectorAll('input[name="hora"]').forEach(function (h) {
                   h.disabled = esHoy && +h.dataset.hora <= ahora + 1;
                   if (h.disabled) h.checked = false;
                 });
               }
               form.addEventListener('change', revisarHoras);
-
-              form.addEventListener('submit', function (e) {
-                e.preventDefault();
-                var dia = form.querySelector('input[name="agendarDia"]:checked');
-                var hora = form.querySelector('input[name="agendarHora"]:checked');
-                if (!dia || !hora) return;
-                var nombre = document.getElementById('agendarNombre').value.trim();
-                var texto = 'Hola, vi el aviso en ' + form.dataset.sitio + ' y quiero agendar una visita para ver el vehículo '
-                  + form.dataset.vehiculo + ', el ' + dia.value + ' a las ' + hora.value + ' hrs.'
-                  + (nombre ? ' Mi nombre es ' + nombre + '.' : '') + ' ¿Está disponible?';
-                window.open('https://wa.me/' + form.dataset.numero + '?text=' + encodeURIComponent(texto), '_blank', 'noopener');
-              });
+              revisarHoras();
+              // Evita enviar dos veces con doble clic.
+              form.addEventListener('submit', function () { form.querySelector('button[type="submit"]').disabled = true; });
             })();
           </script>
 

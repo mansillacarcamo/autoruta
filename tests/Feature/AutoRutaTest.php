@@ -198,15 +198,47 @@ class AutoRutaTest extends TestCase
         $vehiculo = $this->aviso($usuario);
 
         // Mientras está vigente se puede agendar una visita por WhatsApp.
-        $manana = now('America/Santiago')->addDay()->locale('es');
-        $this->get('/vehiculos/' . $vehiculo->id)->assertSee('Agendar visita')->assertSee('data-numero="56911112222"', false)
-            ->assertSee('1. Elige el día')->assertSee('value="' . $manana->translatedFormat('l j \d\e F') . '"', false)
+        $this->get('/vehiculos/' . $vehiculo->id)->assertSee('Agendar visita')
+            ->assertSee('1. Elige el día')->assertSee('value="' . now('America/Santiago')->addDay()->toDateString() . '"', false)
             ->assertSee('value="09:00"', false)->assertSee('value="19:00"', false);
 
         $this->actingAs($usuario)->post('/panel/vehiculos/' . $vehiculo->id . '/vendido')->assertRedirect();
 
         $this->get('/vehiculos/' . $vehiculo->id)->assertSee('ya fue vendido')->assertDontSee('Contactar por WhatsApp')->assertDontSee('Agendar visita');
         $this->get('/vehiculos')->assertDontSee('Kia Rio');
+    }
+
+    public function test_agendar_visita_llega_al_vendedor_por_correo_y_panel(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+        $vendedor = $this->vendedor(['email' => 'vendedor@test.cl']);
+        $vehiculo = $this->aviso($vendedor, ['marca' => 'Chevrolet', 'modelo' => 'Groove', 'anio' => 2023]);
+        $manana = now('America/Santiago')->addDay();
+
+        // Datos inválidos: vuelve a la ficha con los errores y sin guardar nada.
+        $this->post("/vehiculos/{$vehiculo->id}/visita", ['fecha' => $manana->copy()->addDays(30)->toDateString(), 'hora' => '08:00', 'nombre' => 'Ana', 'telefono' => '123'])
+            ->assertRedirect(route('vehiculos.show', $vehiculo) . '#agendar')
+            ->assertSessionHasErrors(['fecha', 'hora', 'telefono_normalizado'], null, 'visita');
+        $this->assertDatabaseCount('solicitudes_visita', 0);
+
+        // Solicitud válida: se guarda, se avisa por correo y la ficha muestra la confirmación.
+        $this->post("/vehiculos/{$vehiculo->id}/visita", ['fecha' => $manana->toDateString(), 'hora' => '15:00', 'nombre' => 'Ana Soto', 'telefono' => '9 8765 4321'])
+            ->assertRedirect(route('vehiculos.show', $vehiculo) . '#agendar')->assertSessionHas('visita_ok');
+        $this->assertDatabaseHas('solicitudes_visita', ['vehiculo_id' => $vehiculo->id, 'user_id' => $vendedor->id, 'nombre' => 'Ana Soto', 'telefono' => '56987654321', 'hora' => '15:00', 'estado' => 'pendiente']);
+        \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\SolicitudVisitaRecibida::class, fn ($m) => $m->hasTo('vendedor@test.cl') && str_contains($m->envelope()->subject, 'Chevrolet Groove'));
+        $this->followingRedirects()->post("/vehiculos/{$vehiculo->id}/visita", ['sitio_web' => 'spam', 'fecha' => 'x'])->assertSee('Solicitud enviada');
+        $this->assertDatabaseCount('solicitudes_visita', 1); // el bot no guardó nada
+
+        // En el panel del vendedor aparece con el botón para responder por WhatsApp.
+        $solicitud = \App\Models\SolicitudVisita::firstOrFail();
+        $this->actingAs($vendedor)->get('/panel')->assertSee('Solicitudes de visita')->assertSee('Ana Soto')
+            ->assertSee('https://wa.me/56987654321?text=', false);
+
+        // Otro usuario no puede tocarla; el vendedor la marca como atendida y desaparece de pendientes.
+        $this->actingAs($this->vendedor())->post("/panel/visitas/{$solicitud->id}/atendida")->assertForbidden();
+        $this->actingAs($vendedor)->post("/panel/visitas/{$solicitud->id}/atendida")->assertRedirect(route('panel'));
+        $this->assertSame('atendida', $solicitud->fresh()->estado);
+        $this->actingAs($vendedor)->get('/panel')->assertDontSee('Solicitudes de visita');
     }
 
     public function test_editar_aviso_propio_y_no_ajeno(): void

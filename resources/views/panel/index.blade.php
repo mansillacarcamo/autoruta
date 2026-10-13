@@ -25,6 +25,31 @@
     </div>
   @endif
 
+  @if ($visitas->isNotEmpty())
+  <div class="mt-3" id="visitas">
+    <h2>Solicitudes de visita <span class="etiqueta-premium" style="vertical-align:middle">{{ $visitas->count() }}</span></h2>
+    <p class="texto-mutado" style="font-size:14px">Responde por WhatsApp para confirmar o proponer otro horario.</p>
+    <div class="visitas-panel">
+      @foreach ($visitas as $s)
+        <div class="caja visita-panel">
+          <div>
+            <strong>{{ ucfirst($s->fechaTexto()) }} · {{ $s->hora }} hrs</strong>
+            <p>{{ $s->nombre }} · +{{ $s->telefono }}</p>
+            <p class="texto-mutado">{{ $s->vehiculo->marca }} {{ $s->vehiculo->modelo }} {{ $s->vehiculo->anio }}</p>
+          </div>
+          <div class="visita-acciones">
+            <a href="{{ $s->urlResponderWhatsapp() }}" target="_blank" rel="noopener" class="btn" style="background:#25D366;color:#fff">Responder por WhatsApp</a>
+            <form method="post" action="{{ route('panel.visita.atendida', $s) }}">
+              @csrf
+              <button type="submit" class="btn btn-outline" style="color:#525252;border-color:#d4d4d4">Marcar atendida</button>
+            </form>
+          </div>
+        </div>
+      @endforeach
+    </div>
+  </div>
+  @endif
+
   @if (auth()->user()->rol !== 'negocio')
   <div class="mt-3">
     <div style="display:flex;align-items:center;justify-content:space-between">

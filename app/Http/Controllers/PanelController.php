@@ -17,8 +17,10 @@ class PanelController extends Controller
         $usuario = $request->user();
         $vehiculos = $usuario->vehiculos()->with('fotos')->orderByDesc('created_at')->get();
         $activas = $vehiculos->filter->estaVisible()->count();
+        $visitas = \App\Models\SolicitudVisita::where('user_id', $usuario->id)->where('estado', 'pendiente')
+            ->with('vehiculo')->orderBy('fecha')->orderBy('hora')->get();
 
-        return view('panel.index', compact('vehiculos', 'activas'));
+        return view('panel.index', compact('vehiculos', 'activas', 'visitas'));
     }
 
     public function crear(Request $request)
