@@ -37,7 +37,7 @@
         <div class="slider-pub-slide">{!! $bannerAutoruta !!}</div>
         @foreach ($portada as $m)
           @php($etiqueta = $m->link_url ? 'a' : 'div')
-          <{{ $etiqueta }} class="slider-pub-slide" inert @if ($m->link_url) href="{{ $m->link_url }}" target="_blank" rel="noopener" @endif>
+          <{{ $etiqueta }} class="slider-pub-slide" inert @if ($m->link_url) href="{{ \App\Models\AnuncianteBanner::marcarOrigen($m->link_url) }}" target="_blank" rel="noopener" @endif>
             @if ($m->tipo_medio === 'video')
               <video src="{{ $m->url() }}" class="banner-medio" autoplay muted loop playsinline></video>
             @else

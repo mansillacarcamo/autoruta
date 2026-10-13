@@ -56,4 +56,37 @@ class AnuncianteBanner extends Model
 
         return preg_match('#^https?://[^\s/$.?\#].[^\s]*$#i', $link) ? $link : null;
     }
+
+    // Marca que la visita viene de AutoRuta: en WhatsApp deja escrito "Hola, vi tu anuncio en AutoRuta...";
+    // en un sitio web agrega utm_source=autoruta para que el anunciante lo vea en su Google Analytics.
+    public static function marcarOrigen(?string $link): ?string
+    {
+        $partes = $link ? parse_url($link) : false;
+        if (! $partes || empty($partes['host'])) {
+            return $link;
+        }
+
+        parse_str($partes['query'] ?? '', $query);
+        $sitio = config('autoruta.nombre_sitio');
+        $host = strtolower($partes['host']);
+        // Links al propio AutoRuta (ej. el pop-up apuntando a /vehiculos) se dejan tal cual.
+        if (in_array($host, [strtolower(request()->getHost()), strtolower((string) parse_url(config('app.url'), PHP_URL_HOST))], true)) {
+            return $link;
+        }
+
+        if (in_array($host, ['wa.me', 'api.whatsapp.com', 'web.whatsapp.com', 'whatsapp.com', 'www.whatsapp.com'], true)) {
+            $texto = trim((string) ($query['text'] ?? ''));
+            if (stripos($texto, $sitio) === false) {
+                $query['text'] = $texto === ''
+                    ? "Hola, vi tu anuncio en $sitio y quiero más información."
+                    : "Hola, vi tu anuncio en $sitio. $texto";
+            }
+        } elseif (! isset($query['utm_source'])) {
+            $query += ['utm_source' => 'autoruta', 'utm_medium' => 'banner', 'utm_campaign' => 'publicidad'];
+        }
+
+        return $partes['scheme'] . '://' . $partes['host'] . (isset($partes['port']) ? ':' . $partes['port'] : '')
+            . (($partes['path'] ?? '') ?: '/') . '?' . http_build_query($query, '', '&', PHP_QUERY_RFC3986)
+            . (isset($partes['fragment']) ? '#' . $partes['fragment'] : '');
+    }
 }

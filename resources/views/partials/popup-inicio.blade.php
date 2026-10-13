@@ -3,7 +3,7 @@
 <div class="popup-fondo" id="popup-inicio" hidden data-clave="popup-visto-{{ $popup->id }}-{{ $popup->updated_at?->timestamp }}">
   <div class="popup-caja" role="dialog" aria-modal="true" aria-label="Novedades de {{ config('autoruta.nombre_sitio') }}">
     <button type="button" class="popup-cerrar" aria-label="Cerrar">&times;</button>
-    @if ($popup->link_url)<a href="{{ $popup->link_url }}" class="popup-medio">@else<div class="popup-medio">@endif
+    @if ($popup->link_url)<a href="{{ \App\Models\AnuncianteBanner::marcarOrigen($popup->link_url) }}" class="popup-medio">@else<div class="popup-medio">@endif
       @if ($popup->tipo_medio === 'video')
         <video src="{{ $popup->url() }}" muted loop playsinline preload="metadata"></video>
       @else

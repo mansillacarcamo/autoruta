@@ -17,6 +17,6 @@ class PublicidadController extends Controller
         $destino = AnuncianteBanner::normalizarLink($banner->link_url);
         abort_unless($destino, 404);
 
-        return redirect()->away($destino);
+        return redirect()->away(AnuncianteBanner::marcarOrigen($destino));
     }
 }

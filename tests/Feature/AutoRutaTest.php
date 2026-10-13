@@ -564,16 +564,28 @@ class AutoRutaTest extends TestCase
         // En la web el banner apunta a la ruta que cuenta el clic.
         auth()->logout();
         $this->get('/')->assertSee(route('publicidad.clic', $banner), false);
-        $this->get(route('publicidad.clic', $banner))->assertRedirect('https://www.tallersur.cl');
-        $this->get(route('publicidad.clic', $banner))->assertRedirect('https://www.tallersur.cl');
+        // Al sitio del anunciante llega marcado como visita desde AutoRuta (utm_source=autoruta).
+        $webMarcada = 'https://www.tallersur.cl/?utm_source=autoruta&utm_medium=banner&utm_campaign=publicidad';
+        $this->get(route('publicidad.clic', $banner))->assertRedirect($webMarcada);
+        $this->get(route('publicidad.clic', $banner))->assertRedirect($webMarcada);
         $this->assertSame(2, $banner->fresh()->clics);
 
         // El admin puede cambiar el link y sus propios clics no cuentan.
+        // A WhatsApp llega con el mensaje "Hola, vi tu anuncio en AutoRuta...".
         $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", ['linkUrl' => 'https://wa.me/56912345678', 'posicion' => 'inferior'])->assertSessionHas('ok');
-        $this->actingAs($admin)->get(route('publicidad.clic', $banner))->assertRedirect('https://wa.me/56912345678');
+        $this->actingAs($admin)->get(route('publicidad.clic', $banner))
+            ->assertRedirect('https://wa.me/56912345678?text=' . rawurlencode('Hola, vi tu anuncio en AutoRuta y quiero más información.'));
         $this->assertSame(2, $banner->fresh()->clics);
         $this->actingAs($admin)->get('/admin/negocios')->assertOk()->assertSee('Taller Sur');
         $this->actingAs($admin)->get("/admin/negocios/{$negocio->id}")->assertOk()->assertSee('2 clics');
+
+        // Si el WhatsApp ya traía un mensaje, se le antepone el origen; si ya nombra AutoRuta, no se repite.
+        $this->assertSame('https://wa.me/569?text=' . rawurlencode('Hola, vi tu anuncio en AutoRuta. Quiero cotizar'),
+            \App\Models\AnuncianteBanner::marcarOrigen('https://wa.me/569?text=Quiero%20cotizar'));
+        $this->assertSame('https://wa.me/569?text=' . rawurlencode('Vengo de AutoRuta'),
+            \App\Models\AnuncianteBanner::marcarOrigen('https://wa.me/569?text=Vengo%20de%20AutoRuta'));
+        // Links al propio sitio no se tocan.
+        $this->assertSame(url('/vehiculos'), \App\Models\AnuncianteBanner::marcarOrigen(url('/vehiculos')));
     }
     public function test_logo_de_automotora_lo_decide_cada_usuario(): void
     {
@@ -894,7 +906,7 @@ class AutoRutaTest extends TestCase
         $html = $this->get('/')->assertOk()->getContent();
         $this->assertStringContainsString('slider-portada', $html);
         $this->assertLessThan(strpos($html, $medio->url()), strpos($html, 'img/banner-portada.jpg'));
-        $this->assertStringContainsString('href="https://www.ofertas.cl"', $html);
+        $this->assertStringContainsString('href="https://www.ofertas.cl/?utm_source=autoruta&amp;utm_medium=banner&amp;utm_campaign=publicidad"', $html);
         $this->assertStringContainsString($medio->urlMovil(), $html);
         $this->assertSame(3, substr_count($html, 'aria-label="Ir al banner'));
 
