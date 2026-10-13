@@ -429,8 +429,9 @@
                 var hora = form.querySelector('input[name="agendarHora"]:checked');
                 if (!dia || !hora) return;
                 var nombre = document.getElementById('agendarNombre').value.trim();
-                var texto = 'Hola' + (nombre ? ', soy ' + nombre : '') + '. Me gustaría agendar una visita para ver el '
-                  + form.dataset.vehiculo + ' publicado en ' + form.dataset.sitio + ', el ' + dia.value + ' a las ' + hora.value + ' hrs. ¿Está disponible?';
+                var texto = 'Hola, vi el aviso en ' + form.dataset.sitio + ' y quiero agendar una visita para ver el vehículo '
+                  + form.dataset.vehiculo + ', el ' + dia.value + ' a las ' + hora.value + ' hrs.'
+                  + (nombre ? ' Mi nombre es ' + nombre + '.' : '') + ' ¿Está disponible?';
                 window.open('https://wa.me/' + form.dataset.numero + '?text=' + encodeURIComponent(texto), '_blank', 'noopener');
               });
             })();
