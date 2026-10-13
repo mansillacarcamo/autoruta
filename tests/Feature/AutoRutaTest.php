@@ -197,9 +197,15 @@ class AutoRutaTest extends TestCase
         $usuario = $this->vendedor();
         $vehiculo = $this->aviso($usuario);
 
+        // Mientras está vigente se puede agendar una visita por WhatsApp.
+        $manana = now('America/Santiago')->addDay()->locale('es');
+        $this->get('/vehiculos/' . $vehiculo->id)->assertSee('Agendar visita')->assertSee('data-numero="56911112222"', false)
+            ->assertSee('1. Elige el día')->assertSee('value="' . $manana->translatedFormat('l j \d\e F') . '"', false)
+            ->assertSee('value="09:00"', false)->assertSee('value="19:00"', false);
+
         $this->actingAs($usuario)->post('/panel/vehiculos/' . $vehiculo->id . '/vendido')->assertRedirect();
 
-        $this->get('/vehiculos/' . $vehiculo->id)->assertSee('ya fue vendido')->assertDontSee('Contactar por WhatsApp');
+        $this->get('/vehiculos/' . $vehiculo->id)->assertSee('ya fue vendido')->assertDontSee('Contactar por WhatsApp')->assertDontSee('Agendar visita');
         $this->get('/vehiculos')->assertDontSee('Kia Rio');
     }
 

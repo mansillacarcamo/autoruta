@@ -366,6 +366,76 @@
             Llamar al vendedor
           </a>
 
+          {{-- Agendar visita: arma un mensaje con día y hora y lo abre en el WhatsApp del vendedor (no se guarda nada). --}}
+          <details class="agendar-visita">
+            <summary class="btn btn-block vendedor-agendar">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4"/></svg>
+              Agendar visita
+            </summary>
+            @php
+              // Calendario de los próximos 14 días (hora de Chile) y horarios de 9 a 19 hrs.
+              $hoyChile = now('America/Santiago')->startOfDay();
+              $diasVisita = collect(range(0, 13))->map(fn ($i) => $hoyChile->copy()->addDays($i)->locale('es'));
+              $horasVisita = range(9, 19);
+            @endphp
+            <form id="formAgendar" class="agendar-form" data-numero="{{ $numeroWa }}" data-vehiculo="{{ $vehiculo->marca }} {{ $vehiculo->modelo }} {{ $vehiculo->anio }}" data-sitio="{{ config('autoruta.nombre_sitio') }}">
+              <p class="agendar-paso">1. Elige el día</p>
+              <div class="agendar-dias" role="radiogroup" aria-label="Día de la visita">
+                @foreach ($diasVisita as $i => $d)
+                  <label class="agendar-dia">
+                    <input type="radio" name="agendarDia" value="{{ $d->translatedFormat('l j \d\e F') }}" data-hoy="{{ $i === 0 ? 1 : 0 }}" required>
+                    <span><small>{{ $i === 0 ? 'Hoy' : ($i === 1 ? 'Mañana' : $d->translatedFormat('D')) }}</small><strong>{{ $d->day }}</strong><small>{{ $d->translatedFormat('M') }}</small></span>
+                  </label>
+                @endforeach
+              </div>
+
+              <p class="agendar-paso">2. Elige la hora</p>
+              <div class="agendar-horas" role="radiogroup" aria-label="Hora de la visita">
+                @foreach ($horasVisita as $h)
+                  <label class="agendar-hora">
+                    <input type="radio" name="agendarHora" value="{{ sprintf('%02d:00', $h) }}" data-hora="{{ $h }}" required>
+                    <span>{{ sprintf('%02d:00', $h) }}</span>
+                  </label>
+                @endforeach
+              </div>
+
+              <p class="agendar-paso"><label for="agendarNombre">3. Tu nombre <small class="texto-mutado">(opcional)</small></label></p>
+              <input type="text" id="agendarNombre" maxlength="60" placeholder="Ej: Juan Pérez">
+
+              <button type="submit" class="btn btn-block vendedor-whatsapp" style="margin-top:12px">Enviar solicitud por WhatsApp</button>
+              <p class="texto-mutado agendar-nota">Le llega al vendedor por WhatsApp y te responde para confirmar la visita.</p>
+            </form>
+          </details>
+          <script>
+            (function () {
+              var form = document.getElementById('formAgendar');
+              if (!form) return;
+
+              // Si eligen "Hoy", se desactivan las horas que ya pasaron (con 1 hora de margen).
+              function revisarHoras() {
+                var dia = form.querySelector('input[name="agendarDia"]:checked');
+                var esHoy = dia && dia.dataset.hoy === '1';
+                var ahora = new Date().getHours();
+                form.querySelectorAll('input[name="agendarHora"]').forEach(function (h) {
+                  h.disabled = esHoy && +h.dataset.hora <= ahora + 1;
+                  if (h.disabled) h.checked = false;
+                });
+              }
+              form.addEventListener('change', revisarHoras);
+
+              form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var dia = form.querySelector('input[name="agendarDia"]:checked');
+                var hora = form.querySelector('input[name="agendarHora"]:checked');
+                if (!dia || !hora) return;
+                var nombre = document.getElementById('agendarNombre').value.trim();
+                var texto = 'Hola' + (nombre ? ', soy ' + nombre : '') + '. Me gustaría agendar una visita para ver el '
+                  + form.dataset.vehiculo + ' publicado en ' + form.dataset.sitio + ', el ' + dia.value + ' a las ' + hora.value + ' hrs. ¿Está disponible?';
+                window.open('https://wa.me/' + form.dataset.numero + '?text=' + encodeURIComponent(texto), '_blank', 'noopener');
+              });
+            })();
+          </script>
+
           @else
             <p class="texto-mutado" style="font-size:15px;margin:0">{{ $vehiculo->estado === 'vendida' ? 'Vehículo vendido: el contacto ya no está disponible.' : 'Publicación no vigente: el contacto no está disponible.' }}</p>
           @endif
