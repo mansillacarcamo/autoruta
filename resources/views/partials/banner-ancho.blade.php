@@ -7,10 +7,10 @@
 @endphp
 <div class="banner-ancho-slot{{ $bannerAncho ? '' : ' banner-ancho-vacio' }}" style="display:flex;flex-direction:column;align-items:center;padding:16px">
   @if ($bannerAncho)
-    <a href="{{ $bannerAncho->urlClic() }}" target="_blank" rel="sponsored noopener"
+    <{{ $bannerAncho->etiqueta() }} {!! $bannerAncho->atributosClic() !!}
        style="display:block;position:relative;width:100%;max-width:728px;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;aspect-ratio:728/90;background:var(--gris-claro)">
       @include('partials.banner-medio', ['banner' => $bannerAncho])
-    </a>
+    </{{ $bannerAncho->etiqueta() }}>
   @else
     @include('partials.espacio-publicitario', ['estilo' => 'width:100%;max-width:728px;aspect-ratio:728/90', 'posicion' => $posicion])
   @endif

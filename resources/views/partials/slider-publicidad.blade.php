@@ -25,10 +25,10 @@
     <div class="slider-pub" data-slider-pub aria-roledescription="carrusel" aria-label="Publicidad">
       <div class="slider-pub-pista">
         @foreach ($slides as $i => $slide)
-          <a href="{{ $slide->urlClic() }}" target="_blank" rel="sponsored noopener" class="slider-pub-slide"
+          <{{ $slide->etiqueta() }} {!! $slide->atributosClic() !!} class="slider-pub-slide"
              @if ($i > 0) inert @endif aria-label="Publicidad {{ $i + 1 }} de {{ $slides->count() }}">
             @include('partials.banner-medio', ['banner' => $slide, 'alt' => $slide->anunciante?->nombre_negocio ?? 'Publicidad'])
-          </a>
+          </{{ $slide->etiqueta() }}>
         @endforeach
       </div>
       @if ($slides->count() > 1)

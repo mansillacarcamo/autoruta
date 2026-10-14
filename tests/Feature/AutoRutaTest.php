@@ -619,6 +619,31 @@ class AutoRutaTest extends TestCase
         // Links al propio sitio no se tocan.
         $this->assertSame(url('/vehiculos'), \App\Models\AnuncianteBanner::marcarOrigen(url('/vehiculos')));
     }
+
+    public function test_publicidad_sin_link_se_muestra_sin_clic(): void
+    {
+        $admin = User::where('usuario', 'cesar')->firstOrFail();
+        $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Repuestos Sur', 'rubro' => 'repuestos', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
+
+        // Se puede subir sin link.
+        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
+            'tipoMedio' => 'imagen', 'posicion' => 'superior', 'linkUrl' => '', 'archivo' => UploadedFile::fake()->image('b.jpg', 728, 90),
+        ])->assertSessionHasNoErrors()->assertSessionHas('ok');
+        $banner = $negocio->banners()->firstOrFail();
+        $this->assertNull($banner->link_url);
+        $this->actingAs($admin)->get("/admin/negocios/{$negocio->id}")->assertSee('Sin link: solo se muestra')->assertDontSee('Probar link');
+
+        // En la web se ve el banner pero sin enlace, y la ruta de clic no redirige a ningún lado.
+        auth()->logout();
+        $this->get('/')->assertSee($banner->url(), false)->assertDontSee(route('publicidad.clic', $banner), false);
+        $this->get(route('publicidad.clic', $banner))->assertNotFound();
+
+        // Se le puede agregar un link después, y también quitárselo.
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", ['linkUrl' => 'www.repuestossur.cl', 'posicion' => 'superior'])->assertSessionHas('ok');
+        $this->assertSame('https://www.repuestossur.cl', $banner->fresh()->link_url);
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$banner->id}", ['linkUrl' => '', 'posicion' => 'superior'])->assertSessionHas('ok');
+        $this->assertNull($banner->fresh()->link_url);
+    }
     public function test_logo_de_automotora_lo_decide_cada_usuario(): void
     {
         $usuario = $this->vendedor();

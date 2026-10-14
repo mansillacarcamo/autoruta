@@ -22,14 +22,14 @@
     <div class="slider-pub slider-pub-movil" data-slider-pub data-intervalo="5000" aria-roledescription="carrusel" aria-label="Publicidad">
       <div class="slider-pub-pista">
         @foreach ($avisosMovil as $i => $bannerMovil)
-          <a href="{{ $bannerMovil->urlClic() }}" target="_blank" rel="sponsored noopener" class="slider-pub-slide"
+          <{{ $bannerMovil->etiqueta() }} {!! $bannerMovil->atributosClic() !!} class="slider-pub-slide"
              @if ($i > 0) inert @endif aria-label="Publicidad {{ $i + 1 }} de {{ $avisosMovil->count() }}">
             @if ($bannerMovil->tipo_movil === 'video')
               <video src="{{ $bannerMovil->urlMovil() }}" class="banner-medio" autoplay muted loop playsinline></video>
             @else
               <img src="{{ $bannerMovil->urlMovil() }}" class="banner-medio" alt="Publicidad" loading="lazy">
             @endif
-          </a>
+          </{{ $bannerMovil->etiqueta() }}>
         @endforeach
       </div>
       @if ($avisosMovil->count() > 1)

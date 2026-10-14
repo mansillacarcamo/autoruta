@@ -252,10 +252,10 @@
   <div class="grilla" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
     @foreach ($bannersInicio as $b)
       <div>
-        <a href="{{ $b->urlClic() }}" target="_blank" rel="sponsored noopener"
+        <{{ $b->etiqueta() }} {!! $b->atributosClic() !!}
            style="display:block;position:relative;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;aspect-ratio:16/9;background:var(--gris-claro)">
           @include('partials.banner-medio', ['banner' => $b, 'alt' => $b->anunciante->nombre_negocio])
-        </a>
+        </{{ $b->etiqueta() }}>
       </div>
     @endforeach
   </div>

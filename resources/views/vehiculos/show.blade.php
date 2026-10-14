@@ -489,11 +489,11 @@
       </script>
 
       @if ($negocioDestacado)
-        <a href="{{ $negocioDestacado->urlClic() }}" target="_blank" rel="sponsored noopener" class="caja mt-2" style="display:block;padding:0;overflow:hidden">
+        <{{ $negocioDestacado->etiqueta() }} {!! $negocioDestacado->atributosClic() !!} class="caja mt-2" style="display:block;padding:0;overflow:hidden">
           <div style="position:relative;aspect-ratio:16/9;background:var(--gris-claro)">
             @include('partials.banner-medio', ['banner' => $negocioDestacado])
           </div>
-        </a>
+        </{{ $negocioDestacado->etiqueta() }}>
       @endif
     </aside>
   </div>

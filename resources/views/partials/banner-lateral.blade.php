@@ -22,9 +22,9 @@
           @if ($bannerLateral)
             <div class="banner-lateral-rotador" data-rotador>
               <div class="banner-lateral-item activo">
-                <a href="{{ $bannerLateral->urlClic() }}" target="_blank" rel="sponsored noopener" class="banner-lateral-media">
+                <{{ $bannerLateral->etiqueta() }} {!! $bannerLateral->atributosClic() !!} class="banner-lateral-media">
                   @include('partials.banner-medio', ['banner' => $bannerLateral])
-                </a>
+                </{{ $bannerLateral->etiqueta() }}>
               </div>
             </div>
             <p class="banner-lateral-titulo">Publicidad</p>

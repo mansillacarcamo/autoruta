@@ -127,7 +127,7 @@ class NegocioController extends Controller
         $datos = $request->validate([
             'tipoMedio' => 'required|in:imagen,video',
             'posicion' => 'required|in:' . implode(',', array_keys(Anunciante::POSICIONES)),
-            'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
+            'linkUrl' => ['nullable', 'string', 'max:255', $this->reglaLink()],
             'archivo' => 'required|file|mimes:jpg,jpeg,png,webp,' . self::FORMATOS_VIDEO . '|max:20480',
             'logo' => 'nullable|file|mimes:png,jpg,jpeg,webp|max:5120',
             'alterno' => 'nullable|file|mimes:jpg,jpeg,png,webp,' . self::FORMATOS_VIDEO . '|max:20480',
@@ -155,7 +155,7 @@ class NegocioController extends Controller
             ...$this->guardarExtra($request, $negocio, 'movil'),
             'segundos_principal' => (int) ($datos['segundosPrincipal'] ?? 3),
             'segundos_alterno' => (int) ($datos['segundosAlterno'] ?? 3),
-            'link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']),
+            'link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl'] ?? null),
             'posicion' => $datos['posicion'],
         ]);
 
@@ -169,7 +169,7 @@ class NegocioController extends Controller
         \App\Support\SubidaPorTrozos::unir($request, ['alterno', 'movil']);
 
         $datos = $request->validate([
-            'linkUrl' => ['required', 'string', 'max:255', $this->reglaLink()],
+            'linkUrl' => ['nullable', 'string', 'max:255', $this->reglaLink()],
             'posicion' => 'required|in:' . implode(',', array_keys(Anunciante::POSICIONES)),
             'logo' => 'nullable|file|mimes:png,jpg,jpeg,webp|max:5120',
             'quitarLogo' => 'nullable|boolean',
@@ -181,7 +181,7 @@ class NegocioController extends Controller
             'quitarMovil' => 'nullable|boolean',
         ], $this->mensajesArchivos());
 
-        $cambios = ['link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl']), 'posicion' => $datos['posicion']];
+        $cambios = ['link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl'] ?? null), 'posicion' => $datos['posicion']];
 
         // Cambiar o quitar el logo del video (el anterior se borra del almacenamiento).
         if ($banner->tipo_medio === 'video' && ($request->hasFile('logo') || $request->boolean('quitarLogo'))) {

@@ -99,8 +99,8 @@
               @endif
               <input type="file" name="movil" accept="image/*,video/*,.mov,.m4v" data-por-trozos>
             @endif
-            <label>Link al hacer clic</label>
-            <input type="text" name="linkUrl" required value="{{ $b->link_url }}" placeholder="https://www.minegocio.cl">
+            <label>Link al hacer clic <small style="font-weight:400;color:#737373">(opcional)</small></label>
+            <input type="text" name="linkUrl" value="{{ $b->link_url }}" placeholder="Vacío = sin link">
             <label>Ubicación</label>
             <select name="posicion">
               @foreach (\App\Models\Anunciante::POSICIONES as $v => [$etiqueta, $medida])
@@ -109,7 +109,11 @@
             </select>
             <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
               <button type="submit" class="btn btn-acento" style="padding:7px 14px;font-size:13px">Guardar</button>
-              <a href="{{ $b->urlClic() }}" target="_blank" rel="noopener" style="font-size:12px;color:#525252">Probar link ↗</a>
+              @if ($b->tieneLink())
+                <a href="{{ $b->urlClic() }}" target="_blank" rel="noopener" style="font-size:12px;color:#525252">Probar link ↗</a>
+              @else
+                <span style="font-size:12px;color:#737373">Sin link: solo se muestra</span>
+              @endif
             </div>
           </form>
         </div>
@@ -135,7 +139,7 @@
           <select name="tipoMedio" id="tipoMedioNuevo"><option value="imagen">Imagen</option><option value="video">Video</option></select>
         </div>
       </div>
-      <div class="form-grupo"><label>Link al hacer clic</label><input type="text" name="linkUrl" required placeholder="www.minegocio.cl o https://wa.me/56912345678" value="{{ old('linkUrl') }}"><p class="admin-ayuda">Puede ser la web del negocio, su Instagram o su WhatsApp (https://wa.me/569XXXXXXXX). Si no escribes https:// se agrega solo.</p></div>
+      <div class="form-grupo"><label>Link al hacer clic <small style="font-weight:400;color:#737373">(opcional)</small></label><input type="text" name="linkUrl" placeholder="www.minegocio.cl o https://wa.me/56912345678" value="{{ old('linkUrl') }}"><p class="admin-ayuda">Puede ser la web del negocio, su Instagram o su WhatsApp (https://wa.me/569XXXXXXXX). Si no escribes https:// se agrega solo. Déjalo vacío si la publicidad no lleva link.</p></div>
       <div class="form-grupo"><label>Archivo</label><input type="file" name="archivo" accept="image/*,video/*" required data-por-trozos><p class="admin-ayuda">Imagen: JPG, PNG o WEBP. Video: MP4, MOV (iPhone), M4V, WEBM u OGG. Máximo 20 MB.</p></div>
       <div class="form-grupo">
         <label>Segundo archivo (opcional)</label>

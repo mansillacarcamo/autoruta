@@ -42,6 +42,23 @@ class AnuncianteBanner extends Model
         return route('publicidad.clic', $this);
     }
 
+    // El link es opcional: sin link el banner se muestra igual, pero no se puede hacer clic.
+    public function tieneLink(): bool
+    {
+        return (bool) self::normalizarLink($this->link_url);
+    }
+
+    // Etiqueta y atributos para envolver el banner: <a href=...> con link, <div> sin link.
+    public function etiqueta(): string
+    {
+        return $this->tieneLink() ? 'a' : 'div';
+    }
+
+    public function atributosClic(): string
+    {
+        return $this->tieneLink() ? 'href="' . e($this->urlClic()) . '" target="_blank" rel="sponsored noopener"' : '';
+    }
+
     // Completa "www.taller.cl" como "https://www.taller.cl". Solo acepta http(s) para no
     // redirigir a esquemas peligrosos (javascript:, data:, etc.).
     public static function normalizarLink(?string $link): ?string
