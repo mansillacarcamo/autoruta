@@ -997,4 +997,14 @@ class AutoRutaTest extends TestCase
         $this->assertSame(1, substr_count($html, 'class="laterales-movil"'));
         $this->assertSame(10, substr_count($html, 'class="banner-lateral-tramo"'));
     }
+
+    public function test_bloque_de_comunas_queda_oculto_en_toda_la_web(): void
+    {
+        $this->aviso($this->vendedor());
+
+        foreach (['/', '/vehiculos', '/vender-mi-auto', '/autos-usados/osorno', '/autos-usados/region-de-los-lagos'] as $url) {
+            $html = $this->get($url)->assertOk()->getContent();
+            $this->assertSame(substr_count($html, 'class="comunas-seo"'), substr_count($html, 'class="comunas-seo" hidden'), "Bloque de comunas visible en {$url}");
+        }
+    }
 }
