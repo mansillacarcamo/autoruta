@@ -108,6 +108,7 @@ img { max-width: 100%; display: block; }
 .meta-km { background: var(--carbon); color: #fff; }
 .meta-km svg { color: #f5c518; }
 .meta-lugar { background: #fde8ea; color: var(--acento); }
+.meta-particular { background: #e0f2fe; color: #0369a1; }
 
 /* SEO local: enlaces por comuna de Los Lagos y páginas Vender / Publicidad automotriz */
 .comunas-seo { margin-top: 40px; padding-top: 24px; border-top: 1px solid #e5e5e5; }
@@ -666,6 +667,7 @@ body { overflow-x: clip; }
 .vendedor-logo { background: #fff; border: 1px solid #e5e5e5; overflow: hidden; }
 .vendedor-logo img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
 .vendedor-comercial { display: block; font-size: 13px; font-weight: 700; color: var(--acento); text-transform: uppercase; letter-spacing: .4px; }
+.vendedor-particular { color: #0369a1; }
 
 /* Banners laterales en celular y tablet: de a pares dentro del contenido */
 .laterales-movil { padding: 24px 16px 8px; max-width: 100%; margin: 0 auto; }

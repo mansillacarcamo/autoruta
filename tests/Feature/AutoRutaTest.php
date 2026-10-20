@@ -998,6 +998,16 @@ class AutoRutaTest extends TestCase
         $this->assertSame(10, substr_count($html, 'class="banner-lateral-tramo"'));
     }
 
+    public function test_vendedor_sin_automotora_sale_como_particular(): void
+    {
+        $particular = $this->aviso($this->vendedor());
+        $automotora = $this->aviso($this->vendedor(['nombre_comercial' => 'Automotora Sur']), ['marca' => 'Mazda']);
+
+        $this->get('/vehiculos/' . $particular->id)->assertOk()->assertSee('vendedor-particular', false);
+        $this->get('/vehiculos/' . $automotora->id)->assertOk()->assertSee('Automotora Sur')->assertDontSee('vendedor-particular', false);
+        $this->assertSame(1, substr_count($this->get('/vehiculos')->assertOk()->getContent(), 'meta-particular'));
+    }
+
     public function test_bloque_de_comunas_queda_oculto_en_toda_la_web(): void
     {
         $this->aviso($this->vendedor());

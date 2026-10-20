@@ -28,6 +28,12 @@ class User extends Authenticatable
         return $this->mostrar_logo && $this->logo ? \App\Support\Archivos::url('logos/' . $this->logo) : null;
     }
 
+    // Vende como persona (no automotora): no completó "Nombre de la automotora o negocio" en Mi cuenta.
+    public function esParticular(): bool
+    {
+        return blank($this->nombre_comercial);
+    }
+
     public function esAdmin(): bool
     {
         return $this->rol === 'admin';

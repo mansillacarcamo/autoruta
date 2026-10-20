@@ -350,7 +350,8 @@
             @endif
             <div>
               <small>Publicado por</small>
-              @if ($vehiculo->usuario->nombre_comercial)<span class="vendedor-comercial">{{ $vehiculo->usuario->nombre_comercial }}</span>@endif
+              @if ($vehiculo->usuario->esParticular())<span class="vendedor-comercial vendedor-particular">Particular</span>
+              @else<span class="vendedor-comercial">{{ $vehiculo->usuario->nombre_comercial }}</span>@endif
               <strong>{{ $vehiculo->usuario->name }}</strong>
               <span>{{ $vehiculo->comuna }} · Miembro desde {{ $vehiculo->usuario->created_at->locale('es')->translatedFormat('F Y') }}</span>
             </div>
