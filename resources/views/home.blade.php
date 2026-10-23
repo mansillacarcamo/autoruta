@@ -89,6 +89,7 @@
   @include('partials.vehiculos-en-vivo', ['modo' => 'insertar', 'grilla' => 'grillaUltimos', 'desde' => (int) \App\Models\Vehiculo::max('id'), 'maxTarjetas' => 36])
 </section>
 
+{{-- Sección Destacados oculta (no se usan autos destacados). Para volver a mostrarla, quitar este comentario.
 @if ($destacados->isNotEmpty())
 <section class="seccion contenedor">
   <div class="seccion-titulo">
@@ -107,6 +108,7 @@
     @if ($destacados->count() > 4)<a href="{{ route('vehiculos.index') }}" class="btn btn-outline-oscuro ver-todos-movil">Ver todos los vehículos →</a>@endif
 </section>
 @endif
+--}}
 
 <script>
   // Carruseles de Destacados y Últimos publicados: se mueven con las flechas o deslizando.

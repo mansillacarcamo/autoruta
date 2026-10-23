@@ -144,8 +144,8 @@ class NegocioController extends Controller
             'neg' . $negocio->id . '_' . time() . '.' . $request->file('archivo')->extension()
         );
 
-        // El logo solo se usa en banners de video (va encima del video).
-        $logo = $tipo === 'video' && $request->hasFile('logo') ? $this->guardarLogo($request, $negocio) : null;
+        // Logo opcional que va encima del aviso (imagen o video).
+        $logo = $request->hasFile('logo') ? $this->guardarLogo($request, $negocio) : null;
 
         $negocio->banners()->create([
             'tipo_medio' => $tipo,
@@ -183,8 +183,8 @@ class NegocioController extends Controller
 
         $cambios = ['link_url' => AnuncianteBanner::normalizarLink($datos['linkUrl'] ?? null), 'posicion' => $datos['posicion']];
 
-        // Cambiar o quitar el logo del video (el anterior se borra del almacenamiento).
-        if ($banner->tipo_medio === 'video' && ($request->hasFile('logo') || $request->boolean('quitarLogo'))) {
+        // Cambiar o quitar el logo (el anterior se borra del almacenamiento).
+        if ($request->hasFile('logo') || $request->boolean('quitarLogo')) {
             if ($banner->logo) {
                 \App\Support\Archivos::borrar('negocios/' . $banner->logo);
             }

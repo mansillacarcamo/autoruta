@@ -7,6 +7,7 @@
     $posicionesDer = \App\Models\Anunciante::posicionesLaterales('derecho');
     $bannersMovil = \App\Models\AnuncianteBanner::whereIn('posicion', array_merge($posicionesIzq, $posicionesDer, ['lateral']))
         ->whereHas('anunciante', fn ($q) => $q->activos())
+        ->with('anunciante')
         ->orderBy('orden')
         ->get();
     $avisosMovil = collect();
@@ -28,6 +29,9 @@
               <video src="{{ $bannerMovil->urlMovil() }}" class="banner-medio" autoplay muted loop playsinline></video>
             @else
               <img src="{{ $bannerMovil->urlMovil() }}" class="banner-medio" alt="Publicidad" loading="lazy">
+            @endif
+            @if ($logoMovil = $bannerMovil->urlLogo())
+              <img src="{{ $logoMovil }}" class="banner-logo" alt="{{ $bannerMovil->anunciante?->nombre_negocio ?? 'Logo' }}">
             @endif
           </{{ $bannerMovil->etiqueta() }}>
         @endforeach

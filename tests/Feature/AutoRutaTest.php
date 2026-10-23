@@ -620,6 +620,38 @@ class AutoRutaTest extends TestCase
         $this->assertSame(url('/vehiculos'), \App\Models\AnuncianteBanner::marcarOrigen(url('/vehiculos')));
     }
 
+    public function test_logo_encima_de_cualquier_banner_de_publicidad(): void
+    {
+        $admin = User::where('usuario', 'cesar')->firstOrFail();
+        $negocio = \App\Models\Anunciante::create(['nombre_negocio' => 'Automotora Norte', 'rubro' => 'otro', 'descripcion' => '', 'estado' => 'activo', 'publicado_en' => now()]);
+
+        // Un video subido dejando "Imagen" seleccionado también guarda el logo.
+        $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
+            'tipoMedio' => 'imagen', 'posicion' => 'slider_1',
+            'archivo' => UploadedFile::fake()->create('auto.mp4', 500, 'video/mp4'),
+            'logo' => UploadedFile::fake()->image('logo.png', 300, 100),
+        ])->assertSessionHasNoErrors()->assertSessionHas('ok');
+        $video = $negocio->banners()->firstOrFail();
+        $this->assertSame('video', $video->tipo_medio);
+        $this->assertNotNull($video->logo);
+
+        // En una imagen con versión celular el logo se ve en la web (escritorio y celular).
+        $imagen = $negocio->banners()->create(['tipo_medio' => 'imagen', 'archivo' => 'lat.jpg', 'archivo_movil' => 'latm.jpg', 'tipo_movil' => 'imagen', 'posicion' => 'lateral_derecho']);
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$imagen->id}", [
+            'posicion' => 'lateral_derecho', 'logo' => UploadedFile::fake()->image('logo2.png', 300, 100),
+        ])->assertSessionHas('ok');
+        $imagen->refresh();
+        $this->assertNotNull($imagen->urlLogo());
+
+        auth()->logout();
+        $html = $this->get('/')->assertOk()->assertSee($video->urlLogo(), false)->getContent();
+        $this->assertGreaterThanOrEqual(2, substr_count($html, $imagen->urlLogo()));
+
+        // Se puede quitar.
+        $this->actingAs($admin)->put("/admin/negocios/{$negocio->id}/banners/{$imagen->id}", ['posicion' => 'lateral_derecho', 'quitarLogo' => '1'])->assertSessionHas('ok');
+        $this->assertNull($imagen->fresh()->logo);
+    }
+
     public function test_publicidad_sin_link_se_muestra_sin_clic(): void
     {
         $admin = User::where('usuario', 'cesar')->firstOrFail();
@@ -727,11 +759,10 @@ class AutoRutaTest extends TestCase
         Storage::disk('public')->assertExists('negocios/' . $video->logo);
         $this->get('/')->assertSee('class="banner-logo"', false)->assertSee($video->urlLogo(), false);
 
-        // Imagen: el logo se ignora, va solo la imagen.
+        // Imagen: también puede llevar logo encima.
         $this->actingAs($admin)->post("/admin/negocios/{$negocio->id}/banners", [
             'tipoMedio' => 'imagen', 'posicion' => 'lateral_derecho', 'linkUrl' => 'www.lacolonia.cl',
             'archivo' => UploadedFile::fake()->image('diseno.png', 320, 1200),
-            'logo' => UploadedFile::fake()->image('logo.png', 300, 120),
         ])->assertSessionHas('ok');
         $this->assertNull($negocio->banners()->where('posicion', 'lateral_derecho')->firstOrFail()->logo);
 

@@ -19,10 +19,11 @@ class AnuncianteBanner extends Model
         return \App\Support\Archivos::url('negocios/' . $this->archivo);
     }
 
-    // Logo que va encima del video (solo banners de video; opcional).
+    // Logo del negocio que va encima del aviso, centrado arriba (opcional). Sirve sobre todo en los videos
+    // para saber de quién es el auto; se muestra sobre el archivo principal, el segundo y la versión celular.
     public function urlLogo(): ?string
     {
-        return $this->tipo_medio === 'video' && $this->logo ? \App\Support\Archivos::url('negocios/' . $this->logo) : null;
+        return $this->logo ? \App\Support\Archivos::url('negocios/' . $this->logo) : null;
     }
 
     // Segundo archivo (imagen o video) que se alterna con el principal cada 3 segundos; opcional.

@@ -37,16 +37,16 @@
     <div class="admin-medios">
       @foreach ($negocio->banners as $b)
         <div class="admin-medio">
-          @if ($b->tipo_medio === 'video')
-            <div style="position:relative">
+          <div style="position:relative">
+            @if ($b->tipo_medio === 'video')
               <video src="{{ $b->url() }}" muted loop autoplay playsinline></video>
-              @if ($b->urlLogo())
-                <img src="{{ $b->urlLogo() }}" alt="" class="banner-logo" style="width:auto;aspect-ratio:auto;background:none">
-              @endif
-            </div>
-          @else
-            <img src="{{ $b->url() }}" alt="">
-          @endif
+            @else
+              <img src="{{ $b->url() }}" alt="">
+            @endif
+            @if ($b->urlLogo())
+              <img src="{{ $b->urlLogo() }}" alt="" class="banner-logo" style="width:auto;aspect-ratio:auto;background:none">
+            @endif
+          </div>
           <div class="admin-medio-pie">
             <span>{{ \App\Models\Anunciante::POSICIONES[$b->posicion][0] ?? (\App\Models\Anunciante::ETIQUETA_POSICION[$b->posicion] ?? $b->posicion) }}</span>
             <span class="admin-etiqueta verde" title="Personas que hicieron clic en este banner">{{ number_format($b->clics, 0, ',', '.') }} clics</span>
@@ -57,16 +57,14 @@
           </div>
           <form method="post" action="{{ route('admin.negocios.banners.actualizar', [$negocio, $b]) }}" class="banner-edicion" enctype="multipart/form-data">
             @csrf @method('PUT')
-            @if ($b->tipo_medio === 'video')
-              <label>Logo encima del video</label>
-              @if ($b->logo)
-                <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
-                  <img src="{{ $b->urlLogo() }}" alt="" style="height:40px;width:auto;aspect-ratio:auto;border-radius:6px;background:repeating-conic-gradient(#e5e5e5 0 25%,#fff 0 50%) 0 0/12px 12px">
-                  <label style="font-size:12px;display:flex;gap:4px;align-items:center;margin:0"><input type="checkbox" name="quitarLogo" value="1"> Quitar</label>
-                </div>
-              @endif
-              <input type="file" name="logo" accept="image/png,image/jpeg,image/webp">
+            <label>Logo encima del aviso <small style="font-weight:400;color:#737373">(opcional, centrado arriba)</small></label>
+            @if ($b->logo)
+              <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
+                <img src="{{ $b->urlLogo() }}" alt="" style="height:40px;width:auto;aspect-ratio:auto;border-radius:6px;background:repeating-conic-gradient(#e5e5e5 0 25%,#fff 0 50%) 0 0/12px 12px">
+                <label style="font-size:12px;display:flex;gap:4px;align-items:center;margin:0"><input type="checkbox" name="quitarLogo" value="1"> Quitar</label>
+              </div>
             @endif
+            <input type="file" name="logo" accept="image/png,image/jpeg,image/webp">
             <label>Segundo archivo (se alterna con el principal)</label>
             @if ($b->archivo_alterno)
               <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
@@ -155,19 +153,11 @@
         <div class="form-grupo"><label>Segundos del archivo principal</label><input type="number" name="segundosPrincipal" min="1" max="60" value="3"></div>
         <div class="form-grupo"><label>Segundos del segundo archivo</label><input type="number" name="segundosAlterno" min="1" max="60" value="3"><p class="admin-ayuda">Solo se usan si hay segundo archivo. Para un video, pon lo que dura (por ejemplo 8) para que se vea completo.</p></div>
       </div>
-      <div class="form-grupo" id="campoLogo" hidden>
+      <div class="form-grupo">
         <label>Logo (opcional)</label>
         <input type="file" name="logo" accept="image/png,image/jpeg,image/webp">
-        <p class="admin-ayuda">Se muestra encima del video, centrado arriba. Ideal PNG con fondo transparente. Máximo 5 MB.</p>
+        <p class="admin-ayuda">Se muestra encima del aviso, centrado arriba y dentro del video o imagen, para que se sepa de quién es (por ejemplo, el logo de la automotora en el video de un auto). También aparece sobre el segundo archivo y la versión celular. Ideal PNG con fondo transparente. Máximo 5 MB.</p>
       </div>
-      <script>
-        (function () {
-          var tipo = document.getElementById('tipoMedioNuevo'), campo = document.getElementById('campoLogo');
-          function mostrar() { campo.hidden = tipo.value !== 'video'; }
-          tipo.addEventListener('change', mostrar);
-          mostrar();
-        })();
-      </script>
       <button type="submit" class="btn btn-acento">Subir banner</button>
     </form>
   @endif
