@@ -266,5 +266,6 @@
 
 @include('partials.slider-publicidad')
 
+@include('partials.popup-bienvenida')
 @include('partials.popup-inicio')
 @endsection

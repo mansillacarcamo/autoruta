@@ -125,10 +125,11 @@ class VehiculoController extends Controller
             ['Dueños anteriores', $vehiculo->duenos_anteriores, 'duenos'],
         ], fn ($dato) => $dato[1] !== null && $dato[1] !== ''));
 
-        $descripcion = \App\Support\DescripcionProfesional::formatear(
-            $vehiculo->descripcion,
-            $vehiculo->equipamiento ? explode(',', $vehiculo->equipamiento) : []
-        );
+        // La descripción se muestra tal como la escribió el vendedor; el equipamiento viene de su propio campo.
+        $equipamiento = array_values(array_unique(array_filter(array_map(
+            fn ($item) => \Illuminate\Support\Str::ucfirst(trim($item)),
+            explode(',', (string) $vehiculo->equipamiento)
+        ))));
 
         $numeroWa = preg_replace('/\D/', '', $vehiculo->usuario->telefono_whatsapp ?: config('autoruta.contacto_whatsapp'));
         // Celulares chilenos escritos sin código de país (9XXXXXXXX): wa.me exige el 56.
@@ -137,7 +138,7 @@ class VehiculoController extends Controller
         }
         $mensajeWa = urlencode("Hola, vi tu auto {$vehiculo->marca} {$vehiculo->modelo} {$vehiculo->anio} en " . config('autoruta.nombre_sitio') . ', me gustaría saber más información.');
 
-        return view('vehiculos.show', compact('vehiculo', 'negocioDestacado', 'ficha', 'descripcion', 'numeroWa', 'mensajeWa'));
+        return view('vehiculos.show', compact('vehiculo', 'negocioDestacado', 'ficha', 'equipamiento', 'numeroWa', 'mensajeWa'));
     }
 
     // Vehículos publicados después de $desde (id), con los mismos filtros del listado.

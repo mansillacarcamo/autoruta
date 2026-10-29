@@ -27,6 +27,8 @@ Route::get('/media/{carpeta}/{archivo}', [\App\Http\Controllers\MediaController:
 
 Route::get('/publicidad/{banner}', [\App\Http\Controllers\PublicidadController::class, 'clic'])->name('publicidad.clic');
 
+Route::post('/asistente', [\App\Http\Controllers\AsistenteController::class, 'responder'])->middleware('throttle:15,1')->name('asistente');
+
 Route::view('/como-funciona', 'como-funciona')->name('como-funciona');
 Route::view('/terminos', 'legal.terminos')->name('terminos');
 Route::view('/privacidad', 'legal.privacidad')->name('privacidad');

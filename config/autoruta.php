@@ -16,6 +16,12 @@ return [
     // Correo que recibe un aviso cada vez que alguien se registra.
     'correo_notificaciones' => env('NOTIFICACIONES_EMAIL', 'cesar.mansilla@bynari.cl'),
 
+    // Asistente virtual que busca autos (burbuja abajo a la derecha). Sin API key no se muestra.
+    'asistente' => [
+        'api_key' => env('ANTHROPIC_API_KEY'),
+        'modelo' => env('ASISTENTE_MODELO', 'claude-opus-5-5'),
+    ],
+
     // WhatsApp del botón flotante "Asesor web".
     'asesor_whatsapp' => '+56993393409',
 

@@ -407,6 +407,7 @@ body { overflow-x: clip; }
 .desc-equipamiento li { display: flex; align-items: flex-start; gap: 9px; padding: 10px 12px; border: 1px solid #ececf0; border-radius: 10px; background: #fff; font-size: 15px; font-weight: 600; color: #23242e; }
 .desc-equipamiento li::before { content: "✓"; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--acento); color: #fff; font-size: 11px; font-weight: 900; }
 @media (max-width: 600px) { .ficha-dato { gap: 9px; padding: 12px; } .ficha-icono { width: 34px; height: 34px; } .ficha-dato strong { font-size: 15.5px; } }
+.desc-texto .desc-vendedor { white-space: pre-line; }
 .desc-original { margin-top: 18px; font-size: 14px; color: #737373; }
 .desc-original summary { cursor: pointer; font-weight: 600; }
 .desc-original p { white-space: pre-line; margin: 8px 0 0; padding: 12px; background: var(--gris-claro); border-radius: 10px; }
@@ -420,6 +421,51 @@ body { overflow-x: clip; }
 .popup-cerrar { position: absolute; top: -14px; right: -14px; z-index: 1; width: 38px; height: 38px; border-radius: 50%; border: 0; background: #fff; color: #171717; font-size: 26px; line-height: 1; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,.3); }
 .popup-cerrar:hover { background: var(--acento); color: #fff; }
 @media (max-width: 600px) { .popup-cerrar { top: 8px; right: 8px; } }
+.bienvenida { width: 420px; max-width: 100%; padding: 34px 28px 26px; border-radius: 16px; text-align: center; color: #fff; background: radial-gradient(circle at 50% 0, var(--carbon-claro), var(--carbon) 70%); border-top: 4px solid var(--acento); box-shadow: 0 25px 60px rgba(0,0,0,.45); }
+.bienvenida-logo { display: block; height: 56px; width: auto; margin: 0 auto 14px; }
+.bienvenida-saludo { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; color: #a3a3a3; }
+.bienvenida h2 { margin: 6px 0 4px; font-size: 40px; line-height: 1.1; font-weight: 800; }
+.bienvenida h2 strong { color: var(--acento); font-weight: 900; text-transform: uppercase; }
+.bienvenida-texto { margin: 0 0 22px; font-size: 19px; color: #e5e5e5; }
+.bienvenida-boton { padding: 14px; font-size: 17px; border-radius: 10px; }
+.bienvenida-login { margin: 14px 0 0; font-size: 14px; color: #a3a3a3; }
+.bienvenida-login a { color: #fff; font-weight: 600; text-decoration: underline; }
+@media (max-width: 600px) { .bienvenida { padding: 30px 20px 22px; } .bienvenida h2 { font-size: 34px; } }
+/* Asistente virtual: burbuja abajo a la derecha y panel de chat (en celular ocupa casi toda la pantalla). */
+.asistente { position: fixed; right: 20px; bottom: 20px; z-index: 60; }
+.asistente-burbuja { display: flex; align-items: center; gap: 8px; padding: 12px 18px; border: 0; border-radius: 999px; background: var(--acento); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 10px 24px rgba(217,7,24,.35); transition: transform .15s; }
+.asistente-burbuja:hover { transform: scale(1.05); background: var(--acento-oscuro); }
+.asistente-burbuja[hidden] { display: none; }
+.asistente-panel { display: flex; flex-direction: column; width: 370px; height: min(560px, calc(100vh - 40px)); border-radius: 16px; overflow: hidden; background: #fff; box-shadow: 0 25px 60px rgba(0,0,0,.35); animation: popup-entra .25s ease-out; }
+.asistente-panel[hidden] { display: none; }
+.asistente-cabecera { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--carbon); color: #fff; border-bottom: 3px solid var(--acento); }
+.asistente-cabecera strong { display: block; font-size: 16px; }
+.asistente-cabecera small { color: #a3a3a3; font-size: 13px; }
+.asistente-cerrar { width: 34px; height: 34px; border: 0; border-radius: 50%; background: var(--carbon-claro); color: #fff; font-size: 24px; line-height: 1; cursor: pointer; }
+.asistente-cerrar:hover { background: var(--acento); }
+.asistente-mensajes { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: var(--gris-claro); }
+.asistente-msj { max-width: 85%; padding: 10px 13px; border-radius: 14px; font-size: 15px; line-height: 1.45; white-space: pre-line; }
+.asistente-msj-bot { align-self: flex-start; background: #fff; color: #171717; border-bottom-left-radius: 4px; }
+.asistente-msj-usuario { align-self: flex-end; background: var(--acento); color: #fff; border-bottom-right-radius: 4px; }
+.asistente-msj-error { color: #b91c1c; }
+.asistente-escribiendo { color: #737373; font-style: italic; }
+.asistente-autos { display: flex; flex-direction: column; gap: 8px; }
+.asistente-auto { display: flex; gap: 10px; align-items: center; padding: 8px; border-radius: 12px; background: #fff; color: #171717; border: 1px solid #e5e5e5; transition: border-color .15s; }
+.asistente-auto:hover { border-color: var(--acento); }
+.asistente-auto img { width: 84px; height: 62px; flex: none; object-fit: cover; border-radius: 8px; background: #e5e5e5; }
+.asistente-auto div { display: flex; flex-direction: column; min-width: 0; }
+.asistente-auto strong { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.asistente-auto-precio { color: var(--acento); font-weight: 800; font-size: 15px; }
+.asistente-auto small { color: #737373; font-size: 12px; }
+.asistente-form { display: flex; gap: 8px; padding: 10px; border-top: 1px solid #e5e5e5; background: #fff; }
+.asistente-form input { flex: 1; min-width: 0; padding: 11px 12px; border: 1px solid #d4d4d4; border-radius: 10px; font-size: 15px; }
+.asistente-form input:focus { outline: 2px solid var(--acento); border-color: transparent; }
+.asistente-form .btn { display: flex; align-items: center; padding: 0 14px; }
+@media (max-width: 600px) {
+  .asistente { right: 10px; bottom: 10px; }
+  .asistente-burbuja { padding: 10px 14px; font-size: 14px; }
+  .asistente-panel { position: fixed; inset: 10px; width: auto; height: auto; }
+}
 @keyframes popup-fondo { from { opacity: 0; } }
 @keyframes popup-entra { from { opacity: 0; transform: scale(.85) translateY(20px); } }
 
@@ -769,8 +815,8 @@ body { overflow-x: clip; }
   .menu-movil a.activo { color: #ff4d5a; }
   .menu-movil-separador { height: 10px; }
   .menu-movil-publicar { display: flex; justify-content: center; gap: 5px; margin-top: 16px; padding: 13px; font-size: 16px; }
-  .menu-movil-asesor { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 10px; padding: 12px; font-size: 16px; background: #25D366; color: #fff; }
-  .menu-movil-asesor:hover { background: #1ebe5b; color: #fff; }
+  .menu-movil-asesor { display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; margin-top: 10px; padding: 12px; font-size: 16px; background: var(--carbon-claro); border: 1px solid #2e2f3a; color: #fff; }
+  .menu-movil-asesor:hover { background: var(--acento); border-color: var(--acento); color: #fff; }
   /* El "Asesor web" va dentro del menú: en celular/tablet no se muestra el botón flotante */
   .wa-flotante { display: none !important; }
   .menu-movil-redes { display: flex; justify-content: center; gap: 22px; margin-top: 16px; }

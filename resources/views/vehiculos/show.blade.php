@@ -303,31 +303,19 @@
       @endif
 
       <h2 class="mt-3">Descripción</h2>
-      @if ($descripcion['destacados'])
-        <div class="desc-destacados">
-          @foreach ($descripcion['destacados'] as $d)<span>✓ {{ $d }}</span>@endforeach
-        </div>
-      @endif
       <div class="desc-texto">
-        @forelse ($descripcion['parrafos'] as $parrafo)
-          <p>{{ $parrafo }}</p>
-        @empty
-          @unless ($descripcion['destacados'] || $descripcion['equipamiento'])<p class="texto-mutado">El vendedor no agregó una descripción.</p>@endunless
-        @endforelse
+        @if (trim((string) $vehiculo->descripcion) !== '')
+          <p class="desc-vendedor">{{ trim($vehiculo->descripcion) }}</p>
+        @else
+          <p class="texto-mutado">El vendedor no agregó una descripción.</p>
+        @endif
       </div>
 
-      @if ($descripcion['equipamiento'])
+      @if ($equipamiento)
         <h2 class="mt-3">Equipamiento</h2>
         <ul class="desc-equipamiento">
-          @foreach ($descripcion['equipamiento'] as $item)<li>{{ $item }}</li>@endforeach
+          @foreach ($equipamiento as $item)<li>{{ $item }}</li>@endforeach
         </ul>
-      @endif
-
-      @if (trim((string) $vehiculo->descripcion) !== '')
-        <details class="desc-original">
-          <summary>Ver texto original del vendedor</summary>
-          <p>{{ $vehiculo->descripcion }}</p>
-        </details>
       @endif
     </div>
 

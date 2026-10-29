@@ -21,74 +21,7 @@
   @endif
   <div class="mt-2">@include('partials.categorias')</div>
 
-  <div style="display:grid;gap:24px;margin-top:24px" class="lg-grid">
-    {{-- En celular los filtros van plegados tras "Filtrar y ordenar" (abiertos si hay alguno aplicado); en escritorio siempre abiertos. --}}
-    @php($hayFiltros = collect(request()->except(['page', 'tipo']))->filter(fn ($v) => $v !== null && $v !== '')->isNotEmpty())
-    <details class="caja filtros-listado" data-filtros @if ($hayFiltros) open @endif>
-    <summary>
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-      Filtrar y ordenar
-    </summary>
-    <form method="get" action="{{ route('vehiculos.index') }}">
-      <div class="form-grupo">
-        <label>Buscar</label>
-        <input type="text" name="q" list="marcas" value="{{ request('q') }}" placeholder="Marca o modelo">
-        <datalist id="marcas">
-          @foreach (config('marcas') as $m)<option value="{{ $m }}">@endforeach
-        </datalist>
-      </div>
-
-      <div class="form-grupo">
-        <label>Tipo</label>
-        <select name="tipo">
-          <option value="">Todos</option>
-          @foreach (\App\Models\Vehiculo::ETIQUETA_TIPO as $valor => $etiqueta)
-            <option value="{{ $valor }}" @selected(request('tipo') === $valor)>{{ $etiqueta }}</option>
-          @endforeach
-        </select>
-      </div>
-
-      <div class="form-grupo">
-        <label>Región</label>
-        <select name="region" onchange="this.form.submit()">
-          <option value="">Todas</option>
-          @foreach (array_keys(config('regiones')) as $r)
-            <option value="{{ $r }}" @selected($filtroRegion === $r)>{{ $r }}</option>
-          @endforeach
-        </select>
-      </div>
-
-      @if ($filtroRegion)
-      <div class="form-grupo">
-        <label>Comuna</label>
-        <select name="comuna">
-          <option value="">Todas</option>
-          @foreach (config('regiones.' . $filtroRegion, []) as $c)
-            <option value="{{ $c }}" @selected($filtroComuna === $c)>{{ $c }}</option>
-          @endforeach
-        </select>
-      </div>
-      @endif
-
-      <div class="grid-2">
-        <div class="form-grupo"><label>Precio min.</label><input type="number" name="precioMin" value="{{ request('precioMin') }}"></div>
-        <div class="form-grupo"><label>Precio máx.</label><input type="number" name="precioMax" value="{{ request('precioMax') }}"></div>
-      </div>
-
-      <div class="form-grupo">
-        <label>Ordenar por</label>
-        <select name="orden">
-          <option value="recientes" @selected(request('orden', 'recientes') === 'recientes')>Más recientes</option>
-          <option value="precio_asc" @selected(request('orden') === 'precio_asc')>Menor precio</option>
-          <option value="precio_desc" @selected(request('orden') === 'precio_desc')>Mayor precio</option>
-          <option value="km_asc" @selected(request('orden') === 'km_asc')>Menor kilometraje</option>
-        </select>
-      </div>
-
-      <button type="submit" class="btn btn-acento btn-block">Filtrar</button>
-    </form>
-    </details>
-
+  <div style="margin-top:24px">
     <div>
       <p class="texto-mutado">{{ $vehiculos->total() }} {{ $vehiculos->total() === 1 ? 'vehículo encontrado' : 'vehículos encontrados' }}</p>
       @if ($vehiculos->isEmpty())
@@ -121,13 +54,4 @@
 </div>
 
 @include('partials.vehiculos-en-vivo', ['modo' => 'aviso', 'grilla' => null, 'desde' => (int) \App\Models\Vehiculo::max('id')])
-
-<style>@media (min-width:900px){.lg-grid{grid-template-columns:260px 1fr}}</style>
-<script>
-  // En escritorio el panel de filtros va siempre abierto (en celular se pliega).
-  (function () {
-    var filtros = document.querySelector('[data-filtros]');
-    if (filtros && window.matchMedia('(min-width: 900px)').matches) filtros.open = true;
-  })();
-</script>
 @endsection

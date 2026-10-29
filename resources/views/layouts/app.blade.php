@@ -99,10 +99,12 @@
           <a href="{{ route('register') }}">Regístrate</a>
           <a href="{{ route('register') }}" class="btn btn-acento menu-movil-publicar">Publica <strong>100% gratis</strong></a>
         @endauth
-        <a href="https://wa.me/{{ preg_replace('/\D/', '', config('autoruta.asesor_whatsapp')) }}?text={{ urlencode('Hola, quiero hablar con un asesor web') }}" target="_blank" rel="noopener" class="btn menu-movil-asesor">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-3.3-.8-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.1.3.7 1.1 1.4 1.8 1 .9 1.8 1.2 2.1 1.3.3.1.4.1.6-.1l.8-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg>
-          Asesor web
-        </a>
+        @if (config('autoruta.asistente.api_key'))
+        <button type="button" class="btn menu-movil-asesor" onclick="window.abrirAsistente && window.abrirAsistente()">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          ¿Qué auto buscas?
+        </button>
+        @endif
         @if (config('autoruta.redes_sociales.facebook') || config('autoruta.redes_sociales.instagram'))
           <div class="menu-movil-redes">
             @if (config('autoruta.redes_sociales.facebook'))<a href="{{ config('autoruta.redes_sociales.facebook') }}" target="_blank" rel="noopener">Facebook</a>@endif
@@ -123,7 +125,7 @@
         boton.setAttribute('aria-label', si ? 'Cerrar menú' : 'Abrir menú');
       }
       boton.addEventListener('click', function () { abrir(menu.hidden); });
-      menu.addEventListener('click', function (e) { if (e.target.closest('a')) abrir(false); });
+      menu.addEventListener('click', function (e) { if (e.target.closest('a, button')) abrir(false); });
       document.addEventListener('keydown', function (e) { if (e.key === 'Escape') abrir(false); });
       document.addEventListener('click', function (e) { if (!menu.hidden && !menu.contains(e.target) && !boton.contains(e.target)) abrir(false); });
       window.matchMedia('(min-width: 900px)').addEventListener('change', function (m) { if (m.matches) abrir(false); });
@@ -229,11 +231,7 @@
     </div>
   </footer>
 
-  <a class="wa-flotante" target="_blank" rel="noopener"
-     href="https://wa.me/{{ preg_replace('/\D/', '', config('autoruta.asesor_whatsapp')) }}?text={{ urlencode('Hola, quiero hablar con un asesor web') }}">
-    Asesor web
-  </a>
-
+  @include('partials.asistente')
   @include('partials.aviso-cookies')
 </body>
 </html>

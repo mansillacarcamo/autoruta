@@ -26,6 +26,8 @@
     function abrir() {
       var cookies = document.getElementById('aviso-cookies');
       if (cookies && !cookies.hidden) return setTimeout(abrir, 800);
+      var bienvenida = document.getElementById('popup-bienvenida');
+      if (bienvenida && bienvenida.dataset.pendiente) return setTimeout(abrir, 800);
       fondo.hidden = false;
       var video = fondo.querySelector('video'); if (video) video.play().catch(function () {});
     }
