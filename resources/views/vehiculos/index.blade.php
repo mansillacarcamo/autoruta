@@ -21,6 +21,58 @@
   @endif
   <div class="mt-2">@include('partials.categorias')</div>
 
+  {{-- Búsqueda bajo las categorías: el tipo elegido arriba viaja oculto. --}}
+  <form method="get" action="{{ route('vehiculos.index') }}" class="buscador-listado">
+    @if (request('tipo'))<input type="hidden" name="tipo" value="{{ request('tipo') }}">@endif
+    <label class="buscador-campo buscador-texto">
+      <span>Buscar</span>
+      <input type="search" name="q" list="marcas" value="{{ request('q') }}" placeholder="Marca o modelo">
+      <datalist id="marcas">
+        @foreach (config('marcas') as $m)<option value="{{ $m }}">@endforeach
+      </datalist>
+    </label>
+    <label class="buscador-campo">
+      <span>Región</span>
+      <select name="region" onchange="this.form.comuna && (this.form.comuna.value = ''); this.form.submit()">
+        <option value="">Todas</option>
+        @foreach (array_keys(config('regiones')) as $r)
+          <option value="{{ $r }}" @selected($filtroRegion === $r)>{{ $r }}</option>
+        @endforeach
+      </select>
+    </label>
+    @if ($filtroRegion)
+    <label class="buscador-campo">
+      <span>Comuna</span>
+      <select name="comuna">
+        <option value="">Todas</option>
+        @foreach (config('regiones.' . $filtroRegion, []) as $c)
+          <option value="{{ $c }}" @selected($filtroComuna === $c)>{{ $c }}</option>
+        @endforeach
+      </select>
+    </label>
+    @endif
+    <label class="buscador-campo">
+      <span>Precio máx.</span>
+      <input type="number" name="precioMax" value="{{ request('precioMax') }}" min="0" step="500000" placeholder="Sin límite">
+    </label>
+    <label class="buscador-campo">
+      <span>Ordenar por</span>
+      <select name="orden">
+        <option value="recientes" @selected(request('orden', 'recientes') === 'recientes')>Más recientes</option>
+        <option value="precio_asc" @selected(request('orden') === 'precio_asc')>Menor precio</option>
+        <option value="precio_desc" @selected(request('orden') === 'precio_desc')>Mayor precio</option>
+        <option value="km_asc" @selected(request('orden') === 'km_asc')>Menor kilometraje</option>
+      </select>
+    </label>
+    <button type="submit" class="btn btn-acento buscador-boton">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      Buscar
+    </button>
+    @if (collect(request()->only(['q', 'region', 'comuna', 'precioMin', 'precioMax', 'orden']))->filter()->isNotEmpty())
+      <a href="{{ route('vehiculos.index', array_filter(['tipo' => request('tipo')])) }}" class="buscador-limpiar">Limpiar filtros</a>
+    @endif
+  </form>
+
   <div style="margin-top:24px">
     <div>
       <p class="texto-mutado">{{ $vehiculos->total() }} {{ $vehiculos->total() === 1 ? 'vehículo encontrado' : 'vehículos encontrados' }}</p>
